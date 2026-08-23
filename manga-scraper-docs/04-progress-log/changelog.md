@@ -5,6 +5,56 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-23 (2) — Fase 2-3: single source of truth + separation of concerns
+
+Lanjutan sesi Fase 1 di branch yang sama. Semua langkah: `npm test` hijau
+sebelum commit. Test: 133 → 138.
+
+### Keputusan arsitektur: endpoint `/api/neko/proxy-player` DIHAPUS
+- Audit menemukan endpoint ini tidak punya konsumen (frontend embed iframe
+  langsung ke penyedia) dan cacat desain (raw HTML pihak ketiga → URL relatif
+  resolve ke origin kita = player rusak by-design).
+- Kapabilitas fallback player server-side tetap terjaga lewat
+  `lib/scraper/playerFrame.js` + lab `scripts/dev/player-frame-server.js`
+  (teruji, punya transformasi URL + passthrough XHR). Jika embed langsung
+  diblokir penyedia, promosikan playerFrame ke produksi — bukan menghidupkan
+  ulang prototipe lama.
+- `lib/browser.js` dipertahankan (dipakai playerFrame via dynamic import).
+
+### Single source of truth (Fase 2)
+- **BUG-4 (config drift)**: allowlist host player yang tadinya berbeda di 3
+  file kini satu sumber: `lib/config/playerHosts.js` (env `NEKO_PLAYER_HOSTS`
+  atau default). `playerFrame.js` re-export demi kompatibilitas.
+- **USER_AGENT**: 3 definisi dengan versi Chrome berbeda (124/126) → satu di
+  `lib/constants.js` (+ `REFERER_NEKO`, `REFERER_DOUJIN`).
+- **safeHttpUrl vs safeImageUrl**: `safeHttpUrl()` kini benar-benar generik
+  (protokol http(s) + anti-SSRF); allowlist domain gambar doujin pindah ke
+  `safeImageUrl()`. Semua konsumen gambar (doujinScraper, normalizer,
+  imageProxy, progressController) pindah ke `safeImageUrl()`.
+- **Cache**: 3 implementasi (CacheManager, Map manual neko, LRU manual image)
+  → semua pakai `CacheManager` (+ method `clear()`; cache gambar kini TTL
+  60 menit — sebelumnya entri hidup selamanya).
+
+### Separation of concerns (Fase 3)
+- `nekoScraper.js` (618 baris) dipecah menjadi `lib/scraper/neko/`:
+  `http.js` (fetch+VPN+retry), `text.js` (util teks), `parsers/cards.js`,
+  `parsers/detail.js`, `parsers/schedule.js`, `parsers/anchors.js`
+  (ekstraksi anchor yang tadinya diduplikasi 3×), `index.js` (orkestrasi).
+  `nekoScraper.js` jadi re-export tipis — kontrak publik nol perubahan.
+- Engine proxy gambar keluar dari controller → `lib/imageProxy.js`.
+  `mangaController.js`: 319 → ~118 baris, kini murni HTTP handler.
+- Mapping error upstream terpusat di `middleware/upstreamResponse.js`
+  (`respondUpstreamError`) — blok if-status yang diduplikasi di ±10 handler
+  kini satu definisi.
+
+### Hasil akhir
+- File terpanjang di kode aplikasi: vpnManager.js 473 (kohesif, sengaja
+  dipertahankan); file terbesar buatan sendiri berikutnya 188 baris.
+- Duplikasi tersisa: nol untuk cache/UA/allowlist/error-mapping/anchor-parse.
+- Validasi: 138/138 test, `node --check` scripts OK.
+
+---
+
 ## 2026-08-23 — Fase 1: bug fix & hardening keamanan (branch `refactor/architecture-cleanup`)
 
 Audit menyeluruh menemukan 4 bug + 2 celah keamanan. Semua diperbaiki dalam
