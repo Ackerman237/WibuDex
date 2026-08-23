@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline — Doujin Library</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #15120f;
+      color: #ece6dc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+    .box { max-width: 420px; }
+    h1 { font-size: 22px; margin: 0 0 10px; }
+    p { color: #a89c8d; font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
+    button {
+      background: transparent;
+      border: 1px solid #5f574d;
+      color: #ece6dc;
+      padding: 10px 22px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+    button:hover { border-color: #a89c8d; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Kamu sedang offline</h1>
+    <p>Halaman ini belum tersimpan di cache. Sambungkan kembali ke internet lalu coba lagi — halaman yang pernah dibuka tetap bisa diakses dari cache.</p>
+    <button type="button" onclick="location.reload()">COBA LAGI</button>
+  </div>
+</body>
+</html>

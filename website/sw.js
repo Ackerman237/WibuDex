@@ -11,9 +11,9 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
-// v4: invalidasi seluruh cache — server kini mengirim HTML no-cache dan
-// aset berversi (?v=). Cache lama (v3) berisi watch.js pra player-frame.
-const CACHE_VERSION = 'v4';
+// v5: offline fallback — navigasi saat offline tanpa cache menyajikan
+// /offline.html (precache) alih-alih error mentah browser.
+const CACHE_VERSION = 'v5';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 
@@ -21,6 +21,7 @@ const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/icons/icon.svg',
   '/icons/favicon.png',
+  '/offline.html',
 ];
 
 /* ---------------- INSTALL ---------------- */
@@ -68,9 +69,10 @@ self.addEventListener('fetch', (event) => {
   // Abaikan skema non-http (chrome-extension:, blob:, dll)
   if (!url.protocol.startsWith('http')) return;
 
-  // 2. Navigasi halaman HTML -> NETWORK-FIRST
+  // 2. Navigasi halaman HTML -> NETWORK-FIRST, fallback cache,
+  //    lalu fallback terakhir: halaman offline
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request, ASSET_CACHE));
+    event.respondWith(networkFirst(request, ASSET_CACHE, '/offline.html'));
     return;
   }
 
@@ -103,7 +105,7 @@ self.addEventListener('fetch', (event) => {
 
 /* ---------------- STRATEGI ---------------- */
 
-async function networkFirst(request, cacheName) {
+async function networkFirst(request, cacheName, offlineFallbackUrl = null) {
   const cache = await caches.open(cacheName);
   try {
     const fresh = await fetch(request);
@@ -114,6 +116,11 @@ async function networkFirst(request, cacheName) {
   } catch {
     const cached = await cache.match(request, { ignoreSearch: request.mode === 'navigate' });
     if (cached) return cached;
+    // Fallback terakhir untuk navigasi: halaman offline yang di-precache
+    if (offlineFallbackUrl) {
+      const offline = await cache.match(offlineFallbackUrl);
+      if (offline) return offline;
+    }
     throw new Error('offline dan belum ada cache');
   }
 }
@@ -148,6 +155,4 @@ async function cacheFirst(request, cacheName) {
 }
 
 /* ---------------- PESAN DARI HALAMAN ---------------- */
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
-});
+// (tidak ada handler — skipWaiting sudah dipanggil di install)

@@ -10,7 +10,15 @@
   <link rel="stylesheet" href="/doujinPage/css/base.css?v=3">
   <link rel="stylesheet" href="/doujinPage/css/components.css?v=3">
   <link rel="stylesheet" href="/doujinPage/css/cards.css?v=3">
-  <link rel="stylesheet" href="/doujinPage/css/index.css?v=3">
+  <link rel="stylesheet" href="/doujinPage/css/index.css?v=4">
+
+  <!-- Favicon & tema browser mobile -->
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#15120f">
+  <link rel="manifest" href="/manifest.json">
+  <!-- Service Worker (offline cache) -->
+  <script src="/js/register-sw.js" defer></script>
 </head>
 <body>
 
@@ -47,15 +55,19 @@
 
     <!-- HERO BANNER SECTION -->
     <section class="hero-section">
-      <div class="hero-banner" style="background-image: linear-gradient(to top, rgba(21,18,15,0.9), transparent), url('https://placehold.co/1200x400/201b16/ece6dc?text=Featured+Manga');">
+      <div class="hero-banner" id="heroBanner">
+        <div class="hero-bg" id="heroBg"></div>
         <div class="hero-tags">
-          <span class="badge badge-ink">MANHWA</span>
-          <span class="badge badge-gold"><svg class="ic" aria-hidden="true"><use href="/doujinPage/icons.svg#i-star"></use></svg> 8.8</span>
+          <span class="badge badge-ink" id="heroTypeBadge" style="display:none"></span>
+          <span class="badge badge-gold"><svg class="ic" aria-hidden="true"><use href="/doujinPage/icons.svg#i-star"></use></svg> <span id="heroRatingText">-</span></span>
         </div>
-        <h2 class="hero-title">I BANGED ALL MY CLASSMATES AFTER GRADUATION</h2>
+        <h2 class="hero-title" id="heroTitle"></h2>
+        <button type="button" class="hero-arrow hero-arrow-left" id="heroPrevBtn" aria-label="Sebelumnya">‹</button>
+        <button type="button" class="hero-arrow hero-arrow-right" id="heroNextBtn" aria-label="Berikutnya">›</button>
+        <div class="hero-dots" id="heroDots"></div>
         <div class="hero-actions">
-          <button class="btn btn-primary">READ NOW</button>
-          <button class="btn btn-icon">INFO</button>
+          <a id="heroReadBtn" class="btn btn-primary" href="#">READ NOW</a>
+          <a id="heroInfoBtn" class="btn btn-icon" href="#">INFO</a>
         </div>
       </div>
 
@@ -105,6 +117,6 @@
   <script src="/doujinPage/shared/api.js?v=3" defer></script>
   <script src="/doujinPage/shared/ui.js?v=3" defer></script>
   <script src="/doujinPage/shared/storage.js?v=3" defer></script>
-  <script src="/doujinPage/js/index.js?v=3" defer></script>
+  <script src="/doujinPage/js/index.js?v=4" defer></script>
 </body>
 </html>
