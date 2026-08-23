@@ -74,7 +74,14 @@ async function loadSeries(reset = false) {
     }
   } catch (err) {
     console.error('Gagal memuat daftar seri:', err);
-    if (reset) grid.innerHTML = `<p class="error">Gagal memuat daftar seri: ${err.message}</p>`;
+    if (reset) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center;">
+          <p class="error">Gagal memuat daftar seri: ${escapeHtml(err.message)}</p>
+          <button type="button" class="retry-btn">COBA LAGI</button>
+        </div>`;
+      grid.querySelector('.retry-btn')?.addEventListener('click', () => loadSeries(true));
+    }
   }
 }
 

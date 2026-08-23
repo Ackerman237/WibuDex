@@ -109,7 +109,14 @@ async function loadVideos(reset = false) {
     }
   } catch (err) {
     console.error('Gagal memuat video:', err);
-    if (reset) grid.innerHTML = `<p class="error">Gagal memuat video: ${err.message}</p>`;
+    if (reset) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center;">
+          <p class="error">Gagal memuat video: ${escapeHtml(err.message)}</p>
+          <button type="button" class="retry-btn">COBA LAGI</button>
+        </div>`;
+      grid.querySelector('.retry-btn')?.addEventListener('click', () => loadVideos(true));
+    }
   }
 }
 
@@ -144,10 +151,10 @@ async function loadSchedule() {
         card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
 
         const thumbUrl = item.thumb || 'https://placehold.co/100x140?text=?';
-        const title = (item.title || '').replace(/[&"<>]/g, m => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
+        const title = escapeHtml(item.title || '');
 
         card.innerHTML = `
-          <img src="${thumbUrl}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+          <img src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
           <span class="schedule-card-title">${title}</span>
         `;
         list.appendChild(card);
@@ -162,7 +169,12 @@ async function loadSchedule() {
     });
   } catch (err) {
     console.error('Gagal memuat jadwal:', err);
-    container.innerHTML = '<p class="error">Gagal memuat jadwal.</p>';
+    container.innerHTML = `
+      <p class="error">Gagal memuat jadwal.</p>
+      <div style="text-align: center;">
+        <button type="button" class="retry-btn">COBA LAGI</button>
+      </div>`;
+    container.querySelector('.retry-btn')?.addEventListener('click', loadSchedule);
   }
 }
 

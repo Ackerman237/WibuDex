@@ -20,7 +20,7 @@
   --gold: #c79a3a;
   --text: #ece6dc;
   --text-muted: #9c9187;
-  --text-faint: #5f574d;
+  --text-faint: #8a8177;
   --font-display: 'Oswald', sans-serif;
   --font-body: 'Inter', sans-serif;
   --radius: 4px;
@@ -282,6 +282,19 @@ main { max-width: 1200px; margin: auto; padding: 30px 20px; }
   animation: spin 0.8s linear infinite;
 }
 .error { color: #d9756c; }
+
+.retry-btn {
+  display: inline-block;
+  margin-top: 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 9px 20px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.retry-btn:hover { border-color: var(--ink); }
 
 /* ---------- shared animations ---------- */
 

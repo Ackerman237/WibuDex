@@ -117,27 +117,217 @@ async function loadManga(query = '', page = 1) {
   }
 }
 
-async function loadPopular() {
+// ---------- Hero featured dinamis (rotasi otomatis + manual) ----------
+const HERO_POOL_SIZE = 6;
+const HERO_SLIDE_INTERVAL_MS = 8000;
+
+let heroPool = [];
+let heroIndex = 0;
+let heroTimer = null;
+
+/** Cover lewat image-proxy (konsisten renderMangaCard, ukuran hero w=1200). */
+function heroProxyImage(thumb) {
+  return thumb
+    ? `/api/image-proxy?url=${encodeURIComponent(thumb)}&w=1200`
+    : 'https://placehold.co/1200x400/201b16/ece6dc?text=Featured+Manga';
+}
+
+const HERO_PLACEHOLDER_BG =
+  'url("https://placehold.co/1200x400/201b16/ece6dc?text=Featured+Manga")';
+
+/** Terapkan satu manga ke seluruh elemen hero (dengan crossfade halus). */
+function applyHeroSlide(manga) {
+  const bg = document.getElementById('heroBg');
+  const title = document.getElementById('heroTitle');
+  const ratingText = document.getElementById('heroRatingText');
+  const typeBadge = document.getElementById('heroTypeBadge');
+  const readBtn = document.getElementById('heroReadBtn');
+  const infoBtn = document.getElementById('heroInfoBtn');
+  const banner = document.getElementById('heroBanner');
+  if (!bg || !title || !manga) return;
+
+  // Crossfade: pudarkan → ganti gambar → munculkan lagi
+  bg.style.opacity = '0';
+  setTimeout(() => {
+    bg.style.backgroundImage = `url("${heroProxyImage(manga.thumb)}")`;
+    bg.style.opacity = '1';
+  }, 250);
+
+  // textContent (bukan innerHTML) — judul berasal dari scraper, anti-XSS
+  title.textContent = manga.title || 'Tanpa Judul';
+  ratingText.textContent = manga.rating ?? '-';
+
+  const type = (manga.type || '').trim();
+  if (type) {
+    typeBadge.style.display = '';
+    typeBadge.textContent = type.toUpperCase();
+  } else {
+    typeBadge.style.display = 'none';
+  }
+  const flag = typeof getMangaFlag === 'function' ? getMangaFlag(type) : '';
+  if (flag) banner.dataset.flag = flag; else delete banner.dataset.flag;
+
+  const slug = manga.slug || '';
+  const detailHref = slug ? `/doujinPage/html/detail.html?slug=${encodeURIComponent(slug)}` : '#';
+  [readBtn, infoBtn].forEach((a) => {
+    a.href = detailHref;
+    a.style.opacity = slug ? '' : '0.5';
+    if (!slug) a.setAttribute('aria-disabled', 'true');
+    else a.removeAttribute('aria-disabled');
+  });
+}
+
+function syncHeroDots() {
+  const dots = document.getElementById('heroDots');
+  if (!dots) return;
+  [...dots.children].forEach((dot, i) => dot.classList.toggle('active', i === heroIndex));
+}
+
+// SATU pintu navigasi slide: dipakai timer otomatis, dots, panah, dan swipe.
+// Selalu me-reset timer supaya tidak "baru geser manual, langsung pindah lagi".
+function goToSlide(i) {
+  if (!heroPool.length) return;
+  heroIndex = ((i % heroPool.length) + heroPool.length) % heroPool.length;
+  applyHeroSlide(heroPool[heroIndex]);
+  syncHeroDots();
+  startHeroTimer();
+}
+
+function startHeroTimer() {
+  stopHeroTimer();
+  heroTimer = setInterval(() => goToSlide(heroIndex + 1), HERO_SLIDE_INTERVAL_MS);
+}
+function stopHeroTimer() {
+  clearInterval(heroTimer);
+  heroTimer = null;
+}
+
+/** Preload sisa gambar pool di belakang layar agar crossfade tak "kedip kosong". */
+function preloadHeroPool(pool) {
+  pool.forEach((m) => {
+    const img = new Image();
+    img.src = heroProxyImage(m.thumb);
+  });
+}
+
+function startHeroRotation(pool) {
+  stopHeroTimer();
+  heroPool = pool;
+  heroIndex = Math.floor(Date.now() / 86400000) % pool.length; // seed harian deterministik
+
+  // Bangun dots
+  const dots = document.getElementById('heroDots');
+  if (dots) {
+    dots.innerHTML = '';
+    pool.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'hero-dot';
+      dot.setAttribute('aria-label', `Featured ${i + 1}`);
+      dot.addEventListener('click', () => goToSlide(i));
+      dots.appendChild(dot);
+    });
+  }
+
+  // Panah desktop
+  document.getElementById('heroPrevBtn')?.addEventListener('click', () => goToSlide(heroIndex - 1));
+  document.getElementById('heroNextBtn')?.addEventListener('click', () => goToSlide(heroIndex + 1));
+
+  // Swipe mobile: delta horizontal ≥48px & mendominasi sumbu vertikal
+  // (guard dy menjaga scroll halaman tetap normal). Tap biasa = klik normal.
+  const banner = document.getElementById('heroBanner');
+  if (banner) {
+    let startX = 0, startY = 0, swiping = false;
+    banner.addEventListener('touchstart', (e) => {
+      startX = e.changedTouches[0].clientX;
+      startY = e.changedTouches[0].clientY;
+      swiping = true;
+      stopHeroTimer();
+    }, { passive: true });
+    banner.addEventListener('touchend', (e) => {
+      if (!swiping) return;
+      swiping = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy)) {
+        goToSlide(heroIndex + (dx < 0 ? 1 : -1));
+      } else {
+        startHeroTimer(); // tap biasa — lanjutkan siklus
+      }
+    }, { passive: true });
+
+    // Pause saat kursor di atas banner (pola sama dengan history carousel)
+    banner.addEventListener('mouseenter', stopHeroTimer);
+    banner.addEventListener('mouseleave', () => {
+      if (!swiping) startHeroTimer();
+    });
+  }
+
+  applyHeroSlide(pool[heroIndex]);
+  syncHeroDots();
+  preloadHeroPool(pool);
+  startHeroTimer();
+}
+
+/** Fallback rapi: fetch gagal/kosong — hero tidak pernah tampak rusak. */
+function showHeroUnavailable(message) {
+  stopHeroTimer();
+  heroPool = [];
+  const dots = document.getElementById('heroDots');
+  if (dots) dots.innerHTML = '';
+  const bg = document.getElementById('heroBg');
+  if (bg) { bg.style.opacity = '1'; bg.style.backgroundImage = HERO_PLACEHOLDER_BG; }
+  const title = document.getElementById('heroTitle');
+  if (title) title.textContent = message || 'Featured tidak tersedia';
+  const ratingText = document.getElementById('heroRatingText');
+  if (ratingText) ratingText.textContent = '-';
+  const typeBadge = document.getElementById('heroTypeBadge');
+  if (typeBadge) typeBadge.style.display = 'none';
+  ['#heroReadBtn', '#heroInfoBtn'].forEach((sel) => {
+    const a = document.querySelector(sel);
+    if (a) { a.href = '#'; a.style.opacity = '0.5'; a.setAttribute('aria-disabled', 'true'); }
+  });
+}
+
+/** Tampilan awal hero selagi fetch berjalan. */
+function setHeroLoading() {
+  const title = document.getElementById('heroTitle');
+  if (title) title.textContent = 'Memuat featured…';
+  const typeBadge = document.getElementById('heroTypeBadge');
+  if (typeBadge) typeBadge.style.display = 'none';
+  const bg = document.getElementById('heroBg');
+  if (bg) { bg.style.backgroundImage = HERO_PLACEHOLDER_BG; bg.style.opacity = '1'; }
+}
+
+async function loadHeroAndPopular() {
   const grid = document.getElementById('popularGrid');
   if (!grid) return;
 
+  setHeroLoading();
+
   try {
-    const result = await fetchJsonWithTimeout('/api/manga?sort=rating&page=1&limit=12');
+    // limit=18: 6 pertama jadi pool featured, 12 sisanya utuh untuk grid populer
+    const result = await fetchJsonWithTimeout('/api/manga?sort=rating&page=1&limit=18');
     const mangaList = Array.isArray(result) ? result : (result.data || result.results || []);
 
     grid.innerHTML = '';
 
     if (mangaList.length === 0) {
+      showHeroUnavailable('Belum ada data populer.');
       grid.innerHTML = '<p class="error" style="font-size: 13px; color: var(--text-muted, #888);">Belum ada data populer.</p>';
       return;
     }
 
-    mangaList.forEach(manga => {
+    const pool = mangaList.slice(0, Math.min(HERO_POOL_SIZE, mangaList.length));
+    startHeroRotation(pool);
+
+    mangaList.slice(pool.length).forEach(manga => {
       grid.appendChild(renderMangaCard(manga));
     });
   } catch (error) {
-    console.error('Popular Fetch Error:', error);
-    grid.innerHTML = '<p class="error" style="font-size: 13px; color: var(--text-muted, #888);">Gagal memuat manga populer.</p>';
+    console.error('Hero/Popular Fetch Error:', error);
+    showHeroUnavailable(formatFetchError(error, 'Gagal memuat manga populer.'));
+    showError(grid, formatFetchError(error, 'Gagal memuat manga populer.'), () => loadHeroAndPopular());
   }
 }
 
@@ -156,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupBackToTop(backToTopBtn, 300);
 
-  loadPopular();
+  loadHeroAndPopular();
   loadManga();
 
   // Perbaiki cover yang hilang saat kembali dari detail/reader via browser back button (bfcache).
