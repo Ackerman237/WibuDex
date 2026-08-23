@@ -1,7 +1,7 @@
 // controllers/progressController.js — Reading position CRUD
 
 import { upsertPosition, getPosition, getAllPositions } from '../lib/db.js';
-import { safeHttpUrl } from '../lib/security.js';
+import { safeImageUrl } from '../lib/security.js';
 import logger from '../lib/logger.js';
 
 const DEVICE_ID_HEADER = 'x-device-id';
@@ -108,7 +108,7 @@ export const saveReadingPositionHandler = (req, res) => {
     if (typeof req.body?.mangaTitle === 'string' && req.body.mangaTitle.trim()) {
       mangaTitle = req.body.mangaTitle.trim().slice(0, 200);
     }
-    const coverUrl = typeof req.body?.coverUrl === 'string' ? safeHttpUrl(req.body.coverUrl.trim()) : null;
+    const coverUrl = typeof req.body?.coverUrl === 'string' ? safeImageUrl(req.body.coverUrl.trim()) : null;
     let mangaType = null;
     if (typeof req.body?.mangaType === 'string' && req.body.mangaType.trim()) {
       mangaType = req.body.mangaType.trim().toLowerCase().slice(0, 20);

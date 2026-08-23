@@ -5,6 +5,7 @@ import {
   isPrivateHost,
   isAllowedImageHost,
   safeHttpUrl,
+  safeImageUrl,
 } from '../lib/security.js';
 
 describe('sanitizeUrl', () => {
@@ -99,7 +100,7 @@ describe('isAllowedImageHost', () => {
   });
 });
 
-describe('safeHttpUrl', () => {
+describe('safeHttpUrl (generik: protokol + anti-SSRF, TANPA allowlist domain)', () => {
   it('returns empty for non-string', () => {
     expect(safeHttpUrl(123)).toBe('');
   });
@@ -110,14 +111,36 @@ describe('safeHttpUrl', () => {
 
   it('returns empty for private host', () => {
     expect(safeHttpUrl('http://localhost/image.jpg')).toBe('');
+    expect(safeHttpUrl('http://127.0.0.1/x')).toBe('');
+    expect(safeHttpUrl('http://192.168.1.5/x')).toBe('');
+  });
+
+  it('accepts any public http(s) host (generik)', () => {
+    expect(safeHttpUrl('https://evil.com/image.jpg')).toContain('evil.com');
+    expect(safeHttpUrl('https://example.com/a.png')).toContain('example.com');
+  });
+});
+
+describe('safeImageUrl (safeHttpUrl + allowlist domain gambar doujin)', () => {
+  it('returns empty for non-string', () => {
+    expect(safeImageUrl(123)).toBe('');
+  });
+
+  it('returns empty for blocked protocol', () => {
+    expect(safeImageUrl('javascript:alert(1)')).toBe('');
+  });
+
+  it('returns empty for private host', () => {
+    expect(safeImageUrl('http://localhost/image.jpg')).toBe('');
   });
 
   it('returns empty for disallowed host', () => {
-    expect(safeHttpUrl('https://evil.com/image.jpg')).toBe('');
+    expect(safeImageUrl('https://evil.com/image.jpg')).toBe('');
   });
 
   it('returns valid url for allowed host', () => {
-    const result = safeHttpUrl('https://doujin.desu.xxx/image.jpg');
+    const result = safeImageUrl('https://doujin.desu.xxx/image.jpg');
     expect(result).toContain('doujin.desu.xxx');
+    expect(safeImageUrl('https://img2.desu.pics/x.webp')).toContain('desu.pics');
   });
 });

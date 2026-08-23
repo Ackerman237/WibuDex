@@ -1,4 +1,4 @@
-import { safeHttpUrl } from '../lib/security.js';
+import { safeImageUrl } from '../lib/security.js';
 import sharp from 'sharp';
 import { USER_AGENT, REFERER_DOUJIN } from '../lib/constants.js';
 import {
@@ -186,7 +186,7 @@ export const proxyImage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'URL gambar tidak disertakan' });
     }
 
-    const safeUrl = safeHttpUrl(imageUrl);
+    const safeUrl = safeImageUrl(imageUrl);
     if (!safeUrl) {
       return res.status(400).json({ success: false, message: 'URL gambar tidak valid' });
     }
