@@ -13,7 +13,7 @@ function sanitizeDeviceId(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > MAX_DEVICE_ID_LEN) return null;
-  if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) return null;
+  if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) return null;
   return trimmed;
 }
 
