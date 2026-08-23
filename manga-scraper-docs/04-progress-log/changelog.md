@@ -5,6 +5,44 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-23 (3) — Fase 4: ESLint, golden test decryptor, test normalizer, README arsitektur
+
+### Bug lama terkonfirmasi lewat sanity check live (`npm run demo:fast`)
+- `scripts/demo.js` mengimpor `disconnectVpn` dari nekoScraper — export itu
+  TIDAK PERNAH ada di sana; demo crash saat start sejak commit lama. Fix:
+  impor dari `lib/vpn/vpnManager.js`.
+- Demo memakai kategori `ecchi` yang tidak ada di situs (404 asli upstream).
+  Diganti `hentai` (terverifikasi live). Hasil demo live: 10/10 lulus.
+
+### ESLint (flat config 9)
+- DevDependency baru: `eslint`, `@eslint/js`, `globals` (tanpa dependensi
+  runtime baru). Script `lint` — step CI `npm run lint --if-present` yang
+  selama ini no-op kini benar-benar memeriksa kode.
+- 21 temuan awal dibereskan: unused vars/imports, useless escape & assignment,
+  empty catch diberi komentar eksplisit. `get-secret.js` disentuh HANYA lewat
+  konfigurasi lint (guardrail dihormati); `website/` diabaikan.
+
+### Golden test decryptor (+5)
+- `_internals { generateKey, decryptHex }` diekspos (aditif) untuk test.
+- Waktu di-pin via fake timers agar bucket jam deterministik; ciphertext
+  dibangun dengan enkripsi cermin (mask `& 255` wajib — tertangkap oleh test
+  sendiri saat draft pertama tanpa mask).
+- Cakupan: bucket saat ini, fallback bucket -1 dan +1, fail path.
+
+### Unit test normalizer (+5)
+- mapListItem/mapDetail: resolve URL relatif, penolakan host non-allowlist,
+  fallback thumb berantai, toleransi null/tipe salah.
+
+### README
+- Ditambah bagian **Architecture** (diagram alur request + daftar single
+  source of truth). Struktur project, jumlah test, requirement Node >=22.5,
+  dan referensi proxy-player yang sudah dihapus ikut disinkronkan.
+
+Validasi akhir: **148/148 test**, lint bersih, `node --check` scripts OK,
+demo live 10/10.
+
+---
+
 ## 2026-08-23 (2) — Fase 2-3: single source of truth + separation of concerns
 
 Lanjutan sesi Fase 1 di branch yang sama. Semua langkah: `npm test` hijau

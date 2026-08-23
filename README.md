@@ -8,13 +8,13 @@ A web application that aggregates and serves manga/doujin content by scraping an
 
 The platform provides:
 - **Manga Catalog & All Manga Page** — Full library browse with server-side numeric pagination (`PREVIOUS / NEXT`), sorting controls (Newest / Rating / Title A–Z), and category/genre filtering.
-- **Nekopoi Platform** — Video catalog browse (`/neko`), category listing and filtering, keyword search, detail view, and a watch page served through a proxied player (`/api/neko/proxy-player`) to bypass direct-embed restrictions.
+- **Nekopoi Platform** — Video catalog browse (`/neko`), category listing and filtering, keyword search, detail view, and a watch page that embeds provider players directly (server-side fallback capability lives in `lib/scraper/playerFrame.js`).
 - **Manga Detail Pages** — Comprehensive view with chapter lists, metadata, and error/retry handling.
 - **Manga Reader** — Lazy loading, chapter navigation, automatic **server-side reading position saving** (powered by built-in `node:sqlite`), and resilient UX: per-page loading skeletons, sticky progress bar (`📄 8/138 halaman siap`), auto-retry 3x backoff (1s→2s→4s) for failed images, classified error messages, and aggressive prefetch (1500px).
 - **Personal Library & Bookmarks** — Local storage integration for favorites and bookmarks.
 - **VPN Failover & Resilience** — Per-target VPN policy (`auto` for doujin, `always` for neko) with automatic provider failover; live connection state exposed via `/api/vpn-status`. Upstream unavailability maps gracefully to HTTP 503 (`UPSTREAM_UNAVAILABLE`).
 - **Security & Hardening** — Robust image proxy with suffix-domain allowlists (`desu.pics`, `desu.xxx`), private-IP blocking (SSRF protection), response size capping (10MB), content-type validation, streaming pipe with timeout (configurable via `IMAGE_PROXY_TIMEOUT_MS`, default 20s), internal retry 1x for transient failures, in-memory LRU cache (max 150 entries, ~50MB), strict rate limiting, and input validation on every endpoint.
-- **Testing & Quality** — Fully tested codebase with **116 Vitest tests passing across 7 test files** and structured Pino logging.
+- **Testing & Quality** — Fully tested codebase with **148 Vitest tests passing across 10 test files** (including golden tests for the decryption pipeline), ESLint enforcement (`npm run lint`), and structured Pino logging.
 
 ---
 
@@ -49,7 +49,6 @@ All endpoints are prefixed under `/api` and rate-limited. Summary:
 | `GET /api/neko/category` | Videos within a specific category. |
 | `GET /api/neko/search` | Nekopoi keyword search. |
 | `GET /api/neko/detail` | Video detail by slug. |
-| `GET /api/neko/proxy-player` | Proxied embedded player. |
 | `GET /api/progress` | Reading position for one manga. |
 | `GET /api/progress/all` | All saved reading positions. |
 | `POST /api/progress` | Save/update reading position. |
@@ -68,35 +67,61 @@ Key issues solved during development (full log: [`manga-scraper-docs/04-progress
 - **Resilient reader UX** — server error messages are properly classified (regex-matched upstream messages), with automatic single retry and an explicit "COBA LAGI" button on failure.
 - **Known limitation (documented honestly)** — auto scroll-to-last-page on "continue reading" is temporarily disabled because it raced against lazy image initialization; saving/loading positions still works normally.
 
+## Architecture
+
+Request flow (separation of concerns per layer):
+
+```text
+HTTP request
+  └ routes/api.js            # routing + rate limiter per endpoint
+      └ controllers/         # validasi input (lib/validator.js) + format respons
+          │                    mapping error upstream terpusat di middleware/upstreamResponse.js
+          └ lib/scraper/
+              ├ doujinScraper.js  # API terenkripsi: fetcher → decryptor → normalizer (+cache)
+              ├ neko/             # HTML nekopoi: http.js (fetch+VPN retry) → parsers/ → index.js
+              ├ fetcher.js        # concurrency limit, retry+backoff, proxy via undici dispatcher
+              ├ cache.js          # CacheManager bersama (TTL + maxSize)
+              └ decryptor.js      # XOR + key turunan bucket jam (SALT env)
+      └ lib/vpn/vpnManager.js   # kebijakan per-target, failover provider, health scoring
+      └ lib/imageProxy.js       # engine proxy gambar: allowlist, SSRF-safe, sharp thumbnail
+
+Single sources of truth:
+  lib/constants.js             # USER_AGENT, referer
+  lib/config/playerHosts.js    # allowlist host player video
+  lib/security.js              # safeHttpUrl (generik) / safeImageUrl (allowlist doujin)
+  middleware/upstreamResponse.js  # error upstream → HTTP 404/503/500
+```
+
 ## Project Structure
 
 ```text
 /
-├ controllers/            # Request handlers (mangaController, nekoController, progressController, vpnController)
-├ lib/                    # Scraper core, security, caching, db, validator
-│   ├── scraper/          # fetcher, decryptor, cache, normalizer, doujinScraper, nekoScraper, index
+├ controllers/            # HTTP handlers tipis (manga, neko, progress, vpn)
+├ lib/                    # Core logic
+│   ├── scraper/          # fetcher, decryptor, cache, normalizer, doujinScraper
+│   │   └── neko/         # http.js, text.js, parsers/, index.js (scraper nekopoi)
+│   ├── config/           # playerHosts.js (allowlist — satu sumber kebenaran)
 │   ├── vpn/              # providers.js, vpnManager.js
-│   ├── security.js
+│   ├── imageProxy.js     # engine proxy + optimasi gambar (sharp)
+│   ├── constants.js      # USER_AGENT, referer
+│   ├── security.js       # safeHttpUrl, safeImageUrl, stripHtml, isPrivateHost
 │   ├── validator.js
 │   ├── logger.js
+│   ├── db.js
 │   └── browser.js
-├ middleware/             # Rate limiting, error handling
-├ routes/                 # API and page route definitions
+├ middleware/             # Rate limiting, error handling, upstream response mapping
+├ routes/                 # API route definitions
 ├ website/                # Frontend assets (doujinPage/, nekoPage/)
-│   ├── doujinPage/       # HTML, CSS, JS for main reader
-│   │   ├── js/           # reader.js, detail.js, allManga.js, library.js, index.js
-│   │   ├── css/          # reader.css
-│   │   └── shared/       # api.js, nav.js, storage.js, ui.js
-│   └── nekoPage/         # HTML, CSS, JS for neko page
-├ tests/                  # Vitest unit & integration test suites (116 tests, 7 files)
-├ scripts/                # Utility scripts
-│   └── dev/              # test.js, test-browser.js (development/testing)
-├ manga-scraper-docs/     # Comprehensive project documentation & decision log (01–08)
+├ tests/                  # Vitest unit & integration suites (148 tests, 10 files)
+├ scripts/                # demo.js, get-secret.js
+│   └── dev/              # Development/lab scripts (player-frame lab, dll.)
+├ manga-scraper-docs/     # Dokumentasi & decision log (01–08)
 ├ data/                   # SQLite database for reading positions
 ├ .data/                  # VPN manager persistent state
 ├ package.json            # Dependencies & scripts
+├ eslint.config.js        # ESLint flat config (npm run lint)
 ├ server.js               # Main application server (PORT via env, fallback auto)
-├ .env.example            # Environment configuration template
+└ .env.example            # Environment configuration template
 ```
 
 ---
@@ -104,7 +129,7 @@ Key issues solved during development (full log: [`manga-scraper-docs/04-progress
 ## Roadmap & Status
 
 - [x] **Phase 1: Reader & Pagination Enhancement** — Numeric pagination, sorting, category filtering, explicit UI states, and server-side reading position tracking (`node:sqlite`). *(Completed)*
-- [x] **Phase 2: Scraper Engine Migration & Security Hardening** — SSRF protection, image proxy limits, request timeouts (configurable via `IMAGE_PROXY_TIMEOUT_MS`, default 20s), caching, input validation, streaming proxy with LRU in-memory cache, and comprehensive Vitest test suite (116 tests passing across 7 files). *(Completed)*
+- [x] **Phase 2: Scraper Engine Migration & Security Hardening** — SSRF protection, image proxy limits, request timeouts (configurable via `IMAGE_PROXY_TIMEOUT_MS`, default 20s), caching, input validation, streaming proxy with LRU in-memory cache, and comprehensive Vitest test suite (148 tests passing across 10 files). *(Completed)*
 - [x] **Phase 3: VPN Failover & Resilience** — Per-target VPN policy (`auto` for `doujin`, `always` for `neko`), graceful `UPSTREAM_UNAVAILABLE` → HTTP 503 mapping, and automatic error classification for 404 vs transient errors. *(Completed)*
 - [ ] **Phase 4: Recommendation System** — Personalized recommendations based on bookmarks and history.
 - [ ] **Phase 5: Account System** — User authentication and cloud synchronization.
@@ -115,7 +140,7 @@ Key issues solved during development (full log: [`manga-scraper-docs/04-progress
 
 ### Requirements
 - Git
-- Node.js (LTS version recommended)
+- Node.js **>= 22.5** (`node:sqlite` / `DatabaseSync` butuh 22.5+)
 - Modern web browser
 
 ### Installation
@@ -152,7 +177,7 @@ The application will be available at the port set in `.env` (`PORT`, default `33
 
 This project is developed incrementally. The focus is on maintainable code, stability, and a seamless user experience. Large architectural changes are implemented only after existing features are tested and stable.
 
-> **Note:** The Nekopoi catalog features (list, categories, search, detail) are functional. The advanced video-player experiment ("Neko Videos" player lab in `scripts/dev/`) is currently paused — playback relies on the proxied embedded player instead.
+> **Note:** The Nekopoi watch page embeds provider players directly via iframe. The server-side player fallback experiment (`lib/scraper/playerFrame.js` + lab in `scripts/dev/`) is kept isolated and can be promoted to production if providers ever block direct embedding.
 
 ---
 
