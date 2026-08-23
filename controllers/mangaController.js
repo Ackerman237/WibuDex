@@ -1,6 +1,7 @@
 import { safeImageUrl } from '../lib/security.js';
 import sharp from 'sharp';
 import { USER_AGENT, REFERER_DOUJIN } from '../lib/constants.js';
+import { CacheManager } from '../lib/scraper/cache.js';
 import {
   scrapeMangaList,
   scrapeMangaDetail,
@@ -118,6 +119,9 @@ export const getChapterImages = async (req, res) => {
 const IMAGE_PROXY_TIMEOUT_MS = Number(process.env.IMAGE_PROXY_TIMEOUT_MS) || 20_000;
 const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
 const IMAGE_CACHE_MAX_ENTRIES = 150;
+// TTL cache gambar: sebelumnya entri hidup selamanya (hanya dibatasi jumlah),
+// 60 menit membatasi memori tanpa mengubah perilaku nyata bagi pengguna.
+const IMAGE_CACHE_TTL_MS = 60 * 60 * 1000;
 // Header cache: cover URL unik per manga, aman di-cache browser jangka panjang
 const IMAGE_CACHE_CONTROL = 'public, max-age=604800';
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -126,25 +130,12 @@ const PROXY_IMAGE_HEADERS = {
   Referer: REFERER_DOUJIN,
 };
 
-const imageCache = new Map();
-
-function imageCacheGet(key) {
-  if (!imageCache.has(key)) return null;
-  const entry = imageCache.get(key);
-  imageCache.delete(key);
-  imageCache.set(key, entry);
-  return entry;
-}
-
-function imageCacheSet(key, entry) {
-  if (imageCache.has(key)) imageCache.delete(key);
-  imageCache.set(key, entry);
-  while (imageCache.size > IMAGE_CACHE_MAX_ENTRIES) {
-    const oldestKey = imageCache.keys().next().value;
-    if (oldestKey === undefined) break;
-    imageCache.delete(oldestKey);
-  }
-}
+// Konsolidasi cache: memakai CacheManager bersama (sebelumnya implementasi
+// Map/LRU manual ketiga di project ini).
+const imageCache = new CacheManager({
+  maxSize: IMAGE_CACHE_MAX_ENTRIES,
+  defaultTTL: IMAGE_CACHE_TTL_MS,
+});
 
 /**
  * Validasi parameter thumbnail ?w= (lebar target dalam px).
@@ -194,7 +185,7 @@ export const proxyImage = async (req, res) => {
     const thumbWidth = parseThumbWidth(req.query.w);
     const cacheKey = thumbWidth ? `${safeUrl}|w=${thumbWidth}` : safeUrl;
 
-    const cached = imageCacheGet(cacheKey);
+    const cached = imageCache.get(cacheKey);
     if (cached) {
       res.setHeader('Content-Type', cached.contentType);
       res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
@@ -270,7 +261,7 @@ export const proxyImage = async (req, res) => {
         res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
         res.setHeader('X-Cache', 'MISS');
         res.send(optimized);
-        imageCacheSet(cacheKey, { contentType: 'image/webp', buffer: optimized });
+        imageCache.set(cacheKey, { contentType: 'image/webp', buffer: optimized });
         return;
       }
       // sharp gagal → jatuh ke path streaming di bawah dengan data yang sudah dibaca
@@ -278,7 +269,7 @@ export const proxyImage = async (req, res) => {
       res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
       res.setHeader('X-Cache', 'MISS');
       if (input && input.length > 0) {
-        imageCacheSet(cacheKey, { contentType, buffer: input });
+        imageCache.set(cacheKey, { contentType, buffer: input });
         res.setHeader('Content-Length', String(input.byteLength));
         return res.send(input);
       }
@@ -313,7 +304,7 @@ export const proxyImage = async (req, res) => {
     res.end();
 
     if (!tooLarge && total > 0) {
-      imageCacheSet(cacheKey, { contentType, buffer: Buffer.concat(chunks) });
+      imageCache.set(cacheKey, { contentType, buffer: Buffer.concat(chunks) });
     }
   } catch (err) {
     logger.error({ err }, 'proxyImage error');

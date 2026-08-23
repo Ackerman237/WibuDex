@@ -50,4 +50,14 @@ describe('CacheManager', () => {
     cache.set('key1', 'new');
     expect(cache.get('key1')).toBe('new');
   });
+
+  it('clear() menghapus semua entry', () => {
+    const cache = new CacheManager({ defaultTTL: 60000 });
+    cache.set('a', 1);
+    cache.set('b', 2);
+    cache.clear();
+    expect(cache.get('a')).toBeNull();
+    expect(cache.get('b')).toBeNull();
+    expect(cache.has('a')).toBe(false);
+  });
 });
