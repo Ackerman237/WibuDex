@@ -179,7 +179,26 @@ The application will be available at the port set in `.env` (`PORT`, default `33
 
 This project is developed incrementally. The focus is on maintainable code, stability, and a seamless user experience. Large architectural changes are implemented only after existing features are tested and stable.
 
-> **Note:** The Nekopoi watch page embeds provider players directly via iframe. The server-side player fallback experiment (`lib/scraper/playerFrame.js` + lab in `scripts/dev/`) is kept isolated and can be promoted to production if providers ever block direct embedding.
+> **Note:** The Nekopoi watch page uses a layered player pipeline: native `<video>` with server-side stream extraction (`/api/neko/stream`), falling back to a server-filtered player frame (`/api/neko/player-frame`, CSP sandboxed, anti popunder) and finally direct embedding (`PLAYER_FRAME_MODE=direct` to roll back). The isolated lab remains in `scripts/dev/player-frame-server.js`.
+
+### Anti-Blocking Strategy (development backlog)
+
+Personal-scale scraping is low-priority for site operators to hunt, but detection is still possible via TLS fingerprint (Node/undici ≠ browser — this is why `playerFrame.js` falls back to `curl.exe` then Puppeteer), request volume/pattern from a single IP, and non-persistent device IDs. Planned mitigations, ordered by cost/benefit:
+
+**Anticipation (reduce detection surface):**
+- [ ] Persistent per-process device ID instead of per-request random ID (`doujinScraper.js`)
+- [ ] Request jitter/pacing between upstream calls (100–500ms random delay)
+
+**Response when blocked (layered):**
+- [x] Stale-cache fallback when upstream fails (`doujinScraper.js`)
+- [x] VPN failover per-target (`lib/vpn/vpnManager.js`: neko=always+strict, doujin=auto+sticky)
+- [ ] Explicit block-reason classification (403/challenge vs upstream-down vs secret rotated)
+- [ ] Periodic health-check alert when a target stays blocked > 30 min
+- [ ] Live contract test against upstream fixtures to catch markup/API changes early
+- [ ] SOCKS proxy support as last-resort route when system VPN providers all fail
+- [ ] Runbook doc: "if blocked" checklist (403 → VPN; secret rejected → `npm run get-secret`; markup changed → update parser)
+
+Deliberately out of scope for personal scale: paid rotating residential proxies, headless-browser for every request, CAPTCHA solving.
 
 ---
 
