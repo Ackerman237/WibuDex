@@ -105,7 +105,9 @@ function restoreReadingPosition(imageList, slug, chapterId, targetPageOverride =
 function getDeviceId() {
   let id = localStorage.getItem('deviceId');
   if (!id) {
-    id = 'dev_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36);
+    // crypto.randomUUID: entropi penuh (Math.random bisa ditebak → progress
+    // device lain bisa dibaca/ditulis orang yang menebak ID).
+    id = 'dev_' + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36));
     localStorage.setItem('deviceId', id);
   }
   return id;

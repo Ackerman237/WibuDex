@@ -20,6 +20,11 @@ if (!process.env.DOUJIN_APP_SECRET) {
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+// 1 hop proxy = cloudflared (set X-Forwarded-For dari IP pengunjung asli).
+// Tanpa ini, SEMUA request dari internet terlihat datang dari 127.0.0.1 →
+// rate limiter membagi satu bucket untuk seluruh dunia.
+app.set('trust proxy', 1);
+
 // 1. Middleware
 // CSP longgar: izinkan emoji/font CDN & inline style bawaan; perketat bertahap nanti
 app.use(
