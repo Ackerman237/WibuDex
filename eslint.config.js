@@ -50,10 +50,14 @@ export default [
     },
   },
   {
-    // Callback page.evaluate berjalan DI BROWSER — `document` valid di sana
-    files: ['scripts/dev/ui-check.mjs'],
+    // Callback page.evaluate berjalan DI BROWSER — `document` valid di sana.
+    // Skrip probe/spike adalah diagnostik sekali-pakai: longgar saja.
+    files: ['scripts/dev/ui-check.mjs', 'scripts/dev/probe-*.mjs', 'scripts/dev/m3u8-spike.mjs'],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      'no-unused-vars': 'off',
     },
   },
 ];

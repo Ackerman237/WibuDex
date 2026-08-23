@@ -19,6 +19,7 @@ import {
   getPlayerMode,
   getPlayerFrame,
   getStream,
+  getStreamProxy,
   passthroughProviderXhr,
 } from '../controllers/nekoController.js';
 import {
@@ -48,6 +49,9 @@ router.get('/neko/player-mode', generalLimiter, getPlayerMode);
 router.get('/neko/player-frame', proxyLimiter, getPlayerFrame);
 // Stream langsung: URL MP4 CDN hasil ekstraksi server (nol JS penyedia)
 router.get('/neko/stream', proxyLimiter, getStream);
+// Proxy byte video: server mengonsumsi token sekali-pakai, browser menerima
+// stream dari origin kita (mendukung Range/seek)
+router.get('/neko/stream-proxy', proxyLimiter, getStreamProxy);
 // Passthrough XHR internal penyedia dari dokumen sandboxed (butuh header CORS di controller)
 router.get('/pf/:host/*', proxyLimiter, passthroughProviderXhr);
 router.get('/progress', generalLimiter, getReadingPosition);

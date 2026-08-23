@@ -12,7 +12,8 @@ import { validatePage, validateCategory, validateQuery, validateSlug, validateUr
 import logger from '../lib/logger.js';
 import { respondUpstreamError } from '../middleware/upstreamResponse.js';
 import { fetchProviderEmbed, buildPlayerFrameHtml, isAllowedPlayerUrl } from '../lib/scraper/playerFrame.js';
-import { extractDirectStream, probeStream } from '../lib/scraper/streamExtract.js';
+import { extractDirectStream } from '../lib/scraper/streamExtract.js';
+import { Readable } from 'node:stream';
 import { PLAYER_HOSTS } from '../lib/config/playerHosts.js';
 import { USER_AGENT } from '../lib/constants.js';
 import { CacheManager } from '../lib/scraper/cache.js';
@@ -80,6 +81,9 @@ export const getPlayerFrame = async (req, res) => {
 // frontend memutar dengan <video> milik sendiri, nol JS penyedia.
 // Return 404 dengan fallback:true bila pola tidak dikenali → frontend jatuh
 // ke player-frame terfilter.
+const STREAM_FAIL_TTL_MS = 60_000;
+const streamFailCache = new Map(); // embedUrl -> timestamp gagal terakhir
+
 export const getStream = async (req, res) => {
   try {
     const url = validateUrl(req.query.url);
@@ -88,26 +92,104 @@ export const getStream = async (req, res) => {
     const safeUrl = isAllowedPlayerUrl(url);
     if (!safeUrl) return res.status(400).json({ success: false, message: 'URL player tidak diizinkan' });
 
+    // Negative-cache 60 dtk: embed yang baru saja gagal diekstrak tidak perlu
+    // mengulang seluruh rantai berat saat user klik server yang sama lagi.
+    const failedAt = streamFailCache.get(safeUrl);
+    if (failedAt && Date.now() - failedAt < STREAM_FAIL_TTL_MS) {
+      return res.status(404).json({ success: false, fallback: true, message: 'Ekstraksi baru saja gagal untuk URL ini' });
+    }
+
     const slug = String(req.query.slug || '').replace(/[^a-z0-9-]/gi, '');
     const extracted = await extractDirectStream(safeUrl, { slug });
     if (!extracted) {
+      streamFailCache.set(safeUrl, Date.now());
       // Bukan error — penyedia ini tidak didukung ekstraksi; fallback ke filtered
       return res.status(404).json({ success: false, fallback: true, message: 'Ekstraksi stream tidak tersedia untuk penyedia ini' });
     }
+    streamFailCache.delete(safeUrl);
 
-    const host = new URL(safeUrl).hostname;
-    const playable = await probeStream(extracted.url, host);
-    if (!playable) {
-      return res.status(404).json({ success: false, fallback: true, message: 'Stream tidak dapat diverifikasi' });
-    }
-
-    return res.json({ success: true, data: { url: extracted.url, type: extracted.type } });
+    // PENTING: JANGAN mem-probe URL CDN di sini — token DoodStream sekali pakai /
+    // berumur sangat pendek (terbukti live: request kedua = 302/refused).
+    // Validasi sebenarnya terjadi saat stream-proxy menyajikan byte pertama;
+    // bila gagal, frontend otomatis jatuh ke player-frame terfilter.
+    const proxyQuery = `url=${encodeURIComponent(safeUrl)}&slug=${encodeURIComponent(slug)}`;
+    return res.json({
+      success: true,
+      data: { type: extracted.type, proxyUrl: `/api/neko/stream-proxy?${proxyQuery}` },
+    });
   } catch (err) {
     logger.error({ err }, 'getStream error');
     if (err?.name === 'AbortError' || err?.message?.includes('Timeout')) {
       return res.status(504).json({ success: false, fallback: true, message: 'Timeout mengekstrak stream' });
     }
     return res.status(502).json({ success: false, fallback: true, message: 'Gagal mengekstrak stream' });
+  }
+};
+
+// Stream-proxy: server mengonsumsi token sekali-pakai lalu MEMIPAKAN byte ke
+// browser. Mendukung Range (seek video). Browser TIDAK pernah melihat URL CDN.
+export const getStreamProxy = async (req, res) => {
+  let upstreamController = null;
+  try {
+    const url = validateUrl(req.query.url);
+    if (!url) return res.status(400).json({ success: false, message: 'Parameter url tidak valid' });
+
+    const safeUrl = isAllowedPlayerUrl(url);
+    if (!safeUrl) return res.status(400).json({ success: false, message: 'URL player tidak diizinkan' });
+
+    const slug = String(req.query.slug || '').replace(/[^a-z0-9-]/gi, '');
+    // Ekstraksi fresh SETIAP pemutaran — token lama pasti sudah mati.
+    const extracted = await extractDirectStream(safeUrl, { slug });
+    if (!extracted) {
+      return res.status(404).json({ success: false, message: 'Ekstraksi stream tidak tersedia' });
+    }
+
+    const host = new URL(safeUrl).hostname;
+    const range = req.headers.range;
+
+    upstreamController = new AbortController();
+    const killSwitch = setTimeout(() => upstreamController?.abort(), 60_000);
+    req.on('close', () => upstreamController?.abort());
+
+    const upstream = await fetch(extracted.url, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        Referer: `https://${host}/`,
+        ...(range ? { Range: range } : {}),
+      },
+      signal: upstreamController.signal,
+      redirect: 'follow',
+    });
+
+    if (!upstream.ok && upstream.status !== 206) {
+      clearTimeout(killSwitch);
+      logger.warn({ status: upstream.status, host }, 'stream-proxy: CDN menolak');
+      return res.status(502).json({ success: false, message: 'CDN menolak stream' });
+    }
+
+    res.status(upstream.status);
+    const passthroughHeaders = ['content-type', 'content-length', 'content-range', 'accept-ranges'];
+    for (const h of passthroughHeaders) {
+      const v = upstream.headers.get(h);
+      if (v) res.setHeader(h, v);
+    }
+    if (!res.getHeader('accept-ranges')) res.setHeader('Accept-Ranges', 'bytes');
+
+    // Pipakan tanpa buffering; bersihkan timer saat data mulai mengalir
+    res.on('close', () => clearTimeout(killSwitch));
+    Readable.fromWeb(upstream.body).pipe(res);
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      // client disconnect / timeout — koneksi sudah mati, tak ada yang dibalas
+      return;
+    }
+    logger.error({ err }, 'getStreamProxy error');
+    if (!res.headersSent) {
+      return res.status(502).json({ success: false, message: 'Gagal men-streaming video' });
+    }
+    res.end();
+  } finally {
+    // killSwitch dibiarkan sampai res close/finish — jangan clearTimeout di sini
   }
 };
 

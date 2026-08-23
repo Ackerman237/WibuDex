@@ -64,111 +64,192 @@ function renderRandomRetry(playerBox) {
 let playerMode = 'filtered';
 const pageSlug = () => new URLSearchParams(window.location.search).get('slug') || '';
 
-function showLoading(text) {
-  const el = document.getElementById('pfLoading');
-  if (el) { el.style.display = 'flex'; el.textContent = text; }
+const NATIVE_TIMEOUT_MS = 20000; // batas sabar menunggu ekstraksi sebelum fallback
+
+// Overlay loading: anak LANGSUNG #playerBox (.video-wrapper, sudah berukuran
+// 16:9 lewat padding-bottom trick). Dulu dibungkus div.pf-wrap tambahan yang
+// tingginya collapse → teks "membersihkan iklan" tergencet di garis atas.
+function showLoading(playerBox, text = '🧹 Sedang membersihkan iklan…') {
+  let el = document.getElementById('pfLoading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'pfLoading';
+    el.className = 'pf-loading';
+    playerBox.prepend(el);
+  }
+  el.style.display = 'flex';
+  el.textContent = text;
 }
 
-function hideLoading() {
-  const el = document.getElementById('pfLoading');
-  if (el) el.style.display = 'none';
-}
-
-function attachSlowNote() {
-  setTimeout(() => {
+let slowTimer1 = null;
+let slowTimer2 = null;
+function attachSlowNotes() {
+  clearTimeout(slowTimer1);
+  clearTimeout(slowTimer2);
+  slowTimer1 = setTimeout(() => {
     const el = document.getElementById('pfLoading');
     if (el && el.style.display !== 'none') {
       el.textContent = '⏳ Masih menyiapkan player… jaringan lambat';
     }
   }, 15000);
+  slowTimer2 = setTimeout(() => {
+    const el = document.getElementById('pfLoading');
+    if (el && el.style.display !== 'none') {
+      el.textContent = '⏳ Lama tak selesai — pakai tombol mode langsung di bawah';
+    }
+  }, 25000);
+}
+function clearSlowTimers() {
+  clearTimeout(slowTimer1);
+  clearTimeout(slowTimer2);
 }
 
-// Coba ekstraksi stream langsung dari server; return URL atau null
-async function tryNativeStream(playerUrl) {
-  try {
-    const res = await fetch(`/api/neko/stream?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`);
-    const json = await res.json();
-    return json?.success && json.data?.url ? json.data.url : null;
-  } catch {
-    return null;
+function hideLoading() {
+  clearSlowTimers();
+  const el = document.getElementById('pfLoading');
+  if (el) el.style.display = 'none';
+}
+
+// Tombol toggle mode: DI LUAR #playerBox (tepat di bawah kotak video),
+// dibuat sekali lalu hanya teksnya yang diperbarui.
+function ensureModeBtn(playerBox, playerUrl) {
+  let host = document.querySelector('.pf-mode-toggle');
+  if (!host) {
+    host = document.createElement('div');
+    host.className = 'pf-mode-toggle';
+    playerBox.after(host);
   }
-}
-
-function renderModeBtn(modeBtn, playerBox, playerUrl) {
-  modeBtn.textContent = playerMode === 'direct'
+  host.innerHTML = '<button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button>';
+  const btn = document.getElementById('pfModeBtn');
+  btn.textContent = playerMode === 'direct'
     ? '🧹 Kembali ke mode bersih (anti iklan)'
     : '⚡ Player tidak muncul? Pakai mode langsung';
-  modeBtn.onclick = () => {
+  btn.onclick = () => {
     playerMode = playerMode === 'direct' ? 'filtered' : 'direct';
     mountPlayer(playerBox, playerUrl);
   };
 }
 
-function renderNativeVideo(playerBox, playerUrl, streamUrl) {
-  playerBox.innerHTML = `
-    <div class="pf-wrap">
-      <div class="pf-loading" id="pfLoading">🧹 Sedang membersihkan iklan…</div>
-      <video id="nativeVideo" src="${escapeHtml(streamUrl)}" controls playsinline
-             referrerpolicy="no-referrer"
-             style="width:100%;aspect-ratio:16/9;background:#000;display:block"></video>
-    </div>
-    <div class="pf-mode-toggle"><button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button></div>
-  `;
+// Coba ekstraksi stream langsung dari server; return src proxy atau null.
+// AbortController 20 detik — jangan biarkan user menunggu fallback berat.
+async function tryNativeStream(playerUrl) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), NATIVE_TIMEOUT_MS);
+  try {
+    const res = await fetch(
+      `/api/neko/stream?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`,
+      { signal: controller.signal }
+    );
+    const json = await res.json();
+    return json?.success && json.data?.proxyUrl ? json.data.proxyUrl : null;
+  } catch {
+    return null; // timeout / gagal → caller jatuh ke filtered
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// URL yang sudah terbukti gagal diputar di sesi ini — jangan coba native lagi
+const failedNativeUrls = new Set();
+
+function mountNativeVideo(playerBox, playerUrl, streamSrc) {
+  // streamSrc = /api/neko/stream-proxy (server mengonsumsi token sekali-pakai
+  // dan memipakan byte — browser tidak pernah melihat URL CDN)
+  playerBox.innerHTML =
+    `<video id="nativeVideo" src="${escapeHtml(streamSrc)}" controls playsinline preload="metadata" ` +
+    `referrerpolicy="no-referrer" ` +
+    `style="position:absolute;inset:0;width:100%;height:100%;background:#000;border:0"></video>`;
   hideLoading();
   const video = document.getElementById('nativeVideo');
-  // Stream gagal diputar di browser (token/referer ditolak CDN) → jatuh otomatis
-  // ke mode filtered — jangan biarkan user menatap layar mati.
+  video.addEventListener('loadeddata', hideLoading, { once: true });
+  // Stream gagal diputar di browser → catat dan jatuh SEKALI ke mode filtered.
   video.addEventListener('error', () => {
+    failedNativeUrls.add(playerUrl);
     playerMode = 'filtered';
-    mountPlayer(playerBox, playerUrl);
+    mountPlayer(playerBox, playerUrl, { skipNative: true });
   }, { once: true });
-  renderModeBtn(document.getElementById('pfModeBtn'), playerBox, playerUrl);
+  ensureModeBtn(playerBox, playerUrl);
 }
 
-function renderFilteredFrame(playerBox, playerUrl) {
-  playerBox.innerHTML = `
-    <div class="pf-wrap">
-      <div class="pf-loading" id="pfLoading">🧹 Sedang membersihkan iklan…</div>
-      <iframe src="${escapeHtml(`/api/neko/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`)}"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe>
-    </div>
-    <div class="pf-mode-toggle"><button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button></div>
-  `;
+function mountFilteredFrame(playerBox, playerUrl) {
+  playerBox.innerHTML =
+    `<iframe src="${escapeHtml(`/api/neko/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`)}" ` +
+    `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  showLoading(playerBox); // innerHTML menghapus overlay lama — pasang lagi sampai load
   const frame = playerBox.querySelector('iframe');
   frame.addEventListener('load', hideLoading);
-  attachSlowNote();
-  renderModeBtn(document.getElementById('pfModeBtn'), playerBox, playerUrl);
+  attachSlowNotes();
+  ensureModeBtn(playerBox, playerUrl);
 }
 
-function renderDirectFrame(playerBox, playerUrl) {
-  playerBox.innerHTML = `
-    <div class="pf-wrap">
-      <iframe src="${escapeHtml(playerUrl)}"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe>
-    </div>
-    <div class="pf-mode-toggle"><button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button></div>
-  `;
-  renderModeBtn(document.getElementById('pfModeBtn'), playerBox, playerUrl);
+function mountDirectFrame(playerBox, playerUrl) {
+  playerBox.innerHTML =
+    `<iframe src="${escapeHtml(playerUrl)}" ` +
+    `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  showLoading(playerBox);
+  const frame = playerBox.querySelector('iframe');
+  frame.addEventListener('load', hideLoading);
+  attachSlowNotes();
+  ensureModeBtn(playerBox, playerUrl);
 }
 
-async function mountPlayer(playerBox, playerUrl) {
+async function mountPlayer(playerBox, playerUrl, opts = {}) {
+  // FIX BUG A: feedback instan SEBELUM await apa pun. Dulu ekstraksi (10–60 dtk)
+  // berjalan dengan kotak player benar-benar kosong tanpa pesan apa pun.
+  showLoading(playerBox);
+  attachSlowNotes();
+  ensureModeBtn(playerBox, playerUrl);
+
   if (playerMode === 'direct') {
-    renderDirectFrame(playerBox, playerUrl);
+    mountDirectFrame(playerBox, playerUrl);
     return;
   }
 
-  // Mode filtered tetap mencoba ekstraksi dulu (hasil paling bersih).
-  // Kalau penyedia tidak didukung / gagal → jatuh ke iframe terfilter.
-  const streamUrl = await tryNativeStream(playerUrl);
-  if (streamUrl && playerMode !== 'direct') {
-    renderNativeVideo(playerBox, playerUrl, streamUrl);
-    return;
+  // URL yang sudah terbukti gagal diputar tidak dicoba native lagi (anti ping-pong)
+  if (!opts.skipNative && !failedNativeUrls.has(playerUrl)) {
+    const streamUrl = await tryNativeStream(playerUrl);
+    if (streamUrl) {
+      mountNativeVideo(playerBox, playerUrl, streamUrl);
+      return;
+    }
   }
-  renderFilteredFrame(playerBox, playerUrl);
+  mountFilteredFrame(playerBox, playerUrl);
 }
 
+// ⚠️ Fungsi ini sempat lenyap saat restrukturisasi (definisinya tertimpa blok
+// helper baru) — halaman mati total tanpa jejak. Test ui-check kini menjaga.
+
+// ⚠️ Juga sempat hilang tertimpa restrukturisasi — direstorasi utuh.
+function renderRelated(related) {
+  const section = document.getElementById('relatedSection');
+  const grid = document.getElementById('relatedGrid');
+  if (!section || !grid) return;
+
+  if (!Array.isArray(related) || related.length === 0) return;
+
+  grid.innerHTML = '';
+  related.forEach((item) => {
+    if (!item?.slug) return;
+    const card = document.createElement('a');
+    card.className = 'video-card';
+    card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
+
+    const thumbUrl = item.thumb || 'https://placehold.co/480x270?text=No+Thumb';
+    const title = (item.title || 'Tanpa Judul').replace(/[&"<>]/g, m => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
+
+    card.innerHTML = `
+      <img class="video-thumb" src="${thumbUrl}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+      <div class="video-info">
+        <h3 class="video-title">${title}</h3>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  if (grid.children.length > 0) {
+    section.style.display = 'block';
+  }
+}
 async function loadDetail() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug');
@@ -183,7 +264,7 @@ async function loadDetail() {
   }
 
   try {
-    // Ikuti kebijakan server (.env PLAYER_FRAME_MODE); jika endpoint gagal, tetap filtered
+    // Ikuti kebijakan server (.env PLAYER_FRAME_MODE); jika gagal, tetap default
     try {
       const modeRes = await fetch('/api/neko/player-mode');
       const modeJson = await modeRes.json();
@@ -194,7 +275,6 @@ async function loadDetail() {
 
     const res = await fetch(`/api/neko/detail?slug=${encodeURIComponent(slug)}`);
     const result = await res.json();
-
     if (!result.success || !result.data) {
       throw new Error(result.message || 'Gagal memuat detail video.');
     }
@@ -230,46 +310,15 @@ async function loadDetail() {
       externalPlayerBtn.href = firstUrl;
       externalFallbackContainer.style.display = 'block';
       mountPlayer(playerBox, firstUrl);
-
     } else {
+      hideLoading(); // tidak ada player — matikan overlay agar pesan terlihat
       playerBox.innerHTML = '<p class="player-error-text">Player video tidak tersedia.</p>';
-      // Recovery: halaman seri -> daftar episode; plus tombol acak ulang
       renderEpisodeList(detail.episodes);
       renderRandomRetry(playerBox);
     }
   } catch (err) {
+    hideLoading();
     playerBox.innerHTML = `<p class="player-error-text">Error: ${err.message}</p>`;
-  }
-}
-
-function renderRelated(related) {
-  const section = document.getElementById('relatedSection');
-  const grid = document.getElementById('relatedGrid');
-  if (!section || !grid) return;
-
-  if (!Array.isArray(related) || related.length === 0) return;
-
-  grid.innerHTML = '';
-  related.forEach((item) => {
-    if (!item?.slug) return;
-    const card = document.createElement('a');
-    card.className = 'video-card';
-    card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
-
-    const thumbUrl = item.thumb || 'https://placehold.co/480x270?text=No+Thumb';
-    const title = (item.title || 'Tanpa Judul').replace(/[&"<>]/g, m => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
-
-    card.innerHTML = `
-      <img class="video-thumb" src="${thumbUrl}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-      <div class="video-info">
-        <h3 class="video-title">${title}</h3>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-
-  if (grid.children.length > 0) {
-    section.style.display = 'block';
   }
 }
 

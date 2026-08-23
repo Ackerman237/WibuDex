@@ -264,16 +264,18 @@
 }
 
 /* ── Player-frame (mode bersih): overlay loading + toggle mode ── */
-.pf-wrap {
-  position: relative;
-}
+/* Overlay = anak langsung #playerBox (.video-wrapper, 16:9 penuh) → teks
+   benar-benar di tengah. Dulu dibungkus .pf-wrap yang tingginya collapse. */
 .pf-loading {
   position: absolute;
   inset: 0;
   z-index: 2;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  padding: 12px;
   background: #000;
   color: #e8e2d9;
   font-size: 0.95rem;
