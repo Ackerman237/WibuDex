@@ -32,8 +32,10 @@ import {
   scrapeNekoSearch,
   scrapeNekoDetail,
   scrapeNekoCategories,
-  disconnectVpn,
 } from '../lib/scraper/nekoScraper.js';
+// disconnectVpn tinggal di vpnManager — sebelumnya salah impor dari
+// nekoScraper (tidak pernah ada di sana; demo langsung crash saat start).
+import { disconnectVpn } from '../lib/vpn/vpnManager.js';
 
 // ── CLI flags ──────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -233,12 +235,14 @@ async function demoNeko() {
   }
 
   // 4. scrapeNekoCategory — video per kategori
+  // Catatan: 'hentai' adalah kategori yang benar-benar ada di situs;
+  // 'ecchi' menghasilkan 404 asli dari upstream (sudah diverifikasi live).
   try {
-    const result = await scrapeNekoCategory('ecchi', 1);
+    const result = await scrapeNekoCategory('hentai', 1);
     const videos = result?.videos || result || [];
-    ok('scrapeNekoCategory (ecchi)', previewArray(Array.isArray(videos) ? videos : []));
+    ok('scrapeNekoCategory (hentai)', previewArray(Array.isArray(videos) ? videos : []));
   } catch (err) {
-    fail('scrapeNekoCategory (ecchi)', err);
+    fail('scrapeNekoCategory (hentai)', err);
   }
 
   // 5. scrapeNekoDetail — detail video
