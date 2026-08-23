@@ -173,3 +173,67 @@ describe('vpnManager', () => {
     expect(_internals.getActiveProviderName()).toBeNull();
   });
 });
+
+describe('VPN auto-toggle idle (pindah section neko ↔ doujin)', () => {
+  beforeEach(() => {
+    _internals.reset();
+    _internals.setVerifyConfig({ attempts: 2, delayMs: 1 });
+    __setProviders([]);
+    vi.restoreAllMocks();
+    _internals.setIdleTimeoutMs(3 * 60_000); // default 3 menit
+  });
+
+  it('idle melewati batas → VPN dimatikan, lalu nyala lagi saat neko dipakai', async () => {
+    const warp = makeProvider('warp');
+    __setProviders([warp]);
+
+    // Masuk neko → VPN nyala
+    await ensureVpn('neko');
+    expect(_internals.getActiveProviderName()).toBe('warp');
+    expect(getVpnStatus().idleDisconnectInMs).toBeLessThanOrEqual(3 * 60_000);
+
+    // User pindah ke doujin — tidak ada aktivitas neko melewati window idle
+    _internals.setLastUsedAt('neko', Date.now() - 4 * 60_000);
+    await _internals.forceIdleCheck();
+
+    expect(warp.disconnect).toHaveBeenCalledTimes(1);
+    expect(_internals.getActiveProviderName()).toBeNull();
+    expect(getVpnStatus().idleDisconnectInMs).toBeNull();
+
+    // Balik ke neko → nyala lagi otomatis
+    await ensureVpn('neko');
+    expect(_internals.getActiveProviderName()).toBe('warp');
+    expect(warp.connect).toHaveBeenCalledTimes(2);
+  });
+
+  it('aktivitas dalam window idle → VPN tetap hidup', async () => {
+    const warp = makeProvider('warp');
+    __setProviders([warp]);
+
+    await ensureVpn('neko');
+    _internals.setLastUsedAt('neko', Date.now() - 60_000); // baru 1 menit lalu
+
+    await _internals.forceIdleCheck();
+
+    expect(_internals.getActiveProviderName()).toBe('warp');
+    expect(warp.disconnect).not.toHaveBeenCalled();
+  });
+
+  it('doujin sedang blocked → VPN TIDAK dimatikan meski neko idle', async () => {
+    const warp = makeProvider('warp');
+    __setProviders([warp]);
+
+    // Doujin diblokir → sticky: dia juga bergantung pada VPN
+    await reportFailure('doujin', new Error('HTTP 403'));
+    await ensureVpn('doujin');
+    expect(_internals.getActiveProviderName()).toBe('warp');
+
+    // Neko diam jauh melewati window idle
+    _internals.setLastUsedAt('neko', Date.now() - 10 * 60_000);
+
+    await _internals.forceIdleCheck();
+
+    expect(_internals.getActiveProviderName()).toBe('warp');
+    expect(warp.disconnect).not.toHaveBeenCalled();
+  });
+});
