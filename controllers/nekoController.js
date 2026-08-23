@@ -135,7 +135,8 @@ export const proxyNekoPlayer = async (req, res) => {
     const url = validateUrl(req.query.url);
     if (!url) return res.status(400).json({ success: false, message: 'Parameter url tidak valid' });
 
-    // SSRF guard: hanya izinkan host yang terdaftar
+    // SSRF guard: hanya izinkan host yang terdaftar.
+    // URL gagal parse = TOLAK (dulu catch-nya justru melanjutkan — celah defense-in-depth).
     try {
       const parsed = new URL(url);
       const allowedHosts = (process.env.NEKO_PLAYER_HOSTS || 'playmogo.com,yandex.ru')
@@ -145,7 +146,7 @@ export const proxyNekoPlayer = async (req, res) => {
         return res.status(400).json({ success: false, message: 'URL player tidak diizinkan' });
       }
     } catch {
-      // Jika URL tidak parseable, lanjutkan (tapi masih akan gagal di puppeteer)
+      return res.status(400).json({ success: false, message: 'URL player tidak valid' });
     }
 
     page = await newPage();
@@ -172,7 +173,12 @@ export const proxyNekoPlayer = async (req, res) => {
     const html = await page.content();
     await page.close();
 
-    res.setHeader('Content-Type', 'text/html');
+    // HTML pihak ketiga disajikan dalam sandbox opaque-origin: script player
+    // tetap jalan, tapi dokumen TIDAK bisa mengakses cookie/localStorage/API
+    // origin kita (mitigasi XSS jika host allowlisted terkompromi).
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Security-Policy', 'sandbox allow-scripts');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.send(html);
   } catch (err) {
     if (page) await page.close();
