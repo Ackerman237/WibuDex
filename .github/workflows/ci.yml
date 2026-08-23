@@ -12,7 +12,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        # node:sqlite (DatabaseSync) butuh Node >= 22.5 — lihat lib/db.js
+        node-version: [22]
 
     steps:
       - uses: actions/checkout@v4

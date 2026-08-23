@@ -30,7 +30,7 @@
     "undici": "^8.10.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.5.0"
   },
   "license": "MIT",
   "devDependencies": {
