@@ -18,6 +18,7 @@ import {
   scrapeNekoSeriesList,
   scrapeNekoRandom,
   scrapeNekoDetail,
+  decodeEntities,
   _clearNekoCacheForTests,
 } from '../lib/scraper/nekoScraper.js';
 
@@ -187,5 +188,25 @@ describe('scrapeNekoRandom', () => {
     });
 
     await expect(scrapeNekoRandom()).rejects.toThrow('random');
+  });
+});
+
+describe('decodeEntities (regresi BUG-1)', () => {
+  it('men-decode &amp; &quot; &#039; dan &nbsp; dengan benar', () => {
+    expect(decodeEntities('A &amp; B')).toBe('A & B');
+    expect(decodeEntities('&quot;Judul&quot;')).toBe('"Judul"');
+    expect(decodeEntities('It&#039;s')).toBe("It's");
+    expect(decodeEntities('It&#39;s')).toBe("It's");
+    expect(decodeEntities('spasi&nbsp;jarak')).toBe('spasi jarak');
+  });
+
+  it('tidak double-decode entity berantai', () => {
+    // "&amp;quot;" harus menjadi "&quot;", bukan '"'
+    expect(decodeEntities('&amp;quot;')).toBe('&quot;');
+  });
+
+  it('men-decode entity numerik tanda baca', () => {
+    expect(decodeEntities('A &#8211; B')).toBe('A \u2013 B');
+    expect(decodeEntities('apa&#8230;')).toBe('apa\u2026');
   });
 });
