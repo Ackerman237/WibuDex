@@ -56,60 +56,117 @@ function renderRandomRetry(playerBox) {
   playerBox.appendChild(btn);
 }
 
-// Mode player: 'filtered' = embed penyedia disaring di server (/api/neko/player-frame,
-// anti popunder/redirect); 'direct' = perilaku lama (iframe langsung ke penyedia).
-// Default sesuai server (PLAYER_FRAME_MODE di .env); user bisa toggle per-session.
+// Mode player (kebijakan server via .env PLAYER_FRAME_MODE):
+//   'native'   = <video> milik sendiri memutar MP4 hasil ekstraksi server
+//                (nol JS penyedia — mustahil ada iklan/klik/redirect)
+//   'filtered' = embed penyedia disaring server (/api/neko/player-frame)
+//   'direct'   = perilaku lama (iframe langsung ke penyedia)
 let playerMode = 'filtered';
+const pageSlug = () => new URLSearchParams(window.location.search).get('slug') || '';
 
-function buildFrameSrc(playerUrl, mode) {
-  if (mode === 'direct') return playerUrl;
-  const slug = new URLSearchParams(window.location.search).get('slug') || '';
-  return `/api/neko/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(slug)}`;
+function showLoading(text) {
+  const el = document.getElementById('pfLoading');
+  if (el) { el.style.display = 'flex'; el.textContent = text; }
 }
 
-function mountPlayer(playerBox, playerUrl) {
-  const isFiltered = playerMode === 'filtered';
-  const frameSrc = escapeHtml(buildFrameSrc(playerUrl, playerMode));
+function hideLoading() {
+  const el = document.getElementById('pfLoading');
+  if (el) el.style.display = 'none';
+}
 
+function attachSlowNote() {
+  setTimeout(() => {
+    const el = document.getElementById('pfLoading');
+    if (el && el.style.display !== 'none') {
+      el.textContent = '⏳ Masih menyiapkan player… jaringan lambat';
+    }
+  }, 15000);
+}
+
+// Coba ekstraksi stream langsung dari server; return URL atau null
+async function tryNativeStream(playerUrl) {
+  try {
+    const res = await fetch(`/api/neko/stream?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`);
+    const json = await res.json();
+    return json?.success && json.data?.url ? json.data.url : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderModeBtn(modeBtn, playerBox, playerUrl) {
+  modeBtn.textContent = playerMode === 'direct'
+    ? '🧹 Kembali ke mode bersih (anti iklan)'
+    : '⚡ Player tidak muncul? Pakai mode langsung';
+  modeBtn.onclick = () => {
+    playerMode = playerMode === 'direct' ? 'filtered' : 'direct';
+    mountPlayer(playerBox, playerUrl);
+  };
+}
+
+function renderNativeVideo(playerBox, playerUrl, streamUrl) {
   playerBox.innerHTML = `
     <div class="pf-wrap">
       <div class="pf-loading" id="pfLoading">🧹 Sedang membersihkan iklan…</div>
-      <iframe
-        src="${frameSrc}"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>
+      <video id="nativeVideo" src="${escapeHtml(streamUrl)}" controls playsinline
+             referrerpolicy="no-referrer"
+             style="width:100%;aspect-ratio:16/9;background:#000;display:block"></video>
     </div>
-    <div class="pf-mode-toggle">
-      <button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button>
-    </div>
+    <div class="pf-mode-toggle"><button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button></div>
   `;
-
-  // Sembunyikan indikator begitu dokumen dalam iframe selesai dimuat.
-  const loading = document.getElementById('pfLoading');
-  const frame = playerBox.querySelector('iframe');
-  frame.addEventListener('load', () => {
-    if (loading) loading.style.display = 'none';
-  });
-  // Jaringan lambat: indikator tetap informatif setelah 15 detik
-  setTimeout(() => {
-    if (loading && loading.style.display !== 'none') {
-      loading.textContent = '⏳ Masih menyiapkan player… jaringan lambat';
-    }
-  }, 15000);
-
-  const modeBtn = document.getElementById('pfModeBtn');
-  const syncModeBtn = () => {
-    modeBtn.textContent = playerMode === 'filtered'
-      ? '⚡ Player tidak muncul? Pakai mode langsung'
-      : '🧹 Kembali ke mode bersih (anti iklan)';
-  };
-  syncModeBtn();
-  modeBtn.addEventListener('click', () => {
-    playerMode = playerMode === 'filtered' ? 'direct' : 'filtered';
-    syncModeBtn();
+  hideLoading();
+  const video = document.getElementById('nativeVideo');
+  // Stream gagal diputar di browser (token/referer ditolak CDN) → jatuh otomatis
+  // ke mode filtered — jangan biarkan user menatap layar mati.
+  video.addEventListener('error', () => {
+    playerMode = 'filtered';
     mountPlayer(playerBox, playerUrl);
-  });
+  }, { once: true });
+  renderModeBtn(document.getElementById('pfModeBtn'), playerBox, playerUrl);
+}
+
+function renderFilteredFrame(playerBox, playerUrl) {
+  playerBox.innerHTML = `
+    <div class="pf-wrap">
+      <div class="pf-loading" id="pfLoading">🧹 Sedang membersihkan iklan…</div>
+      <iframe src="${escapeHtml(`/api/neko/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`)}"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+    <div class="pf-mode-toggle"><button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button></div>
+  `;
+  const frame = playerBox.querySelector('iframe');
+  frame.addEventListener('load', hideLoading);
+  attachSlowNote();
+  renderModeBtn(document.getElementById('pfModeBtn'), playerBox, playerUrl);
+}
+
+function renderDirectFrame(playerBox, playerUrl) {
+  playerBox.innerHTML = `
+    <div class="pf-wrap">
+      <iframe src="${escapeHtml(playerUrl)}"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+    <div class="pf-mode-toggle"><button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button></div>
+  `;
+  renderModeBtn(document.getElementById('pfModeBtn'), playerBox, playerUrl);
+}
+
+async function mountPlayer(playerBox, playerUrl) {
+  if (playerMode === 'direct') {
+    renderDirectFrame(playerBox, playerUrl);
+    return;
+  }
+
+  // Mode filtered tetap mencoba ekstraksi dulu (hasil paling bersih).
+  // Kalau penyedia tidak didukung / gagal → jatuh ke iframe terfilter.
+  const streamUrl = await tryNativeStream(playerUrl);
+  if (streamUrl && playerMode !== 'direct') {
+    renderNativeVideo(playerBox, playerUrl, streamUrl);
+    return;
+  }
+  renderFilteredFrame(playerBox, playerUrl);
 }
 
 async function loadDetail() {

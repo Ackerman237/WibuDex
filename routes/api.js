@@ -18,6 +18,7 @@ import {
   getNekoRandom,
   getPlayerMode,
   getPlayerFrame,
+  getStream,
   passthroughProviderXhr,
 } from '../controllers/nekoController.js';
 import {
@@ -45,6 +46,8 @@ router.get('/neko/random', generalLimiter, getNekoRandom);
 // Player-frame "bersih": embed penyedia disaring di server (anti popunder/redirect)
 router.get('/neko/player-mode', generalLimiter, getPlayerMode);
 router.get('/neko/player-frame', proxyLimiter, getPlayerFrame);
+// Stream langsung: URL MP4 CDN hasil ekstraksi server (nol JS penyedia)
+router.get('/neko/stream', proxyLimiter, getStream);
 // Passthrough XHR internal penyedia dari dokumen sandboxed (butuh header CORS di controller)
 router.get('/pf/:host/*', proxyLimiter, passthroughProviderXhr);
 router.get('/progress', generalLimiter, getReadingPosition);

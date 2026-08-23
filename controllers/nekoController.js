@@ -12,6 +12,7 @@ import { validatePage, validateCategory, validateQuery, validateSlug, validateUr
 import logger from '../lib/logger.js';
 import { respondUpstreamError } from '../middleware/upstreamResponse.js';
 import { fetchProviderEmbed, buildPlayerFrameHtml, isAllowedPlayerUrl } from '../lib/scraper/playerFrame.js';
+import { extractDirectStream, probeStream } from '../lib/scraper/streamExtract.js';
 import { PLAYER_HOSTS } from '../lib/config/playerHosts.js';
 import { USER_AGENT } from '../lib/constants.js';
 import { CacheManager } from '../lib/scraper/cache.js';
@@ -72,6 +73,41 @@ export const getPlayerFrame = async (req, res) => {
       return res.status(504).json({ success: false, message: 'Timeout menunggu player' });
     }
     return res.status(502).json({ success: false, message: 'Gagal memuat player' });
+  }
+};
+
+// Stream langsung (Fase C): URL MP4 dari CDN diekstrak server-side →
+// frontend memutar dengan <video> milik sendiri, nol JS penyedia.
+// Return 404 dengan fallback:true bila pola tidak dikenali → frontend jatuh
+// ke player-frame terfilter.
+export const getStream = async (req, res) => {
+  try {
+    const url = validateUrl(req.query.url);
+    if (!url) return res.status(400).json({ success: false, message: 'Parameter url tidak valid' });
+
+    const safeUrl = isAllowedPlayerUrl(url);
+    if (!safeUrl) return res.status(400).json({ success: false, message: 'URL player tidak diizinkan' });
+
+    const slug = String(req.query.slug || '').replace(/[^a-z0-9-]/gi, '');
+    const extracted = await extractDirectStream(safeUrl, { slug });
+    if (!extracted) {
+      // Bukan error — penyedia ini tidak didukung ekstraksi; fallback ke filtered
+      return res.status(404).json({ success: false, fallback: true, message: 'Ekstraksi stream tidak tersedia untuk penyedia ini' });
+    }
+
+    const host = new URL(safeUrl).hostname;
+    const playable = await probeStream(extracted.url, host);
+    if (!playable) {
+      return res.status(404).json({ success: false, fallback: true, message: 'Stream tidak dapat diverifikasi' });
+    }
+
+    return res.json({ success: true, data: { url: extracted.url, type: extracted.type } });
+  } catch (err) {
+    logger.error({ err }, 'getStream error');
+    if (err?.name === 'AbortError' || err?.message?.includes('Timeout')) {
+      return res.status(504).json({ success: false, fallback: true, message: 'Timeout mengekstrak stream' });
+    }
+    return res.status(502).json({ success: false, fallback: true, message: 'Gagal mengekstrak stream' });
   }
 };
 
