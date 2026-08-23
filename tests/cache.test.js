@@ -60,4 +60,37 @@ describe('CacheManager', () => {
     expect(cache.get('b')).toBeNull();
     expect(cache.has('a')).toBe(false);
   });
+
+  it('evicts oldest by byte budget (maxBytes + sizeOf)', () => {
+    const cache = new CacheManager({
+      defaultTTL: 60000,
+      maxBytes: 100,
+      sizeOf: (v) => v?.buffer?.byteLength || 0,
+    });
+    const mk = (n) => ({ buffer: { byteLength: n } });
+    cache.set('small', mk(40));
+    cache.set('medium', mk(50));
+    // total 90 — 'small' masih ada
+    expect(cache.get('small')).not.toBeNull();
+    // memasukkan 60 byte melebihi budget → evict tertua sampai muat:
+    // 'small' lalu 'medium' ikut terbuang (total sebelumnya 90 + 60 > 100)
+    cache.set('big', mk(60));
+    expect(cache.get('small')).toBeNull();
+    expect(cache.get('medium')).toBeNull();
+    expect(cache.get('big')).not.toBeNull();
+    expect(cache.totalBytes).toBe(60);
+  });
+
+  it('overwriting key updates totalBytes correctly', () => {
+    const cache = new CacheManager({
+      defaultTTL: 60000,
+      maxBytes: 100,
+      sizeOf: (v) => v?.buffer?.byteLength || 0,
+    });
+    const mk = (n) => ({ buffer: { byteLength: n } });
+    cache.set('x', mk(80));
+    cache.set('x', mk(20)); // timpa: 80 dibuang, 20 masuk — bukan 100 total
+    expect(cache.totalBytes).toBe(20);
+    expect(cache.get('x')).not.toBeNull();
+  });
 });
