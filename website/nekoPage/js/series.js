@@ -4,7 +4,7 @@ let currentType = 'hentai';
 let currentPage = 1;
 
 function escapeHtml(s) {
-  return String(s || '').replace(/[&"<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
+  return String(s || '').replace(/[&"<>']/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;', "'": '&#39;' }[m]));
 }
 
 function renderSeriesCard(item) {

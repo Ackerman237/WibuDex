@@ -32,7 +32,10 @@ const PLAYER_FRAME_MODE = process.env.PLAYER_FRAME_MODE === 'direct' ? 'direct' 
 const playerFrameCache = new CacheManager({ maxSize: 20, defaultTTL: 5 * 60_000 });
 
 export const getPlayerMode = (_req, res) => {
-  res.json({ success: true, data: { mode: PLAYER_FRAME_MODE } });
+  // allowedHosts dipakai frontend untuk pra-validasi URL player sebelum
+  // dipakai di iframe langsung (mode direct) — satu sumber kebenaran dengan
+  // env NEKO_PLAYER_HOSTS.
+  res.json({ success: true, data: { mode: PLAYER_FRAME_MODE, allowedHosts: PLAYER_HOSTS } });
 };
 
 export const getPlayerFrame = async (req, res) => {
@@ -82,6 +85,7 @@ export const getPlayerFrame = async (req, res) => {
 // Return 404 dengan fallback:true bila pola tidak dikenali → frontend jatuh
 // ke player-frame terfilter.
 const STREAM_FAIL_TTL_MS = 60_000;
+const STREAM_FAIL_MAX_ENTRIES = 200;
 const streamFailCache = new Map(); // embedUrl -> timestamp gagal terakhir
 
 export const getStream = async (req, res) => {
@@ -102,11 +106,21 @@ export const getStream = async (req, res) => {
     const slug = String(req.query.slug || '').replace(/[^a-z0-9-]/gi, '');
     const extracted = await extractDirectStream(safeUrl, { slug });
     if (!extracted) {
+      // Cap ukuran cache (Map tak terbatas = kebocoran memori perlahan)
+      if (streamFailCache.size >= STREAM_FAIL_MAX_ENTRIES) {
+        streamFailCache.delete(streamFailCache.keys().next().value);
+      }
       streamFailCache.set(safeUrl, Date.now());
       // Bukan error — penyedia ini tidak didukung ekstraksi; fallback ke filtered
       return res.status(404).json({ success: false, fallback: true, message: 'Ekstraksi stream tidak tersedia untuk penyedia ini' });
     }
     streamFailCache.delete(safeUrl);
+
+    // URL hasil ekstraksi berasal dari halaman provider (tidak sepenuhnya
+    // dipercaya) — paksa https sebelum diverifikasi & dikirim ke klien.
+    if (!/^https:\/\//i.test(extracted.url)) {
+      return res.status(404).json({ success: false, fallback: true, message: 'Stream tidak dapat diverifikasi' });
+    }
 
     // PENTING: JANGAN mem-probe URL CDN di sini — token DoodStream sekali pakai /
     // berumur sangat pendek (terbukti live: request kedua = 302/refused).
@@ -195,6 +209,9 @@ export const getStreamProxy = async (req, res) => {
 
 // Passthrough XHR internal penyedia (mis. $.get('/pass_md5/...')) dari dokumen
 // sandboxed (origin null) → butuh header CORS terbuka, dengan host allowlist.
+const PASSTHROUGH_TIMEOUT_MS = 15_000;
+const PASSTHROUGH_MAX_BYTES = 2 * 1024 * 1024; // respons XHR provider = token/JSON kecil
+
 export const passthroughProviderXhr = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const host = String(req.params.host || '').toLowerCase();
@@ -204,6 +221,8 @@ export const passthroughProviderXhr = async (req, res) => {
   const rest = req.params[0] || '';
   const query = req.url.includes('?') ? `?${req.url.split('?').slice(1).join('?')}` : '';
   const target = `https://${host}/${rest}${query}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PASSTHROUGH_TIMEOUT_MS);
   try {
     const upstream = await fetch(target, {
       headers: {
@@ -211,15 +230,35 @@ export const passthroughProviderXhr = async (req, res) => {
         Accept: '*/*',
         Referer: `https://${host}/`,
       },
+      signal: controller.signal,
     });
     res.status(upstream.status);
     const contentType = upstream.headers.get('content-type');
     if (contentType) res.type(contentType);
-    const text = await upstream.text();
-    return res.send(text);
+    // Cap ukuran respons: tanpa ini memori bisa dipompa lewat file besar
+    // dari host allowlist (relay publik).
+    let total = 0;
+    const chunks = [];
+    const reader = upstream.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > PASSTHROUGH_MAX_BYTES) {
+        controller.abort();
+        return res.status(413).json({ success: false, message: 'Respons provider terlalu besar' });
+      }
+      chunks.push(Buffer.from(value));
+    }
+    return res.send(Buffer.concat(chunks));
   } catch (err) {
     logger.warn({ err, target }, 'passthroughProviderXhr gagal');
-    return res.status(502).json({ success: false, message: 'Passthrough gagal' });
+    if (!res.headersSent) {
+      return res.status(502).json({ success: false, message: 'Passthrough gagal' });
+    }
+    return res.end();
+  } finally {
+    clearTimeout(timer);
   }
 };
 

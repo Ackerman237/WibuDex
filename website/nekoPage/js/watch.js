@@ -1,7 +1,21 @@
 // nekoPage/js/watch.js — Neko Video watch page
 
 function escapeHtml(s) {
-  return String(s || '').replace(/[&"<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
+  return String(s || '').replace(/[&"<>']/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;', "'": '&#39;' }[m]));
+}
+
+// Allowlist host player — fallback hardcoded; nilai resmi diambil dari
+// /api/neko/player-mode (field allowedHosts) saat halaman dimuat.
+let playerAllowedHosts = ['playmogo.com', 'streampoi.com', 'yandex.ru'];
+
+function isAllowedPlayerUrl(rawUrl) {
+  try {
+    const u = new URL(String(rawUrl));
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    return playerAllowedHosts.some((h) => u.hostname === h || u.hostname.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
 }
 
 function renderEpisodeList(episodes) {
@@ -201,7 +215,13 @@ async function mountPlayer(playerBox, playerUrl, opts = {}) {
   ensureModeBtn(playerBox, playerUrl);
 
   if (playerMode === 'direct') {
-    mountDirectFrame(playerBox, playerUrl);
+    // Guard: URL di luar allowlist tidak pernah masuk iframe langsung —
+    // jatuh ke mode filtered (server juga memvalidasi ulang).
+    if (isAllowedPlayerUrl(playerUrl)) {
+      mountDirectFrame(playerBox, playerUrl);
+    } else {
+      mountFilteredFrame(playerBox, playerUrl);
+    }
     return;
   }
 
@@ -235,10 +255,10 @@ function renderRelated(related) {
     card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
 
     const thumbUrl = item.thumb || 'https://placehold.co/480x270?text=No+Thumb';
-    const title = (item.title || 'Tanpa Judul').replace(/[&"<>]/g, m => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
+    const title = escapeHtml(item.title || 'Tanpa Judul');
 
     card.innerHTML = `
-      <img class="video-thumb" src="${thumbUrl}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+      <img class="video-thumb" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
       <div class="video-info">
         <h3 class="video-title">${title}</h3>
       </div>
@@ -269,6 +289,9 @@ async function loadDetail() {
       const modeRes = await fetch('/api/neko/player-mode');
       const modeJson = await modeRes.json();
       if (modeJson?.success && modeJson.data?.mode) playerMode = modeJson.data.mode;
+      if (Array.isArray(modeJson?.data?.allowedHosts) && modeJson.data.allowedHosts.length > 0) {
+        playerAllowedHosts = modeJson.data.allowedHosts;
+      }
     } catch {
       /* server lama / offline — pakai default */
     }
@@ -297,8 +320,15 @@ async function loadDetail() {
           document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
 
-          externalPlayerBtn.href = playerUrl;
-          externalFallbackContainer.style.display = 'block';
+          // href hanya untuk URL allowlist — javascript:/data: di href TETAP
+          // dieksekusi saat diklik meski tidak pernah masuk iframe.
+          if (isAllowedPlayerUrl(playerUrl)) {
+            externalPlayerBtn.href = playerUrl;
+            externalFallbackContainer.style.display = 'block';
+          } else {
+            externalPlayerBtn.removeAttribute('href');
+            externalFallbackContainer.style.display = 'none';
+          }
 
           mountPlayer(playerBox, playerUrl);
         };
@@ -307,8 +337,10 @@ async function loadDetail() {
       });
 
       const firstUrl = detail.players[0];
-      externalPlayerBtn.href = firstUrl;
-      externalFallbackContainer.style.display = 'block';
+      if (isAllowedPlayerUrl(firstUrl)) {
+        externalPlayerBtn.href = firstUrl;
+        externalFallbackContainer.style.display = 'block';
+      }
       mountPlayer(playerBox, firstUrl);
     } else {
       hideLoading(); // tidak ada player — matikan overlay agar pesan terlihat
@@ -318,7 +350,7 @@ async function loadDetail() {
     }
   } catch (err) {
     hideLoading();
-    playerBox.innerHTML = `<p class="player-error-text">Error: ${err.message}</p>`;
+    playerBox.innerHTML = `<p class="player-error-text">Error: ${escapeHtml(err.message)}</p>`;
   }
 }
 

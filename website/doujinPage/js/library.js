@@ -57,14 +57,14 @@ function renderLibrarySection(storageKey, gridId, emptyId, btnId) {
     if (flag) card.dataset.flag = flag;
 
     card.innerHTML = `
-      <div class="manga-card-thumb" style="background-image: url('${coverUrl}')" data-detail="${encodeURIComponent(item.slug)}"></div>
+      <div class="manga-card-thumb" style="background-image: url('${escapeHtml(coverUrl)}')" data-detail="${encodeURIComponent(item.slug)}" role="img" aria-label="${escapeHtml(title)}"></div>
       <div class="manga-card-body">
         <div>
-          <h3 class="manga-card-title" data-detail="${encodeURIComponent(item.slug)}" style="cursor: pointer;">${title}</h3>
+          <h3 class="manga-card-title" data-detail="${encodeURIComponent(item.slug)}" style="cursor: pointer;">${escapeHtml(title)}</h3>
         </div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
           <span class="manga-card-meta">${ic('star')} ${rating}</span>
-          ${storageKey === 'bookmarks' ? `<button class="btn-remove-item" title="Hapus" style="background: none; border: none; cursor: pointer; font-size: 14px;">${ic('trash-2')}</button>` : ''}
+          ${storageKey === 'bookmarks' ? `<button class="btn-remove-item" title="Hapus" aria-label="Hapus ${escapeHtml(title)} dari daftar" style="background: none; border: none; cursor: pointer; font-size: 14px;">${ic('trash-2')}</button>` : ''}
         </div>
       </div>
     `;

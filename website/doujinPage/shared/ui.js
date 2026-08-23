@@ -4,6 +4,21 @@ function el(id) {
   return document.getElementById(id);
 }
 
+/**
+ * Escape karakter HTML berbahaya sebelum interpolasi ke innerHTML.
+ * Global (bukan module): tersedia untuk semua page script yang
+ * meng-include ui.js. WAJIB dipakai untuk teks dari sumber eksternal
+ * (judul/thumbnail hasil scrape) maupun localStorage.
+ */
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function setupBackToTop(btn, threshold) {
   threshold = threshold || 300;
   if (!btn) return;
@@ -165,10 +180,11 @@ function renderMangaCard(manga) {
       const chId = ch.id || ch.chapter_id || '';
       if (!chId) return; // skip chapter tanpa ID valid
       const isNew = ch.isNew ? '<span class="badge-new">NEW</span>' : '';
+      const chTitle = escapeHtml(ch.title || 'Chapter ' + ch.chapter);
       chaptersHTML += `
         <a href="/doujinPage/html/reader.html?id=${encodeURIComponent(chId)}" class="chapter-btn" onclick="event.stopPropagation();">
-          <span>${ch.title || 'Chapter ' + ch.chapter} ${isNew}</span>
-          <span class="time-ago">${ch.date || ch.releaseTime || ''}</span>
+          <span>${chTitle} ${isNew}</span>
+          <span class="time-ago">${escapeHtml(ch.date || ch.releaseTime || '')}</span>
         </a>
       `;
     });
@@ -176,11 +192,11 @@ function renderMangaCard(manga) {
 
   card.innerHTML = `
     <div class="thumb-container" data-slug="${mangaSlug}">
-      <img src="${thumbSrc}" alt="${manga.title || ''}" loading="lazy">
-      <span class="rating-tag">${ic('star')} ${manga.rating ?? '-'}</span>
+      <img src="${thumbSrc}" alt="${escapeHtml(manga.title || '')}" loading="lazy">
+      <span class="rating-tag">${ic('star')} ${escapeHtml(manga.rating ?? '-')}</span>
     </div>
     <div class="manga-info">
-      <h3 class="manga-title" data-slug="${mangaSlug}">${manga.title || ''}</h3>
+      <h3 class="manga-title" data-slug="${mangaSlug}">${escapeHtml(manga.title || '')}</h3>
       <div class="chapter-list">${chaptersHTML}</div>
     </div>
   `;

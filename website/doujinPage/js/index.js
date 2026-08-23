@@ -30,10 +30,10 @@ function renderHomeHistory() {
     const formattedDate = item.lastRead ? new Date(item.lastRead).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-';
 
     card.innerHTML = `
-      <img src="${thumbUrl}" alt="${item.title}" class="history-card-thumb" loading="lazy" referrerpolicy="no-referrer">
+      <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(item.title)}" class="history-card-thumb" loading="lazy" referrerpolicy="no-referrer">
       <div class="history-card-body">
-        <h4 class="history-card-title" title="${item.title}">${item.title}</h4>
-        <div class="history-card-meta">Ch. ${item.chapter}</div>
+        <h4 class="history-card-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</h4>
+        <div class="history-card-meta">Ch. ${escapeHtml(item.chapter ?? '-')}</div>
       </div>
     `;
 

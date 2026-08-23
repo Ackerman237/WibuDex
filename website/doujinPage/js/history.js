@@ -1,8 +1,6 @@
 // history.js — Halaman riwayat baca dari posisi tersimpan di server (node:sqlite)
 
-function escapeHtml(s) {
-  return String(s || '').replace(/[&"<>]/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[m]));
-}
+// escapeHtml: pakai global dari shared/ui.js (sudah termasuk escape kutip).
 
 async function loadServerHistory() {
   const grid = document.getElementById('historyGrid');

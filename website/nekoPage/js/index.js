@@ -10,16 +10,22 @@ function renderVideoCard(video) {
 
   const thumbUrl = video.thumb || 'https://placehold.co/480x270?text=No+Thumb';
   const title = video.title || 'Tanpa Judul';
-  // Escape HTML entities in title to prevent layout break / XSS
-  const escapedTitle = title.replace(/[&"<>]/g, m => ({ '&': '&', '"': '"', '<': '<', '>': '>' }[m]));
+  // Escape penuh sebelum interpolasi innerHTML (versi lama no-op — tiap
+  // karakter dipetakan ke dirinya sendiri sehingga XSS tetap lolos).
+  const escapedTitle = String(title)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   const date = video.date || '-';
   const slug = video.slug || '';
 
   card.innerHTML = `
-    <img class="video-thumb" src="${thumbUrl}" alt="${escapedTitle}" loading="lazy" referrerpolicy="no-referrer">
+    <img class="video-thumb" src="${escapeHtml(thumbUrl)}" alt="${escapedTitle}" loading="lazy" referrerpolicy="no-referrer">
     <div class="video-info">
       <h3 class="video-title">${escapedTitle}</h3>
-      <div class="video-date">${date}</div>
+      <div class="video-date">${escapeHtml(date)}</div>
     </div>
   `;
 
@@ -30,6 +36,15 @@ function renderVideoCard(video) {
   }
 
   return card;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function loadVideos(reset = false) {
