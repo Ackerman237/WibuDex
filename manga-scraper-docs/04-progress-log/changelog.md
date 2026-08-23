@@ -5,6 +5,58 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-23 — Fase 1: bug fix & hardening keamanan (branch `refactor/architecture-cleanup`)
+
+Audit menyeluruh menemukan 4 bug + 2 celah keamanan. Semua diperbaiki dalam
+commit terpisah (satu fix = satu commit) di atas baseline 130 test hijau.
+
+### BUG-1 — `decodeEntities()` korup (nekoScraper.js)
+- `.replace(/&/g, '&')` dan `.replace(/"/g, '"')` adalah no-op (diduga korup
+  terkena script replace emoji) → `&amp;`/`&quot;` tidak pernah ter-decode.
+- Fix: tulis ulang rantai decode; `&amp;` paling akhir agar tidak double-decode.
+- Test: +3 kasus regresi di `tests/nekoFeatures.test.js` (130 → 133).
+
+### BUG-2 — Retry `getHtml()` berjalan tanpa timeout (nekoScraper.js)
+- Catch path memanggil `clearTimeout()` lalu fetch retry memakai signal yang
+  sama → retry bisa hang selamanya.
+- Fix: tiap percobaan fetch punya AbortController + timer sendiri
+  (`fetchHtmlText()`); sekalian hapus duplikasi blok fetch options.
+
+### BUG-3 — Klaim kompatibilitas salah (`node:sqlite`)
+- `lib/db.js` memakai `DatabaseSync` (Node ≥22.5) padahal engines `>=18` dan
+  CI matrix 18/20/22.
+- Fix (opsi A): `engines: ">=22.5.0"`, CI matrix hanya Node 22.
+
+### P1 — Proxy dead-code di `fetcher.js`
+- Global fetch (undici) mengabaikan opsi `agent` (API node-fetch) → proxy env
+  diam-diam tidak aktif, termasuk SOCKS.
+- Fix: dispatcher undici `ProxyAgent` (di-cache per URL); pass-through `agent`
+  mati dihapus dari doujin/neko scraper; SOCKS kini menghasilkan warn
+  eksplisit (undici tidak mendukung SOCKS).
+
+### P3 — Fallback data palsu dihapus (`doujinScraper.apiGet`)
+- Detail manga palsu "Offline / Timeout" + cover placeholder dihapus: client
+  tak bisa bedakan data asli vs sintetis dan data palsu berisiko ter-cache.
+- Upstream gagal kini konsisten melempar `UPSTREAM_UNAVAILABLE` (dengan error
+  asli di `cause`) → controller membalas HTTP 503 untuk list/categories/detail/
+  chapter. Stale-cache fallback dan passthrough 404 dipertahankan.
+
+### Keamanan (`nekoController.proxyNekoPlayer`)
+- S-1: SSRF guard — URL gagal parse kini DITOLAK (dulu catch-nya melanjutkan).
+- S-2: respons HTML pihak ketiga diberi `Content-Security-Policy: sandbox
+  allow-scripts` + `X-Content-Type-Options: nosniff` (opaque origin, script
+  player tetap jalan, akses ke origin kita diblokir).
+- Catatan: endpoint ini saat ini TIDAK dipakai frontend (iframe langsung ke
+  penyedia) — kandidat penghapusan, menunggu keputusan.
+
+### Lainnya
+- Sampah disk root dibersihkan (server*.log, server-test.*, pr_body.txt).
+- Verifikasi: `website/doujinPage/shared/` hanya dipakai halaman doujin —
+  tidak perlu dipindah.
+- Validasi: `npm test` 133/133 hijau; `node --check` scripts OK.
+
+---
+
 ## 2026-08-22 (2) — Fix: hasil acak mendarat di halaman seri -> "Player video tidak tersedia"
 
 ### Root cause
