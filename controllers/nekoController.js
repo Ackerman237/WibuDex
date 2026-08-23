@@ -10,6 +10,7 @@ import {
 } from '../lib/scraper/nekoScraper.js';
 import { validatePage, validateCategory, validateQuery, validateSlug, validateEnum } from '../lib/validator.js';
 import logger from '../lib/logger.js';
+import { respondUpstreamError } from '../middleware/upstreamResponse.js';
 
 const NEKO_SERIES_TYPES = new Set(['hentai', 'jav']);
 
@@ -19,11 +20,7 @@ export const getNekoList = async (req, res) => {
     const data = await scrapeNekoList(page);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoList error');
-    if (err?.message?.includes('HTTP 404')) {
-      return res.status(404).json({ success: false, message: 'Video tidak ditemukan' });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getNekoList', notFoundMessage: 'Video tidak ditemukan' });
   }
 };
 
@@ -37,11 +34,7 @@ export const getNekoCategory = async (req, res) => {
     const data = await scrapeNekoCategory(category, page);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoCategory error');
-    if (err?.message?.includes('HTTP 404')) {
-      return res.status(404).json({ success: false, message: 'Category tidak ditemukan' });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getNekoCategory', notFoundMessage: 'Category tidak ditemukan' });
   }
 };
 
@@ -55,11 +48,7 @@ export const getNekoSearch = async (req, res) => {
     const data = await scrapeNekoSearch(query, page);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoSearch error');
-    if (err?.message?.includes('HTTP 404')) {
-      return res.status(404).json({ success: false, message: 'Hasil pencarian tidak ditemukan' });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getNekoSearch', notFoundMessage: 'Hasil pencarian tidak ditemukan' });
   }
 };
 
@@ -72,11 +61,7 @@ export const getNekoDetail = async (req, res) => {
     const data = await scrapeNekoDetail(slug);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoDetail error');
-    if (err?.message?.includes('HTTP 404')) {
-      return res.status(404).json({ success: false, message: 'Video tidak ditemukan' });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getNekoDetail', notFoundMessage: 'Video tidak ditemukan' });
   }
 };
 
@@ -85,8 +70,7 @@ export const getNekoCategories = async (_req, res) => {
     const data = await scrapeNekoCategories();
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoCategories error');
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getNekoCategories', notFoundMessage: 'Kategori tidak ditemukan' });
   }
 };
 
@@ -107,11 +91,7 @@ export const getNekoSeriesList = async (req, res) => {
     const data = await scrapeNekoSeriesList(type, page);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoSeriesList error');
-    if (err?.message?.includes('HTTP 404')) {
-      return res.status(404).json({ success: false, message: 'Daftar seri tidak ditemukan' });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getNekoSeriesList', notFoundMessage: 'Daftar seri tidak ditemukan' });
   }
 };
 

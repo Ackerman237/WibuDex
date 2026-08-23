@@ -5,7 +5,7 @@ import {
   scrapeGenres,
 } from '../lib/scraper/index.js';
 import { validatePage, validateLimit, validateQuery, validateSlug, validateId, validateCategory, validateEnum } from '../lib/validator.js';
-import logger from '../lib/logger.js';
+import { respondUpstreamError } from '../middleware/upstreamResponse.js';
 
 // Engine proxy gambar dipindah ke lib/imageProxy.js (SoC) — controller hanya
 // me-re-export agar rute /api/image-proxy tidak berubah.
@@ -43,14 +43,7 @@ export const getMangaList = async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error({ err }, 'getMangaList error');
-    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
-      return res.status(503).json({
-        success: false,
-        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
-      });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getMangaList', notFoundMessage: 'Manga tidak ditemukan' });
   }
 };
 
@@ -59,14 +52,7 @@ export const getMangaCategories = async (req, res) => {
     const data = await scrapeGenres();
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getMangaCategories error');
-    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
-      return res.status(503).json({
-        success: false,
-        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
-      });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getMangaCategories', notFoundMessage: 'Kategori tidak ditemukan' });
   }
 };
 
@@ -79,17 +65,7 @@ export const getMangaDetail = async (req, res) => {
     const data = await scrapeMangaDetail(slug);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getMangaDetail error');
-    if (err?.message === 'HTTP 404') {
-      return res.status(404).json({ success: false, message: 'Manga tidak ditemukan' });
-    }
-    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
-      return res.status(503).json({
-        success: false,
-        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
-      });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getMangaDetail', notFoundMessage: 'Manga tidak ditemukan' });
   }
 };
 
@@ -102,17 +78,7 @@ export const getChapterImages = async (req, res) => {
     const data = await scrapeChapterImages(id);
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getChapterImages error');
-    if (err?.message === 'HTTP 404') {
-      return res.status(404).json({ success: false, message: 'Chapter tidak ditemukan' });
-    }
-    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
-      return res.status(503).json({
-        success: false,
-        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
-      });
-    }
-    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+    return respondUpstreamError(res, err, { logLabel: 'getChapterImages', notFoundMessage: 'Chapter tidak ditemukan' });
   }
 };
 
