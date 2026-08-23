@@ -131,3 +131,69 @@ during that migration.
 - [ ] Rate limited
 - [ ] Errors sanitized before reaching the client
 - [ ] No secrets logged or committed
+
+## 10. Cloudflare Tunnel & Access (self-host dari komputer pribadi)
+
+Server ini di-expose ke internet lewat `cloudflared` tunnel, bukan cloud
+server. Kontrol di bawah ini melengkapi hardening aplikasi (bagian 1–9)
+pada lapisan edge.
+
+### A. Cloudflare Access — gerbang autentikasi (WAJIB)
+Semua endpoint API tidak punya sistem akun; Access menggantikan fungsi itu
+di level edge, gratis untuk personal use:
+
+1. Dashboard Cloudflare → **Zero Trust** → **Access** → **Applications** →
+   **Add an application** → *Self-hosted*.
+2. Application domain: subdomain tunnel kamu (mis. `lib.example.com`).
+   Scope: seluruh domain (`lib.example.com/*`) sehingga semua path
+   (termasuk `/api/vpn-status`, `/api/progress`) terlindungi sekaligus.
+3. Add a policy: Action **Allow**, Include **Emails** → email pribadi kamu.
+4. Login method: **One-time PIN** (email OTP) — tanpa perlu akun apapun.
+5. Test: buka subdomain dari browser/incognito → harus muncul halaman OTP
+   Cloudflare sebelum app.
+
+Efek di kode: request yang lolos Access membawa header
+`Cf-Access-Jwt-Assertion`. Guard `/api/vpn-status`
+(`controllers/vpnController.js`) menerima loopback atau header ini.
+> Catatan: guard saat ini hanya mengecek *keberadaan* header, belum
+> memverifikasi signature JWT-nya. Karena Access menolak request tanpa
+> auth di edge, ini cukup untuk personal use; verifikasi penuh (fetch
+> team cert + `crypto.verify`) adalah peningkatan opsional.
+
+### B. Rate limit per pengunjung nyata
+`server.js` memakai `app.set('trust proxy', 1)` dan rate limiter
+ber-key `CF-Connecting-IP` (`middleware/rateLimit.js`). Tanpa ini, semua
+pengunjung internet berbagi satu bucket karena cloudflared terhubung via
+loopback.
+
+⚠️ Konsekuensi keamanan: dengan `trust proxy` aktif, klien yang bisa
+menghubungi port Express **langsung** (tanpa lewat tunnel) dapat memalsukan
+`X-Forwarded-For`. Mitigasi:
+- Pastikan port 4000 **tidak diteruskan** ke internet (router NAT tertutup,
+  Windows Firewall block inbound pada port itu), dan/atau
+- Bind Express ke loopback saja: `app.listen(PORT, '127.0.0.1')`.
+
+### C. cloudflared sebagai Windows service
+Proses manual mati saat restart/relog dan website down tanpa notifikasi:
+
+```powershell
+cloudflared service install   # butuh admin; config di %TUNNEL_TOKEN% atau config.yml
+Get-Service cloudflared       # verifikasi status Running
+```
+
+### D. Ingress hygiene
+Config tunnel hanya boleh mengarah ke satu service:
+
+```yaml
+ingress:
+  - hostname: lib.example.com
+    service: http://localhost:4000
+  - service: http_status:404   # fallback tegas, jangan wildcard ke service lain
+```
+
+## 11. Endpoint Sensitif
+| Endpoint | Risiko | Kontrol |
+|---|---|---|
+| `GET /api/vpn-status` | bocor nama provider VPN, health, history error internal | Loopback/JWT-only guard + Access |
+| `GET /api/progress` | riwayat baca per device bisa dibaca/ditulis siapa pun yang tahu deviceId | deviceId = UUID entropi penuh; cap 100 baris/device; idealnya terlindungi Access |
+| `GET /pf/:host/*` | relay publik ke host player | allowlist host + timeout 15s + cap respons 2MB |
