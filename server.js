@@ -42,13 +42,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 2. Serve Static Files (Folder website/ untuk HTML, CSS, & JS Frontend)
-// maxAge panjang → aset di-cache browser; invalidasi via query string versi di HTML
+// Kebijakan cache:
+//   - HTML  -> no-cache (perubahan UI langsung terlihat; dulu maxAge 365d
+//              membuat user terjebak di JS lama berbulan-bulan)
+//   - Aset  -> cache panjang; invalidasi lewat ?v=N di referensi HTML
+const staticCacheHeaders = (res, filePath) => {
+  res.setHeader(
+    'Cache-Control',
+    filePath.endsWith('.html') ? 'no-cache' : 'public, max-age=31536000'
+  );
+};
 
 app.use(
-  express.static(path.join(__dirname, 'website'), { maxAge: '365d' })
+  express.static(path.join(__dirname, 'website'), { setHeaders: staticCacheHeaders })
 );
 
-app.use('/neko', express.static(path.join(__dirname, 'website', 'nekoPage'), { maxAge: '365d' }));
+app.use('/neko', express.static(path.join(__dirname, 'website', 'nekoPage'), { setHeaders: staticCacheHeaders }));
 
 app.get('/', (_req, res) => {
   res.redirect('/doujinPage/html/index.html');
@@ -56,7 +65,7 @@ app.get('/', (_req, res) => {
 
 app.use(
   '/doujinPage/html',
-  express.static(path.join(__dirname, 'website', 'doujinPage'), { maxAge: '365d' })
+  express.static(path.join(__dirname, 'website', 'doujinPage'), { setHeaders: staticCacheHeaders })
 );
 
 // 3. Routing API

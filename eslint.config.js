@@ -49,4 +49,11 @@ export default [
       'no-useless-escape': 'off',
     },
   },
+  {
+    // Callback page.evaluate berjalan DI BROWSER — `document` valid di sana
+    files: ['scripts/dev/ui-check.mjs'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
 ];

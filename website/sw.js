@@ -11,7 +11,9 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
-const CACHE_VERSION = 'v3';
+// v4: invalidasi seluruh cache — server kini mengirim HTML no-cache dan
+// aset berversi (?v=). Cache lama (v3) berisi watch.js pra player-frame.
+const CACHE_VERSION = 'v4';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 
