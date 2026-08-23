@@ -1,5 +1,6 @@
 import { safeHttpUrl } from '../lib/security.js';
 import sharp from 'sharp';
+import { USER_AGENT, REFERER_DOUJIN } from '../lib/constants.js';
 import {
   scrapeMangaList,
   scrapeMangaDetail,
@@ -121,8 +122,8 @@ const IMAGE_CACHE_MAX_ENTRIES = 150;
 const IMAGE_CACHE_CONTROL = 'public, max-age=604800';
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const PROXY_IMAGE_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-  Referer: 'https://doujin.desu.xxx',
+  'User-Agent': USER_AGENT,
+  Referer: REFERER_DOUJIN,
 };
 
 const imageCache = new Map();
