@@ -5,6 +5,59 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-23 (4) — Player anti-iklan: player-frame produksi + stream langsung (Fase A/B/C)
+
+Masalah: iframe embed penyedia melempar user ke web lain saat dipencet
+(popunder/redirect). Karena iframe lintas-domain tak bisa disentuh dari parent,
+dan atribut `sandbox` terdeteksi penyedia → solusi = saring di server.
+
+### Fase A — Player-frame ke produksi (`307d0b5`)
+- `buildPlayerFrameHtml()` kini menyuntik **guard anti-lempar**: `window.open`
+  dimentralkan, anchor eksternal/`target=_blank` dibatalkan fase-capture,
+  submit form lintas domain diblokir.
+- Endpoint baru: `GET /api/neko/player-mode` (kebijakan server), 
+  `GET /api/neko/player-frame` (HTML tersaring + cache 5 menit + CSP
+  `sandbox allow-scripts allow-forms allow-presentation` → opaque origin:
+  top-nav & popup diblokir engine browser, cookie/localStorage kita tak
+  tersentuh), `GET /api/pf/:host/*` (passthrough XHR penyedia dengan header
+  CORS — dokumen sandboxed ber-origin null).
+- `stealthShim` menerima `xhrBase` agar lab (port 3444, `/pf`) dan produksi
+  (`/api/pf`) tetap kompatibel.
+- `watch.js`: indikator "🧹 Sedang membersihkan iklan…" + toggle mode.
+- Rollback satu baris `.env`: `PLAYER_FRAME_MODE=direct`.
+
+### Fase B — Spike ekstraksi stream (titik keputusan)
+Analisis fixture + dump live (`scripts/dev/dump-embed.mjs`,
+`scripts/dev/m3u8-spike.mjs`) membuktikan playmogo = keluarga DoodStream:
+**MP4 progresif** (bukan HLS → tidak ada iklan mid-roll dalam stream).
+Alur resolusi tereplikasi penuh server-side:
+1. HTML embed memuat `$.get('/pass_md5/<hash>/<fileid>')` + cookie `file_id`
+2. GET pass_md5 (endpoint dilindungi CF → **wajib curl**, fetch Node kena 403)
+3. URL final = base CDN + 10 char acak + `?token=<token>` (replicasi `makePlay()`)
+Hasil probe live: **HTTP 206 • video/mp4** pada kedua kualitas. ✅
+
+### Fase C — Player native milik sendiri (`9e46c90`)
+- `lib/scraper/streamExtract.js`: parser murni (`parseDoodStreamEmbed`,
+  `buildMakePlaySuffix` — golden-test offline dengan fixture) + ekstraksi via
+  `curlGetText` yang diekspor dari playerFrame.
+- Endpoint `GET /api/neko/stream` → JSON URL CDN; 404+`fallback:true` untuk
+  penyedia yang belum didukung (streampoi — logika di `/js/xupload.js`).
+- `watch.js` rantai berlapis: **native `<video>`** (referrerpolicy=no-referrer,
+  nol JS penyedia) → error otomatis jatuh ke **iframe terfilter** → toggle
+  manual **direct**. Tidak ada jalur yang meninggalkan user buntu.
+- Validasi end-to-end live: server nyata port 4123, endpoint mengembalikan
+  `200 {success:true, type:"video/mp4", url:"https://xo247l.cloudatacdn.com/…"}`.
+
+### Batasan jujur (dokumen untuk masa depan)
+- Streampoi belum didukung ekstraksi (butuh reverse `xupload.js`) — otomatis
+  pakai player-frame terfilter.
+- Token CDN punya umur pendek; URL stream tidak di-cache (selalu fresh).
+- Jika CDN mulai mengecek Referer ketat, fallback filtered sudah siap.
+
+Test: 159 → **164 lulus** (5 golden streamExtract). Lint bersih.
+
+---
+
 ## 2026-08-23 (3) — Fase 4: ESLint, golden test decryptor, test normalizer, README arsitektur
 
 ### Bug lama terkonfirmasi lewat sanity check live (`npm run demo:fast`)

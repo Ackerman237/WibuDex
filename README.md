@@ -8,7 +8,7 @@ A web application that aggregates and serves manga/doujin content by scraping an
 
 The platform provides:
 - **Manga Catalog & All Manga Page** — Full library browse with server-side numeric pagination (`PREVIOUS / NEXT`), sorting controls (Newest / Rating / Title A–Z), and category/genre filtering.
-- **Nekopoi Platform** — Video catalog browse (`/neko`), category listing and filtering, keyword search, detail view, and a watch page that embeds provider players directly (server-side fallback capability lives in `lib/scraper/playerFrame.js`).
+- **Nekopoi Platform** — Video catalog browse (`/neko`), category listing and filtering, keyword search, and detail view. Watch page plays video in layered clean modes: **native `<video>`** (server-extracted direct MP4 stream — zero provider JS), falling back to a **server-filtered player frame** (ad/popunder scripts stripped + CSP sandbox), with a manual direct-mode toggle. Policy via `PLAYER_FRAME_MODE` env.
 - **Manga Detail Pages** — Comprehensive view with chapter lists, metadata, and error/retry handling.
 - **Manga Reader** — Lazy loading, chapter navigation, automatic **server-side reading position saving** (powered by built-in `node:sqlite`), and resilient UX: per-page loading skeletons, sticky progress bar (`📄 8/138 halaman siap`), auto-retry 3x backoff (1s→2s→4s) for failed images, classified error messages, and aggressive prefetch (1500px).
 - **Personal Library & Bookmarks** — Local storage integration for favorites and bookmarks.
@@ -49,6 +49,8 @@ All endpoints are prefixed under `/api` and rate-limited. Summary:
 | `GET /api/neko/category` | Videos within a specific category. |
 | `GET /api/neko/search` | Nekopoi keyword search. |
 | `GET /api/neko/detail` | Video detail by slug. |
+| `GET /api/neko/player-frame` | Server-filtered provider embed (anti popunder/redirect). |
+| `GET /api/neko/stream` | Direct MP4 CDN URL extracted server-side (native player). |
 | `GET /api/progress` | Reading position for one manga. |
 | `GET /api/progress/all` | All saved reading positions. |
 | `POST /api/progress` | Save/update reading position. |
