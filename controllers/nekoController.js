@@ -8,11 +8,102 @@ import {
   scrapeNekoSeriesList,
   scrapeNekoRandom,
 } from '../lib/scraper/nekoScraper.js';
-import { validatePage, validateCategory, validateQuery, validateSlug, validateEnum } from '../lib/validator.js';
+import { validatePage, validateCategory, validateQuery, validateSlug, validateUrl, validateEnum } from '../lib/validator.js';
 import logger from '../lib/logger.js';
 import { respondUpstreamError } from '../middleware/upstreamResponse.js';
+import { fetchProviderEmbed, buildPlayerFrameHtml, isAllowedPlayerUrl } from '../lib/scraper/playerFrame.js';
+import { PLAYER_HOSTS } from '../lib/config/playerHosts.js';
+import { USER_AGENT } from '../lib/constants.js';
+import { CacheManager } from '../lib/scraper/cache.js';
 
 const NEKO_SERIES_TYPES = new Set(['hentai', 'jav']);
+
+// ============================================================
+// Player-frame (mode "bersih"): HTML embed penyedia disaring di server
+// (script iklan/popunder dibuang) lalu disajikan dari origin kita dengan
+// CSP sandbox opaque-origin — top-navigation & popup diblokir browser,
+// akses ke cookie/localStorage situs ini nihil.
+// Rollback: set PLAYER_FRAME_MODE=direct di .env → frontend kembali
+// embed langsung ke penyedia.
+// ============================================================
+const PLAYER_FRAME_MODE = process.env.PLAYER_FRAME_MODE === 'direct' ? 'direct' : 'filtered';
+const playerFrameCache = new CacheManager({ maxSize: 20, defaultTTL: 5 * 60_000 });
+
+export const getPlayerMode = (_req, res) => {
+  res.json({ success: true, data: { mode: PLAYER_FRAME_MODE } });
+};
+
+export const getPlayerFrame = async (req, res) => {
+  try {
+    if (PLAYER_FRAME_MODE !== 'filtered') {
+      return res.status(404).json({ success: false, message: 'Player-frame dinonaktifkan (mode direct)' });
+    }
+
+    const url = validateUrl(req.query.url);
+    if (!url) return res.status(400).json({ success: false, message: 'Parameter url tidak valid' });
+
+    const safeUrl = isAllowedPlayerUrl(url);
+    if (!safeUrl) return res.status(400).json({ success: false, message: 'URL player tidak diizinkan' });
+
+    // Slug hanya boleh berisi karakter slug — dipakai untuk spoof Referer
+    const slug = String(req.query.slug || '').replace(/[^a-z0-9-]/gi, '');
+    const providerHost = new URL(safeUrl).hostname;
+    const cacheKey = `${safeUrl}|${slug}`;
+
+    let html = playerFrameCache.get(cacheKey);
+    if (!html) {
+      const raw = await fetchProviderEmbed(safeUrl, { slug });
+      html = buildPlayerFrameHtml({ html: raw, providerHost, slug, xhrBase: '/api/pf' });
+      playerFrameCache.set(cacheKey, html);
+    }
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    // Sandbox flags default: TANPA allow-top-navigation, TANPA allow-popups.
+    // allow-same-origin sengaja tidak ada → origin opaque (tidak bisa sentuh
+    // cookie/localStorage/API kita). XHR internal penyedia tetap jalan lewat
+    // /pf/:host/* yang mengirim header CORS.
+    res.setHeader('Content-Security-Policy', 'sandbox allow-scripts allow-forms allow-presentation');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-store');
+    return res.send(html);
+  } catch (err) {
+    logger.error({ err }, 'getPlayerFrame error');
+    if (err?.name === 'AbortError' || err?.message?.includes('Timeout')) {
+      return res.status(504).json({ success: false, message: 'Timeout menunggu player' });
+    }
+    return res.status(502).json({ success: false, message: 'Gagal memuat player' });
+  }
+};
+
+// Passthrough XHR internal penyedia (mis. $.get('/pass_md5/...')) dari dokumen
+// sandboxed (origin null) → butuh header CORS terbuka, dengan host allowlist.
+export const passthroughProviderXhr = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const host = String(req.params.host || '').toLowerCase();
+  if (!PLAYER_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) {
+    return res.status(400).json({ success: false, message: 'Host tidak diizinkan' });
+  }
+  const rest = req.params[0] || '';
+  const query = req.url.includes('?') ? `?${req.url.split('?').slice(1).join('?')}` : '';
+  const target = `https://${host}/${rest}${query}`;
+  try {
+    const upstream = await fetch(target, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        Accept: '*/*',
+        Referer: `https://${host}/`,
+      },
+    });
+    res.status(upstream.status);
+    const contentType = upstream.headers.get('content-type');
+    if (contentType) res.type(contentType);
+    const text = await upstream.text();
+    return res.send(text);
+  } catch (err) {
+    logger.warn({ err, target }, 'passthroughProviderXhr gagal');
+    return res.status(502).json({ success: false, message: 'Passthrough gagal' });
+  }
+};
 
 export const getNekoList = async (req, res) => {
   try {

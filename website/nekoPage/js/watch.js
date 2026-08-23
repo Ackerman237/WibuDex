@@ -56,6 +56,62 @@ function renderRandomRetry(playerBox) {
   playerBox.appendChild(btn);
 }
 
+// Mode player: 'filtered' = embed penyedia disaring di server (/api/neko/player-frame,
+// anti popunder/redirect); 'direct' = perilaku lama (iframe langsung ke penyedia).
+// Default sesuai server (PLAYER_FRAME_MODE di .env); user bisa toggle per-session.
+let playerMode = 'filtered';
+
+function buildFrameSrc(playerUrl, mode) {
+  if (mode === 'direct') return playerUrl;
+  const slug = new URLSearchParams(window.location.search).get('slug') || '';
+  return `/api/neko/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(slug)}`;
+}
+
+function mountPlayer(playerBox, playerUrl) {
+  const isFiltered = playerMode === 'filtered';
+  const frameSrc = escapeHtml(buildFrameSrc(playerUrl, playerMode));
+
+  playerBox.innerHTML = `
+    <div class="pf-wrap">
+      <div class="pf-loading" id="pfLoading">🧹 Sedang membersihkan iklan…</div>
+      <iframe
+        src="${frameSrc}"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <div class="pf-mode-toggle">
+      <button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button>
+    </div>
+  `;
+
+  // Sembunyikan indikator begitu dokumen dalam iframe selesai dimuat.
+  const loading = document.getElementById('pfLoading');
+  const frame = playerBox.querySelector('iframe');
+  frame.addEventListener('load', () => {
+    if (loading) loading.style.display = 'none';
+  });
+  // Jaringan lambat: indikator tetap informatif setelah 15 detik
+  setTimeout(() => {
+    if (loading && loading.style.display !== 'none') {
+      loading.textContent = '⏳ Masih menyiapkan player… jaringan lambat';
+    }
+  }, 15000);
+
+  const modeBtn = document.getElementById('pfModeBtn');
+  const syncModeBtn = () => {
+    modeBtn.textContent = playerMode === 'filtered'
+      ? '⚡ Player tidak muncul? Pakai mode langsung'
+      : '🧹 Kembali ke mode bersih (anti iklan)';
+  };
+  syncModeBtn();
+  modeBtn.addEventListener('click', () => {
+    playerMode = playerMode === 'filtered' ? 'direct' : 'filtered';
+    syncModeBtn();
+    mountPlayer(playerBox, playerUrl);
+  });
+}
+
 async function loadDetail() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug');
@@ -70,6 +126,15 @@ async function loadDetail() {
   }
 
   try {
+    // Ikuti kebijakan server (.env PLAYER_FRAME_MODE); jika endpoint gagal, tetap filtered
+    try {
+      const modeRes = await fetch('/api/neko/player-mode');
+      const modeJson = await modeRes.json();
+      if (modeJson?.success && modeJson.data?.mode) playerMode = modeJson.data.mode;
+    } catch {
+      /* server lama / offline — pakai default */
+    }
+
     const res = await fetch(`/api/neko/detail?slug=${encodeURIComponent(slug)}`);
     const result = await res.json();
 
@@ -98,16 +163,7 @@ async function loadDetail() {
           externalPlayerBtn.href = playerUrl;
           externalFallbackContainer.style.display = 'block';
 
-          // Replikasi pola nekopoi.care: iframe LANGSUNG ke penyedia tanpa sandbox.
-          // Atribut sandbox justru memicu deteksi frameElement.hasAttribute("sandbox")
-          // di streampoi/playmogo yang me-redirect ke /blocked.
-          playerBox.innerHTML = `
-            <iframe
-              src="${playerUrl}"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-            ></iframe>
-          `;
+          mountPlayer(playerBox, playerUrl);
         };
 
         serverSelectorContainer.appendChild(btn);
@@ -116,13 +172,7 @@ async function loadDetail() {
       const firstUrl = detail.players[0];
       externalPlayerBtn.href = firstUrl;
       externalFallbackContainer.style.display = 'block';
-      playerBox.innerHTML = `
-        <iframe
-          src="${firstUrl}"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-        ></iframe>
-      `;
+      mountPlayer(playerBox, firstUrl);
 
     } else {
       playerBox.innerHTML = '<p class="player-error-text">Player video tidak tersedia.</p>';

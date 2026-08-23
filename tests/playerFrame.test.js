@@ -164,3 +164,37 @@ describe('integration — createPlayerFrameApp', () => {
     }
   });
 });
+
+describe('guardShim via buildPlayerFrameHtml (anti popunder/redirect)', () => {
+  const out = buildPlayerFrameHtml({
+    html: '<html><head><title>t</title></head><body>ok</body></html>',
+    providerHost: 'playmogo.com',
+    slug: 'test-slug',
+  });
+
+  it('menyuntikkan guard script dengan marker data-player-frame-guard', () => {
+    expect(out).toContain('data-player-frame-guard');
+  });
+
+  it('mentralkan window.open (popunder mati)', () => {
+    expect(out).toContain('window.open=function(){return null;}');
+  });
+
+  it('memblokir anchor eksternal dan target _blank (fase capture)', () => {
+    expect(out).toContain('addEventListener("click"');
+    expect(out).toContain('ev.preventDefault()');
+  });
+
+  it('membatasi host ke penyedia terkait', () => {
+    expect(out).toContain('"playmogo.com"');
+  });
+
+  it('xhrBase produksi: /api/pf dipakai saat diminta', () => {
+    const prod = buildPlayerFrameHtml({
+      html: '<html><head></head><body>x</body></html>',
+      providerHost: 'playmogo.com',
+      xhrBase: '/api/pf',
+    });
+    expect(prod).toContain('/api/pf/playmogo.com');
+  });
+});

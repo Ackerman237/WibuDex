@@ -102,6 +102,46 @@ describe('API Routes', () => {
     });
   });
 
+  describe('GET /api/neko/proxy-player (dihapus)', () => {
+    it('returns 404 — endpoint usang sudah dihapus', async () => {
+      const res = await request(app).get('/api/neko/proxy-player');
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/neko/player-mode', () => {
+    it('returns mode (default filtered)', async () => {
+      const res = await request(app).get('/api/neko/player-mode');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(['filtered', 'direct']).toContain(res.body.data.mode);
+    });
+  });
+
+  describe('GET /api/neko/player-frame', () => {
+    it('returns 400 for missing url', async () => {
+      const res = await request(app).get('/api/neko/player-frame');
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 for invalid url', async () => {
+      const res = await request(app).get('/api/neko/player-frame?url=javascript:alert(1)');
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 for host outside allowlist (SSRF guard)', async () => {
+      const res = await request(app).get('/api/neko/player-frame?url=https://evil.com/embed');
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('GET /api/pf/:host/* (passthrough XHR penyedia)', () => {
+    it('rejects host outside allowlist', async () => {
+      const res = await request(app).get('/api/pf/evil.com/pass_md5/x');
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe('GET /api/neko', () => {
     it('returns neko list', async () => {
       const res = await request(app).get('/api/neko?page=1');

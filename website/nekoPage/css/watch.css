@@ -262,3 +262,27 @@
 .random-retry-btn {
   margin-top: 12px;
 }
+
+/* ── Player-frame (mode bersih): overlay loading + toggle mode ── */
+.pf-wrap {
+  position: relative;
+}
+.pf-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #e8e2d9;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+.pf-mode-toggle {
+  margin-top: 8px;
+}
+.pf-mode-btn {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}

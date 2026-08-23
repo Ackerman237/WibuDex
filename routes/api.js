@@ -16,6 +16,9 @@ import {
   getNekoSchedule,
   getNekoSeriesList,
   getNekoRandom,
+  getPlayerMode,
+  getPlayerFrame,
+  passthroughProviderXhr,
 } from '../controllers/nekoController.js';
 import {
   getReadingPosition,
@@ -39,6 +42,11 @@ router.get('/neko/detail', generalLimiter, getNekoDetail);
 router.get('/neko/schedule', generalLimiter, getNekoSchedule);
 router.get('/neko/series', generalLimiter, getNekoSeriesList);
 router.get('/neko/random', generalLimiter, getNekoRandom);
+// Player-frame "bersih": embed penyedia disaring di server (anti popunder/redirect)
+router.get('/neko/player-mode', generalLimiter, getPlayerMode);
+router.get('/neko/player-frame', proxyLimiter, getPlayerFrame);
+// Passthrough XHR internal penyedia dari dokumen sandboxed (butuh header CORS di controller)
+router.get('/pf/:host/*', proxyLimiter, passthroughProviderXhr);
 router.get('/progress', generalLimiter, getReadingPosition);
 router.get('/progress/all', generalLimiter, getAllReadingPositions);
 router.post('/progress', generalLimiter, saveReadingPositionHandler);
