@@ -16,7 +16,6 @@ import {
   getNekoSchedule,
   getNekoSeriesList,
   getNekoRandom,
-  proxyNekoPlayer 
 } from '../controllers/nekoController.js';
 import {
   getReadingPosition,
@@ -40,7 +39,6 @@ router.get('/neko/detail', generalLimiter, getNekoDetail);
 router.get('/neko/schedule', generalLimiter, getNekoSchedule);
 router.get('/neko/series', generalLimiter, getNekoSeriesList);
 router.get('/neko/random', generalLimiter, getNekoRandom);
-router.get('/neko/proxy-player', proxyLimiter, proxyNekoPlayer);
 router.get('/progress', generalLimiter, getReadingPosition);
 router.get('/progress/all', generalLimiter, getAllReadingPositions);
 router.post('/progress', generalLimiter, saveReadingPositionHandler);
