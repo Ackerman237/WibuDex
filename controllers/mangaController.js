@@ -42,6 +42,12 @@ export const getMangaList = async (req, res) => {
     });
   } catch (err) {
     logger.error({ err }, 'getMangaList error');
+    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
+      return res.status(503).json({
+        success: false,
+        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
+      });
+    }
     return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
   }
 };
@@ -52,6 +58,12 @@ export const getMangaCategories = async (req, res) => {
     return res.json({ success: true, data });
   } catch (err) {
     logger.error({ err }, 'getMangaCategories error');
+    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
+      return res.status(503).json({
+        success: false,
+        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
+      });
+    }
     return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
   }
 };
@@ -68,6 +80,12 @@ export const getMangaDetail = async (req, res) => {
     logger.error({ err }, 'getMangaDetail error');
     if (err?.message === 'HTTP 404') {
       return res.status(404).json({ success: false, message: 'Manga tidak ditemukan' });
+    }
+    if (err?.message === 'UPSTREAM_UNAVAILABLE') {
+      return res.status(503).json({
+        success: false,
+        message: 'Server sumber sedang tidak dapat dihubungi (VPN/upstream bermasalah). Coba lagi beberapa saat.',
+      });
     }
     return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
   }
