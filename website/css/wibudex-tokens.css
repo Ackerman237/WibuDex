@@ -183,6 +183,13 @@ body, .media-card, .bottom-nav, .reader__nav-btn {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Atribut hidden WAJIB menang atas deklarasi display apapun.
+   (Postmortem 2026-08-24: kelas bug "hidden vs display" 3x berulang —
+   badge kosong tampil sebagai bulatan oranye, panel tak muncul, dst.) */
+[hidden] {
+  display: none !important;
+}
+
 html {
   background: var(--bg-base);
 }

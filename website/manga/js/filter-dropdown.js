@@ -138,10 +138,13 @@
 
       clearBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        // INSTANT-APPLY: bersihkan langsung diterapkan tanpa tombol Terapkan
+        [...select.options].forEach((o) => { o.selected = false; });
         pending = [];
         hideWarn();
-        renderList();
-        syncTrigger();
+        // Event 'change' ASLI → catalog.js navigasi ke URL tanpa genre
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        closeAll();
       });
 
       applyBtn.addEventListener('click', (e) => {
@@ -230,6 +233,15 @@
             return;
           }
 
+          // INSTANT-APPLY "Semua Genre": langsung terapkan tanpa Terapkan
+          if (opt.value === '') {
+            [...select.options].forEach((o) => { o.selected = false; });
+            pending = [];
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            closeAll();
+            return;
+          }
+
           // ── Mode multi: toggle pending, batas maksimal ──
           const idx = pending.indexOf(opt.value);
           if (idx >= 0) {
@@ -239,7 +251,6 @@
             showWarn(); // tolak pilihan ke-(max+1)
             return;
           } else {
-            if (opt.value === '') return; // opsi "Semua…" tak relevan di multi
             pending.push(opt.value);
             hideWarn();
           }

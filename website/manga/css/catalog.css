@@ -272,9 +272,7 @@
   cursor: default;
 }
 
-.fdrop__warn[hidden] {
-  display: none;
-}
+/* [hidden] ditangani aturan global di wibudex-tokens.css */
 
 /* Footer aksi multi-select */
 .fdrop__footer {

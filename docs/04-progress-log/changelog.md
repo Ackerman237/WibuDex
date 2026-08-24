@@ -5,6 +5,28 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (9) — Fix katalog: instant-clear + badge hantu + fix [hidden] global
+
+### Perilaku
+- Dropdown genre: **Bersihkan** dan klik opsi **"Semua Genre"** kini
+  langsung diterapkan (unselect semua + dispatch change → navigasi tanpa
+  param genre, panel tertutup). Alur toggle-pending-Terapkan untuk memilih
+  genre individual tetap seperti sebelumnya.
+
+### Bug "bulatan oranye"
+Badge jumlah `.fdrop__count` punya `display:inline-flex` yang menimpa style
+UA `[hidden]` → saat nol genre dipilih, pil amber kosong 18px tetap tampil.
+Ini kejadian KE-3 kelas bug identik (hidden vs deklarasi display).
+
+### Fix sistemik
+`wibudex-tokens.css`: aturan global `[hidden] { display:none !important }`
+— memusnahkan seluruh kelas bug ini di semua halaman (manga & video);
+override manual `.fdrop__warn[hidden]` dibersihkan karena redundan.
+
+Gate: `ui-check-catalog.mjs` 13/13 lolos runtime (+2 assertion baru).
+
+---
+
 ## 2026-08-24 (8) — Halaman detail + tema dinamis cover (langkah 3 roadmap)
 
 ### Baru

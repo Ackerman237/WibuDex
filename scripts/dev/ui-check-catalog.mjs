@@ -175,6 +175,27 @@ try {
      `pending=${warnProbe.pendingCount ?? '-'}`);
   ok('Multi-genre: peringatan maksimum tampil', warnProbe.warnVisible === true);
 
+  // ── 7) Bersihkan → instant apply: navigasi TANPA param genre ──
+  await page.evaluate(() => {
+    document.querySelector('.fdrop.is-open .fdrop__clear')?.click();
+  });
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {}),
+  ]);
+  await page.waitForSelector('.fdrop__trigger', { timeout: 15000 });
+  await new Promise((r) => setTimeout(r, 500));
+  const genreParam = await page.evaluate(
+    () => new URLSearchParams(location.search).get('genre')
+  );
+  ok('Bersihkan → instant apply (URL tanpa genre)', !genreParam, `genre=${genreParam ?? '(tidak ada)'}`);
+
+  // Badge jumlah harus TERSEMBUNYI saat nol genre (regresi bulatan oranye)
+  const badgeHidden = await page.evaluate(() => {
+    const b = document.querySelector('.fdrop__count');
+    return Boolean(b) && getComputedStyle(b).display === 'none';
+  });
+  ok('Badge count tersembunyi saat kosong', badgeHidden);
+
   // ── Mobile 360px ─────────────────────────────────────────────────────
   await page.setViewport({ width: 360, height: 740 });
   await page.goto(`${base}/manga/html/catalog.html`, { waitUntil: 'domcontentloaded', timeout: 60000 });
