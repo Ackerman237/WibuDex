@@ -11,6 +11,9 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v26: unifikasi tema video home/series/watch (tokens + alias legacy
+// base.css, font Plus Jakarta Sans, theme-color espresso).
+// v25: theater mode watch page.
 // v24: konsolidasi card video (cards.js + refactor index/series/watch.js)
 // + fix pencarian video (reset query) + fix path tokens watch.html.
 // v23: reset global link tanpa underline (a color:inherit di tokens.css).
@@ -38,7 +41,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v24';
+const CACHE_VERSION = 'v26';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

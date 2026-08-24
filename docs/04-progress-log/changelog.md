@@ -11,6 +11,34 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (23) - Video: unifikasi tema home/series/watch dengan Wibudex
+
+Keluhan user: tema video beda dengan manga/komik. Terbukti: 2 dari 3
+halaman video tidak memuat wibudex-tokens.css sama sekali, base.css masih
+memakai palet lama (Oswald, ink merah #c1443a, bg #15120f), theme-color
+berbeda.
+
+### Perubahan
+- base.css: blok :root legas diganti ALIAS ke token terkunci (pola yang
+  sama dengan LEGACY ALIAS manga) - seluruh komponen existing otomatis
+  ikut palet amber/Espresso; font Oswald -> Plus Jakarta Sans.
+- Header video: glassmorphism sticky (nav-bg + blur 20px), shadow merah
+  dihapus.
+- Search box: pill radius-full + focus accent + hover CARI.
+- index.css: satu-satunya hex hardcode (#15120f) -> var(--bg-surface-raised).
+- Ketiga halaman: tokens.css dimuat SEBELUM base.css; theme-color
+  disatukan #0D0C0C. watch.html sudah benar sejak fix path sebelumnya.
+- .btn-see-more diberi hover spotlight amber.
+
+### Gate
+ui-check-video-home.mjs +3 assertion tema (tokens termuat, body espresso,
+brand ::after amber) -> total 10/10 runtime lolos. sw v26.
+
+---
+
 ## 2026-08-24 (22) - Video V1.2: Theater Mode watch page
 
 Toggle **Mode Teater** di bawah player: layout menjadi satu kolom penuh (melebihi lebar konten 1200px), sidebar episode/related disembunyikan sementara. State persisten di localStorage (watchTheater); tombol mobile disembunyikan (sudah satu kolom). Toolbar baru berdampingan dengan mode-player toggle.

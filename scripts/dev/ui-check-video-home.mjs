@@ -72,6 +72,21 @@ try {
   );
   ok('Grid video ter-render dari payload stub', true, '3 kartu');
 
+  // 0) Tema ter-unifikasi: tokens termuat + body espresso + brand amber
+  const theme = await page.evaluate(() => {
+    const tokLoaded = [...document.styleSheets].some((s) =>
+      (s.href || '').includes('/css/wibudex-tokens.css'));
+    const bg = getComputedStyle(document.body).backgroundColor;
+    const brandBar = getComputedStyle(
+      document.querySelector('header h1'), '::after'
+    ).backgroundColor;
+    return { tokLoaded, bg, brandBar };
+  });
+  ok('Tema unifikasi: tokens.css termuat', theme.tokLoaded);
+  ok('Body espresso #0D0C0C', theme.bg === 'rgb(13, 12, 12)', theme.bg);
+  ok('Aksen brand amber (bukan merah legacy)',
+     theme.brandBar === 'rgb(217, 119, 6)', theme.brandBar);
+
   // 2) Struktur markup konsolidasi
   const struct = await page.evaluate(() => {
     const cards = [...document.querySelectorAll('#videoGrid .video-card')];
