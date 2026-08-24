@@ -180,6 +180,7 @@ main {
     height: auto;
     padding-block: var(--space-2);
     row-gap: var(--space-2);
+    gap: var(--space-2); /* override gap desktop 24px — layar sempit hemat */
   }
 
   .nav-hamburger {
@@ -187,13 +188,15 @@ main {
     order: 3;
   }
 
-  /* Satu baris kompak: logo - search (tengah) - hamburger (kanan).
-     Search grow menyerap sisa ruang → hamburger pasti terdorong ke ujung. */
+  /* Satu baris terkunci: logo - search (tengah) - hamburger (kanan).
+     flex-basis WAJIB 0, bukan auto: basis auto mengukur lebar intrinsik
+     input (~200px) sehingga di layar sempit hamburger jatuh ke baris
+     kedua (postmortem 2026-08-24). Basis 0 = dapat sisa ruang saja. */
   .nav-search {
     order: 2;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: 0; /* layar sempit: placeholder terpotong, layout tidak pecah */
-    margin-inline: var(--space-3);
+    margin-inline: var(--space-2);
   }
 
   .nav-links {

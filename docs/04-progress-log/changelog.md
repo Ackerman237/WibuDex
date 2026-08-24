@@ -5,7 +5,32 @@ notes live in `reports/`.
 
 ---
 
-## 2026-08-24 (4) — QA katalog: cache v10, rail filter mobile, dropdown kustom
+## 2026-08-24 (5) — Fix dropdown katalog + searchbar mobile + gate QA runtime
+
+Postmortem lengkap: `reports/2026-08-24-dropdown-bug-postmortem.md`.
+
+### Fix
+- **Panel dropdown tak muncul** — `panel.hidden = true` tak pernah dilepas
+  sementara toggle hanya membuka class → style UA `[hidden]` menang selamanya.
+  Kini visibilitas satu mekanisme: `.fdrop__panel{display:none}` →
+  `.is-open …{display:block}`.
+- **Panel terklip rail scroll mobile** — `overflow-x:auto` pada filter bar
+  mengklip keturunan absolut. Panel kini `position: fixed` diukur dari rect
+  trigger (+ clamp viewport), ditutup saat scroll/resize.
+- **Hamburger turun ke baris kedua** — `flex: 1 1 auto` mengukur basis dari
+  lebar intrinsik input (~200px). Kini `flex: 1 1 0` + gap nav mobile 8px;
+  di 360px search dapat ±171px, satu baris terkunci.
+- `sw.js` CACHE_VERSION v10 → v11 (aset v10 ter-cache masih rusak).
+
+### Gate QA runtime baru
+- `scripts/dev/ui-check-catalog.mjs`: uji browser nyata (puppeteer) — panel
+  terbuka, fixed & dalam viewport, Escape, dispatch change → navigasi
+  `?sort=rating`, mobile 360px satu baris & tak terklip. Hasil: 6/6 ✅.
+- Aturan permanen di AGENTS.md § Alur Kerja + skills `wibudex-design`
+  (gate runtime wajib) & `careful-logic-change` (anti dual source of truth).
+
+---
+
 
 ### Cache
 - `sw.js` `CACHE_VERSION` v9 → v10: CSS via stale-while-revalidate membuat
@@ -27,6 +52,7 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (4) — QA katalog: cache v10, rail filter mobile, dropdown kustom
 ## 2026-08-24 (3) — Halaman katalog catalog.html (langkah 2 roadmap)
 
 Reuse penuh fondasi home.css; file baru hanya komponen khas katalog.

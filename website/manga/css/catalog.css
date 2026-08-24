@@ -159,15 +159,18 @@
   transform: rotate(180deg);
 }
 
-/* Panel opsi — glassmorphism terkunci (blur 20px + nav-bg) */
+/* Panel opsi — glassmorphism terkunci (blur 20px + nav-bg).
+   Visibilitis SATU mekanisme: class .is-open pada .fdrop (postmortem
+   2026-08-24 — jangan campur atribut hidden dengan class).
+   Posisi final = fixed yang dihitung JS dari rect trigger (kebal clipping
+   oleh rail scroll mobile); left/top inline di-set saat dibuka. */
 .fdrop__panel {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
-  z-index: 30;
+  display: none;
+  position: fixed;
+  z-index: 60; /* di atas nav sticky (50) */
   min-width: max-content;
-  max-width: min(320px, 80vw);
-  max-height: 280px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: min(280px, calc(100vh - 32px));
   overflow-y: auto;
   overscroll-behavior: contain;
   margin: 0;
@@ -179,6 +182,10 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--elevation-modal);
+}
+
+.fdrop.is-open .fdrop__panel {
+  display: block;
 }
 
 .fdrop__panel li {

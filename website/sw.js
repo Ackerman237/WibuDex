@@ -11,11 +11,13 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v11: fix dropdown katalog (filter-dropdown.js) + searchbar mobile
+// (home.css) — aset v10 yang ter-cache masih versi rusak.
 // v10: batch UI manga (home.css direvisi, catalog.html/css/js baru,
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v11';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 
