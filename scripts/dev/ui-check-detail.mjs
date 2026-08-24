@@ -29,6 +29,11 @@ const ok = (name, cond, detail = '') => {
   if (!cond) failures += 1;
 };
 
+async function api(path) {
+  const r = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(30000) });
+  return r.json();
+}
+
 async function openDetail(page, slug) {
   await page.goto(
     `${base}/manga/html/detail.html?slug=${encodeURIComponent(slug)}`,
@@ -70,7 +75,8 @@ try {
     { timeout: 30000 }
   );
   await page.waitForSelector('#backBtn', { timeout: 15000 });
-  await page.click('#backBtn');
+  await page.evaluate(() => document.getElementById('backBtn').click());
+  await new Promise((r) => setTimeout(r, 300));
   await page
     .waitForFunction(() => location.pathname.includes('/manga/html/catalog.html'), { timeout: 15000 })
     .then(() => ok('Tombol Kembali → balik ke halaman sebelumnya', true))
@@ -328,6 +334,43 @@ try {
        !stamp.cls.includes('is-latest') &&
        /tamati?/i.test(stamp.content),
        `content="${stamp.content}"`);
+  }
+
+  // ── Penanda baca pada daftar chapter detail (seed deterministik) ──
+  let markerSlug = null;
+  for (const m of (await api('/api/manga?limit=10&page=1'))?.data || []) {
+    if (m.slug === slug) continue;
+    try {
+      const d = await api(`/api/manga/detail?slug=${encodeURIComponent(m.slug)}`);
+      const chs = (d?.data?.chapters || []).filter((c) => c.id || c.chapter_id);
+      if (chs.length >= 3) { markerSlug = m.slug; break; }
+    } catch { /* kandidat berikutnya */ }
+  }
+  if (!markerSlug) {
+    ok('Seed penanda baca', false, 'tidak ada manga ≥3 chapter');
+  } else {
+    await openDetail(page, markerSlug);
+    const ids = await page.evaluate(() =>
+      [...document.querySelectorAll('.chapter-row')]
+        .map((r) => String(r.dataset.chapterId)).filter(Boolean).slice(0, 2)
+    );
+    await page.evaluate(({ slug, ids }) => {
+      localStorage.setItem('readChapters:' + slug, JSON.stringify([ids[0]]));
+      localStorage.setItem('finishedChapters:' + slug, JSON.stringify([ids[1] || ids[0]]));
+    }, { slug: markerSlug, ids });
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForFunction(
+      () => document.querySelectorAll('.chapter-row').length > 0,
+      { timeout: 30000 }
+    );
+    await new Promise((r) => setTimeout(r, 300));
+    const marks = await page.evaluate((ids) => ids.map((id) =>
+      document.querySelector(`.chapter-row[data-chapter-id="${CSS.escape(id)}"]`)?.className || '(hilang)'
+    ), ids);
+    ok('Penanda dibuka (.is-read-ch) di detail',
+       marks[0].includes('is-read-ch') && !marks[0].includes('is-finished-ch'), marks[0]);
+    ok('Penanda selesai (.is-finished-ch) di detail',
+       marks[1].includes('is-finished-ch'), marks[1]);
   }
 
   console.log('\n══════ HASIL UI-CHECK DETAIL ══════');

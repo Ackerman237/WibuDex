@@ -58,6 +58,17 @@ function renderChapterList() {
       }
       row.className = 'chapter-row' + (variant ? ` ${variant}` : '');
 
+      // Penanda baca (tier: selesai > dibuka) — sumber: storage per-slug
+      row.dataset.chapterId = String(chId);
+      if (currentMangaSlug) {
+        const idStr = String(chId);
+        if (getFinishedChapters(currentMangaSlug).map(String).includes(idStr)) {
+          row.classList.add('is-finished-ch');
+        } else if (getReadChapters(currentMangaSlug).map(String).includes(idStr)) {
+          row.classList.add('is-read-ch');
+        }
+      }
+
       const numberDiv = document.createElement("div");
       numberDiv.className = "chapter-number";
       numberDiv.textContent = chNum;
@@ -275,6 +286,9 @@ async function renderDetail() {
     if (el("synopsisToggle")) el("synopsisToggle").style.display = synopsisContent ? "" : "none";
     if (synopsisPanel) synopsisPanel.style.display = synopsisContent ? "" : "none";
 
+    // Slug WAJIB terisi SEBELUM renderChapterList — penanda baca butuh slug
+    // untuk membaca readChapters/finishedChapters (bug urutan 2026-08-24)
+    currentMangaSlug = mangaSlug;
     renderChapterList();
 
     const readNowBtn = el("readNowBtn");
@@ -300,7 +314,6 @@ async function renderDetail() {
     if (el("detailLoading")) el("detailLoading").style.display = "none";
     if (el("detailLayout")) el("detailLayout").style.display = "grid";
 
-    currentMangaSlug = mangaSlug;
     currentGenresArr = genresArr;
     recommendationsLoaded = false;
     recommendationsExpanded = false;
@@ -561,6 +574,9 @@ document.addEventListener("DOMContentLoaded", () => {
         coverFrame.style.backgroundImage = bgImage;
       }
     }
+    // Segarkan penanda baca — kembali dari reader berarti status chapter
+    // (dibuka/selesai) mungkin baru saja berubah
+    renderChapterList();
   });
 });
 

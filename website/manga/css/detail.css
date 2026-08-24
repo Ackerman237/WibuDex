@@ -675,6 +675,26 @@
   background: var(--success);
 }
 
+/* Penanda baca (tier sama dengan drawer reader):
+   selesai = hijau · pernah dibuka = pudar. Stempel status independen. */
+.chapter-row.is-finished-ch .chapter-number {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.chapter-row.is-finished-ch .chapter-number::after {
+  content: '✓';
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.chapter-row.is-read-ch .chapter-number,
+.chapter-row.is-read-ch .chapter-row-body h4 {
+  color: var(--text-disabled);
+}
+
 @media (max-width: 480px) {
   .chapter-row-meta .meta-item:last-child {
     display: none; /* views disembunyikan di layar sempit — tanggal prioritas */
