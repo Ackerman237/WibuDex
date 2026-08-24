@@ -14,6 +14,7 @@ import { respondUpstreamError } from '../middleware/upstreamResponse.js';
 import { fetchProviderEmbed, buildPlayerFrameHtml, isAllowedPlayerUrl } from '../lib/scraper/playerFrame.js';
 import { extractDirectStream } from '../lib/scraper/streamExtract.js';
 import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { PLAYER_HOSTS } from '../lib/config/playerHosts.js';
 import { USER_AGENT } from '../lib/constants.js';
 import { CacheManager } from '../lib/scraper/cache.js';
@@ -189,15 +190,27 @@ export const getStreamProxy = async (req, res) => {
     }
     if (!res.getHeader('accept-ranges')) res.setHeader('Accept-Ranges', 'bytes');
 
-    // Pipakan tanpa buffering; bersihkan timer saat data mulai mengalir
+    // Pipakan via pipeline() — BUKAN .pipe() polos.
+    // FIX FATAL 2026-08-24: user pindah episode → req 'close' → abort()
+    // → Readable emit 'error' (AbortError) tanpa listener → SELURUH
+    // SERVER MATI. Pola identik PeerTube #7535 & node-fetch #1801;
+    // pipeline() menangani error/cleanup/backpressure dengan benar.
     res.on('close', () => clearTimeout(killSwitch));
-    Readable.fromWeb(upstream.body).pipe(res);
+    const upstreamReadable = Readable.fromWeb(upstream.body);
+    // Lapis pertama: log + matikan killSwitch saat upstream error
+    upstreamReadable.on('error', (err) => {
+      clearTimeout(killSwitch);
+      logger.warn({ err: err?.message }, 'stream-proxy: stream upstream error');
+    });
+    await pipeline(upstreamReadable, res);
   } catch (err) {
     if (err?.name === 'AbortError') {
       // client disconnect / timeout — koneksi sudah mati, tak ada yang dibalas
       return;
     }
     logger.error({ err }, 'getStreamProxy error');
+    // Guard: jangan tulis ke response yang sudah destroyed/terkirim
+    if (res.destroyed || res.writableEnded) return;
     if (!res.headersSent) {
       return res.status(502).json({ success: false, message: 'Gagal men-streaming video' });
     }
