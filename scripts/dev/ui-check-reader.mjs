@@ -9,6 +9,8 @@
  *   5. Panel pengaturan: slider lebar mengubah --page-w
  *   6. Auto-hide chrome saat scroll; tap area baca memunculkan kembali
  *   7. Elemen progress halaman ada
+ *   8. Default lebar gambar desktop = 35% (bila user belum mengatur)
+ *   9. Scroll ke halaman terakhir → chapter tercatat SELESAI + drawer .is-finished
  *
  * Jalankan (server harus sudah berjalan):
  *   node scripts/dev/ui-check-reader.mjs [base-url]
@@ -108,20 +110,25 @@ try {
   );
   ok('Chrome auto-hide saat scroll', hiddenAfterScroll === true);
 
-  // 6b) Tap area baca memunculkan chrome kembali
+  // 6b) Tap area baca memunculkan chrome kembali (polling 2s)
   await page.evaluate(() => document.querySelector('.reader-pages').click());
-  await new Promise((r) => setTimeout(r, 400));
-  const shownAfterTap = await page.evaluate(() =>
-    !document.querySelector('.reader-topbar')?.classList.contains('is-hidden')
-  );
+  let shownAfterTap = false;
+  for (let i = 0; i < 8 && !shownAfterTap; i++) {
+    await new Promise((r) => setTimeout(r, 250));
+    shownAfterTap = await page.evaluate(() =>
+      !document.querySelector('.reader-topbar')?.classList.contains('is-hidden')
+    );
+  }
   ok('Tap area baca memunculkan chrome', shownAfterTap === true);
 
   // 7) Progress element
   const progressEl = await page.evaluate(() => Boolean(document.querySelector('.reader-progress')));
   ok('Elemen progress halaman ada', progressEl);
 
-  // 4) Drawer buka/tutup — mobile: bottom sheet (translateY), desktop: kanan
-  await page.click('.reader-bottombar .reader-bb-btn:nth-child(4)');
+  // 4) Drawer buka/tutup — evaluate-click (deterministik)
+  await page.evaluate(() =>
+    document.querySelectorAll('.reader-bottombar .reader-bb-btn')[3].click()
+  );
   await new Promise((r) => setTimeout(r, 500));
   const drawerOpen = await page.evaluate(() => ({
     open: document.querySelector('.reader-drawer')?.classList.contains('is-open'),
@@ -136,6 +143,23 @@ try {
      drawerOpen.items > 0 && drawerOpen.current === 1,
      `${drawerOpen.items} item, current=${drawerOpen.current}`);
   ok('Drawer tanpa elemen tanggal', drawerOpen.dates === 0);
+
+  // ── 9) Selesaikan chapter: scroll ke halaman terakhir ──
+  await page.evaluate(() => {
+    const pages = document.querySelectorAll('.reader-pages .reader-page');
+    pages[pages.length - 1]?.scrollIntoView({ block: 'start' });
+  });
+  // Observer progres butuh waktu mendeteksi halaman terakhir
+  let finishedStored = false;
+  for (let i = 0; i < 20 && !finishedStored; i++) {
+    await new Promise((r) => setTimeout(r, 500));
+    finishedStored = await page.evaluate(
+      (payload) => (JSON.parse(localStorage.getItem('finishedChapters:' + payload.slug) || '[]'))
+        .map(String).includes(String(payload.cid)),
+      { slug: chosen.slug, cid: chosen.chapterId }
+    );
+  }
+  ok('Scroll ke akhir → chapter tercatat SELESAI', finishedStored);
   // Chapter yang dibuka barusan harus tercatat "pernah dibaca"
   // (storage berkunci SLUG: readChapters:<slug>, bukan chapter id!)
   const markedStored = await page.evaluate((slug) => {
@@ -175,6 +199,29 @@ try {
   await page.evaluate(() =>
     document.querySelector('.reader-settings-panel .reader-drawer-close').click()
   );
+
+  // ── Default lebar gambar desktop = 35% bila belum pernah mengatur ──
+  // (diletakkan di akhir agar reload tidak mengganggu alur chrome lain)
+  await page.evaluate(() => localStorage.removeItem('readerPageWidth'));
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForFunction(
+    () => document.querySelectorAll('.reader-page').length > 0,
+    { timeout: 45000 }
+  );
+  await new Promise((r) => setTimeout(r, 300));
+  const wProbe = await page.evaluate(() => {
+    const p = document.querySelector('.reader-page');
+    const l = document.querySelector('.reader-pages');
+    const ratio = parseFloat(getComputedStyle(p).width) /
+      parseFloat(getComputedStyle(l).width) * 100;
+    return {
+      ratio: Math.round(ratio),
+      saved: localStorage.getItem('readerPageWidth'),
+      inlineVar: l.style.getPropertyValue('--page-w') || '(css default)',
+    };
+  });
+  ok('Default lebar gambar desktop ±35% (tanpa preset)', !wProbe.saved &&
+     Math.abs(wProbe.ratio - 35) <= 2, JSON.stringify(wProbe));
 
   console.log('\n══════ HASIL UI-CHECK READER ══════');
   if (browserLog.length) {

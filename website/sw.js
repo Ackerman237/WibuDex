@@ -11,6 +11,8 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v20: penanda chapter selesai (finishedChapters) + settings bottom-sheet +
+// default lebar gambar responsif (35% desktop) + gate ui-check-home.
 // v19: fix nav mobile (menu vs auto-hide + label bottom-nav aktif-only) +
 // polish reader (side controls dihapus, bottombar vertikal, drawer sheet,
 // penanda chapter dibaca) + alt-title span-per-judul.
@@ -30,7 +32,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v19';
+const CACHE_VERSION = 'v20';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

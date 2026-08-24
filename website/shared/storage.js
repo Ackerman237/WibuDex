@@ -112,6 +112,39 @@ function markChapterRead(slug, chapterId) {
 }
 
 /**
+ * Daftar chapter yang sudah DISELESAIKAN (dibaca sampai halaman terakhir)
+ * untuk satu manga. Terpisah dari readChapters (yang tercatat saat dibuka).
+ * @param {string} slug
+ * @returns {string[]}
+ */
+function getFinishedChapters(slug) {
+  if (!slug) return [];
+  try {
+    return JSON.parse(localStorage.getItem('finishedChapters:' + slug)) || [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Tandai chapter selesai dibaca — dipanggil reader saat halaman terakhir
+ * terlihat. Unik per-slug, cap 300 terbaru.
+ * @param {string} slug
+ * @param {string|number} chapterId
+ */
+function markChapterFinished(slug, chapterId) {
+  if (!slug || !chapterId) return;
+  const idStr = String(chapterId);
+  const list = getFinishedChapters(slug);
+  if (list.some((id) => String(id) === idStr)) return;
+  list.push(idStr);
+  localStorage.setItem(
+    'finishedChapters:' + slug,
+    JSON.stringify(list.slice(-300))
+  );
+}
+
+/**
  * Ambil nomor halaman yang tersimpan untuk satu chapter (logic murni).
  * @param {string} slug - Slug manga
  * @param {string} chapterId - ID chapter

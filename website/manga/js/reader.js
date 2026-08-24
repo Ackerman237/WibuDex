@@ -160,6 +160,11 @@ function setupReadingProgress(imageList, totalPages, readingData) {
     const data = { ...readingData, page };
     saveReadingPosition(data); // Instan simpan ke localStorage
 
+    // Chapter DISELESAIKAN: halaman terakhir terlihat (progress v2)
+    if (page >= totalPages && readingData.slug && readingData.chapterId) {
+      markChapterFinished(readingData.slug, readingData.chapterId);
+    }
+
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       saveProgressToServer(data);
@@ -349,7 +354,7 @@ function buildBottomBar({ prevChapter, nextChapter, onPlayToggle, onSettings, on
 // masukan user: mengganggu pembaca — scroll native + auto-scroll +
 // back-to-top sudah menutup fungsinya.
 
-function buildChapterDrawer({ chapters, currentChapterId, readSet }) {
+function buildChapterDrawer({ chapters, currentChapterId, readSet, finishedSet }) {
   const drawer = document.createElement('div');
   drawer.className = 'reader-drawer';
 
@@ -383,8 +388,9 @@ function buildChapterDrawer({ chapters, currentChapterId, readSet }) {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'reader-drawer-item';
+      // Tier penanda: current (amber) > finished (✓ hijau) > read (✓ abu)
       if (isCurrent) item.classList.add('is-current');
-      // Penanda "pernah dibaca" (readSet dari storage.getReadChapters)
+      else if (finishedSet && finishedSet.has(String(id))) item.classList.add('is-finished');
       else if (readSet && readSet.has(String(id))) item.classList.add('is-read');
 
       const labelSpan = document.createElement('span');
@@ -439,12 +445,16 @@ function buildSettingsPanel({ imageList }) {
   widthLabel.textContent = 'Lebar Gambar';
   const widthInput = document.createElement('input');
   widthInput.type = 'range';
-  widthInput.min = '60';
+  widthInput.min = '30';
   widthInput.max = '100';
-  // Persist: muat nilai tersimpan dari localStorage, fallback 100
-  const savedWidth = localStorage.getItem('readerPageWidth') || '100';
-  widthInput.value = savedWidth;
-  imageList.style.setProperty('--page-w', `${savedWidth}%`);
+  // Default RESPONSIF bila user belum pernah mengatur: desktop 35%
+  // (layar besar), di bawahnya 100%. Nilai tersimpan (eksplisit) menang.
+  const savedWidth = localStorage.getItem('readerPageWidth');
+  const defaultWidth = window.matchMedia('(min-width: 1024px)').matches ? '35' : '100';
+  widthInput.value = savedWidth || defaultWidth;
+  if (savedWidth) {
+    imageList.style.setProperty('--page-w', `${savedWidth}%`);
+  }
   widthInput.addEventListener('input', () => {
     const val = `${widthInput.value}%`;
     imageList.style.setProperty('--page-w', val);
@@ -797,6 +807,7 @@ async function loadChapter() {
       chapters,
       currentChapterId: chapterId,
       readSet: new Set(getReadChapters(mangaSlug).map(String)),
+      finishedSet: new Set(getFinishedChapters(mangaSlug).map(String)),
     });
     const { panel: settingsPanel, closeBtn: settingsClose, speedInput } = buildSettingsPanel({ imageList });
 

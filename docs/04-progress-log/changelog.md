@@ -5,7 +5,35 @@ notes live in `reports/`.
 
 ---
 
-## 2026-08-24 (16) — Hero: BACA SEKARANG langsung ke reader + LANJUT cerdas
+## 2026-08-24 (17) — Reader: penanda chapter selesai + settings bottom-sheet + default lebar 35%
+
+### Penanda "selesai dibaca" (beda dari "pernah dibuka")
+- `storage.js`: `getFinishedChapters` / `markChapterFinished`
+  (`finishedChapters:<slug>`, cap 300 — pola identik readChapters).
+- `reader.js`: observer progres → halaman terakhir terlihat =
+  `markChapterFinished` otomatis.
+- Drawer tiering: `.is-current` amber > `.is-finished` ✓ hijau
+  `--success` > `.is-read` ✓ abu redup (warna centang is-read diturunkan
+  agar hierarki selesai/dibuka jelas).
+
+### Settings panel konsisten drawer
+Mobile ≤700px = bottom sheet naik dari bawah (height auto, max-height
+60vh, radius atas); desktop tetap slide kanan. Duplikasi blok @media
+dibersihkan.
+
+### Default lebar gambar responsif
+Bila user belum pernah mengatur: CSS default **35% di desktop ≥1024px**
+(halaman tak terbentang di monitor besar), 100% di bawahnya. Slider min
+diperluas 60→30. Geser slider sekali = tersimpan & berlaku global.
+
+### Gate
+`ui-check-reader.mjs` **16 cek runtime lolos** (default 35% terukur;
+scroll ke akhir → finishedChapters terisi). `ui-check-home.mjs` baru
+**5 cek lolos** (hero BACA→reader ch1, INFO→detail, riwayat→LANJUT CH).
+sw v20.
+
+---
+
 
 Dua tombol hero sebelumnya sama-sama ke detail. Kini:
 - **BACA SEKARANG** → langsung `reader.html?id=` — chapter tersimpan di
@@ -19,6 +47,7 @@ href detail, riwayat → LANJUT CH + id tersimpan. sw v20.
 
 ---
 
+## 2026-08-24 (16) — Hero: BACA SEKARANG langsung ke reader + LANJUT cerdas
 ## 2026-08-24 (15) — Alt title span-per-judul: batas antar judul selalu jelas
 
 `detail.js`: infoAltTitles kini merender **span `.alt-title-item` per
