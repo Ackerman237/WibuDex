@@ -262,17 +262,17 @@ export const passthroughProviderXhr = async (req, res) => {
   }
 };
 
-export const getNekoList = async (req, res) => {
+export const getVideoList = async (req, res) => {
   try {
     const page = validatePage(req.query.page);
     const data = await scrapeNekoList(page);
     return res.json({ success: true, data });
   } catch (err) {
-    return respondUpstreamError(res, err, { logLabel: 'getNekoList', notFoundMessage: 'Video tidak ditemukan' });
+    return respondUpstreamError(res, err, { logLabel: 'getVideoList', notFoundMessage: 'Video tidak ditemukan' });
   }
 };
 
-export const getNekoCategory = async (req, res) => {
+export const getVideoCategory = async (req, res) => {
   try {
     const page = validatePage(req.query.page);
     const category = validateCategory(req.query.category);
@@ -282,11 +282,11 @@ export const getNekoCategory = async (req, res) => {
     const data = await scrapeNekoCategory(category, page);
     return res.json({ success: true, data });
   } catch (err) {
-    return respondUpstreamError(res, err, { logLabel: 'getNekoCategory', notFoundMessage: 'Category tidak ditemukan' });
+    return respondUpstreamError(res, err, { logLabel: 'getVideoCategory', notFoundMessage: 'Category tidak ditemukan' });
   }
 };
 
-export const getNekoSearch = async (req, res) => {
+export const getVideoSearch = async (req, res) => {
   try {
     const page = validatePage(req.query.page);
     const query = validateQuery(req.query.query);
@@ -296,11 +296,11 @@ export const getNekoSearch = async (req, res) => {
     const data = await scrapeNekoSearch(query, page);
     return res.json({ success: true, data });
   } catch (err) {
-    return respondUpstreamError(res, err, { logLabel: 'getNekoSearch', notFoundMessage: 'Hasil pencarian tidak ditemukan' });
+    return respondUpstreamError(res, err, { logLabel: 'getVideoSearch', notFoundMessage: 'Hasil pencarian tidak ditemukan' });
   }
 };
 
-export const getNekoDetail = async (req, res) => {
+export const getVideoDetail = async (req, res) => {
   try {
     const slug = validateSlug(req.query.slug);
     if (!slug) {
@@ -309,46 +309,46 @@ export const getNekoDetail = async (req, res) => {
     const data = await scrapeNekoDetail(slug);
     return res.json({ success: true, data });
   } catch (err) {
-    return respondUpstreamError(res, err, { logLabel: 'getNekoDetail', notFoundMessage: 'Video tidak ditemukan' });
+    return respondUpstreamError(res, err, { logLabel: 'getVideoDetail', notFoundMessage: 'Video tidak ditemukan' });
   }
 };
 
-export const getNekoCategories = async (_req, res) => {
+export const getVideoCategories = async (_req, res) => {
   try {
     const data = await scrapeNekoCategories();
     return res.json({ success: true, data });
   } catch (err) {
-    return respondUpstreamError(res, err, { logLabel: 'getNekoCategories', notFoundMessage: 'Kategori tidak ditemukan' });
+    return respondUpstreamError(res, err, { logLabel: 'getVideoCategories', notFoundMessage: 'Kategori tidak ditemukan' });
   }
 };
 
-export const getNekoSchedule = async (_req, res) => {
+export const getVideoSchedule = async (_req, res) => {
   try {
     const data = await scrapeNekoSchedule();
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoSchedule error');
+    logger.error({ err }, 'getVideoSchedule error');
     return res.status(503).json({ success: false, message: 'Jadwal sementara tidak tersedia' });
   }
 };
 
-export const getNekoSeriesList = async (req, res) => {
+export const getVideoSeriesList = async (req, res) => {
   try {
     const page = validatePage(req.query.page);
     const type = validateEnum(req.query.type, NEKO_SERIES_TYPES, 'hentai');
     const data = await scrapeNekoSeriesList(type, page);
     return res.json({ success: true, data });
   } catch (err) {
-    return respondUpstreamError(res, err, { logLabel: 'getNekoSeriesList', notFoundMessage: 'Daftar seri tidak ditemukan' });
+    return respondUpstreamError(res, err, { logLabel: 'getVideoSeriesList', notFoundMessage: 'Daftar seri tidak ditemukan' });
   }
 };
 
-export const getNekoRandom = async (_req, res) => {
+export const getVideoRandom = async (_req, res) => {
   try {
     const data = await scrapeNekoRandom();
     return res.json({ success: true, data });
   } catch (err) {
-    logger.error({ err }, 'getNekoRandom error');
+    logger.error({ err }, 'getVideoRandom error');
     if (err?.name === 'AbortError' || err?.message?.includes('Timeout')) {
       return res.status(504).json({ success: false, message: 'Timeout mencari video acak' });
     }

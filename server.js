@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import net from 'net';
 import helmet from 'helmet';
-import apiRoutes from './routes/api.js';
+import apiRoutes from './routes/index.js';
 import logger from './lib/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { disconnectVpn } from './lib/vpn/vpnManager.js';
