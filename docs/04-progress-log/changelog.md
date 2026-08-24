@@ -8,6 +8,15 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (22) - Video V1.2: Theater Mode watch page
+
+Toggle **Mode Teater** di bawah player: layout menjadi satu kolom penuh (melebihi lebar konten 1200px), sidebar episode/related disembunyikan sementara. State persisten di localStorage (watchTheater); tombol mobile disembunyikan (sudah satu kolom). Toolbar baru berdampingan dengan mode-player toggle.
+
+Gate: ui-check-video-watch.mjs baru - sidebar/related ter-render dari stub offline, theater ON + persisten reload -> 4/4 runtime lolos. watch.css?v=6 - watch.js?v=10 - sw v25.
+
 ## 2026-08-24 (21) — Video V1.1: konsolidasi card + FIX pencarian rusak & path tokens watch
 
 ### Konsolidasi card (V1.1)

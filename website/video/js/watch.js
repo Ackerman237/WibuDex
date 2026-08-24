@@ -432,3 +432,28 @@ async function loadDetail() {
 }
 
 document.addEventListener('DOMContentLoaded', loadDetail);
+
+// ─── Theater mode (V1.2): perbesar player, sembunyikan sidebar sementara ──
+// State persisten di localStorage — preferensi tampilan bersifat sticky.
+(function () {
+  const KEY = 'watchTheater';
+  const layout = document.querySelector('.watch-layout');
+  const btn = document.getElementById('theaterToggleBtn');
+  if (!layout || !btn) return;
+
+  function apply(on) {
+    layout.classList.toggle('theater-mode', on);
+    btn.setAttribute('aria-pressed', String(on));
+    btn.textContent = on ? 'Keluar Mode Teater' : 'Mode Teater';
+  }
+
+  let on = false;
+  try { on = localStorage.getItem(KEY) === '1'; } catch { /* abaikan */ }
+  apply(on);
+
+  btn.addEventListener('click', () => {
+    on = !on;
+    try { localStorage.setItem(KEY, on ? '1' : '0'); } catch { /* abaikan */ }
+    apply(on);
+  });
+})();

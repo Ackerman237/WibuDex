@@ -19,6 +19,64 @@
   padding: var(--space-5) var(--space-4) var(--space-8);
 }
 
+/* ---------------------------------------------------------------------- */
+/* THEATER MODE — player membesar melebihi lebar konten, sidebar           */
+/* disembunyikan sementara (toggle #theaterToggleBtn / watch.js)           */
+/* ---------------------------------------------------------------------- */
+.watch-layout.theater-mode {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+  padding-inline: var(--space-3);
+}
+
+.watch-layout.theater-mode .watch-sidebar {
+  display: none;
+}
+
+/* Toolbar di bawah player: mode player + theater berdampingan */
+.watch-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.theater-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard),
+              background var(--duration-fast) var(--ease-standard);
+}
+
+.theater-toggle:hover {
+  border-color: rgba(217, 119, 6, 0.45);
+  color: var(--accent-primary);
+}
+
+.theater-toggle[aria-pressed='true'] {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--bg-base);
+}
+
+@media (max-width: 700px) {
+  /* Mobile sudah satu kolom — theater tak relevan */
+  .theater-toggle { display: none; }
+}
+
 .watch-main {
   display: flex;
   flex-direction: column;
