@@ -20,7 +20,7 @@
         <a href="${item.path}" class="bottom-nav__item ${isActive ? 'is-active' : ''}">
           ${isActive ? '<div class="bottom-nav__pill"></div>' : ''}
           <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-${item.icon}"/></svg>
-          <span style="font-size: 11px; font-weight: 600;">${item.label}</span>
+          ${isActive ? `<span class="bottom-nav__label">${item.label}</span>` : ''}
         </a>
       `;
     });

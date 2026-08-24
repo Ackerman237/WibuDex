@@ -5,6 +5,31 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (13) — Fix nav mobile: menu vs auto-hide + bottom nav label aktif-only
+
+### Bug hamburger (dua laporan user)
+- Buka menu → header melorot hilang; geser ke atas → muncul lagi dengan
+  menu masih terbuka.
+- Scroll-bawah saat menu terbuka → naik lagi, hamburger masih terbuka.
+
+Akar: listener auto-hide tidak sadar status menu; ditambah kompleksitas —
+menutup menu memicu **ekor koreksi scrollTop naik** (lipatan tinggi menu,
+±700ms belasan event) yang melepas kembali `header-is-hidden`.
+
+### Fix (`shared/nav.js`)
+- Menu terbuka → header dipaksa tampil (jitter diabaikan).
+- Scroll-bawah delta >40px saat menu terbuka → `closeNav()` + header
+  disembunyikan, dengan **kunci pelepasan yang memperpanjang dirinya**
+  selama ekor koreksi masih berjalan (ditemukan via trace per-event).
+
+### Bottom nav mobile
+Label hanya dirender pada item aktif (pola M3); inline style pindah ke
+rule `.bottom-nav__label` di tokens.css.
+
+Gate: `ui-check-catalog.mjs` +3 assertion nav-mobile → **17/17 runtime**.
+
+---
+
 ## 2026-08-24 (12) — Halaman reader (langkah 4 roadmap)
 
 ### Baru

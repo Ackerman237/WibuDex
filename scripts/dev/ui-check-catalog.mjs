@@ -234,6 +234,45 @@ try {
   ok('Mobile 360px: panel terbuka TIDAK terklip rail scroll',
      probe.open && probe.inViewport, `inViewport=${probe.inViewport}`);
 
+  // ── Nav mobile: menu vs auto-hide + bottom-nav label ──
+  await page.click('#navHamburger');
+  await new Promise((r) => setTimeout(r, 350));
+  await page.evaluate(() => {
+    window.scrollTo(0, 20); // jitter kecil
+    window.dispatchEvent(new Event('scroll'));
+  });
+  await new Promise((r) => setTimeout(r, 300));
+  const jitterProbe = await page.evaluate(() => ({
+    open: document.getElementById('navLinks').classList.contains('is-open'),
+    headerVisible: !document.querySelector('.site-nav').classList.contains('header-is-hidden'),
+  }));
+  ok('Menu terbuka: jitter tidak menyembunyikan header/menu',
+     jitterProbe.open && jitterProbe.headerVisible,
+     JSON.stringify(jitterProbe));
+
+  await page.evaluate(() => {
+    window.scrollTo(0, 400); // scroll-bawah signifikan
+    window.dispatchEvent(new Event('scroll'));
+  });
+  await new Promise((r) => setTimeout(r, 300));
+  const downProbe = await page.evaluate(() => ({
+    closed: !document.getElementById('navLinks').classList.contains('is-open'),
+    hidden: document.querySelector('.site-nav').classList.contains('header-is-hidden'),
+  }));
+  ok('Scroll-bawah saat menu buka → menu tertutup + header hilang',
+     downProbe.closed && downProbe.hidden, JSON.stringify(downProbe));
+
+  const bn = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.bottom-nav__item')];
+    return {
+      total: items.length,
+      labels: items.filter((i) => i.querySelector('.bottom-nav__label')).length,
+      active: items.filter((i) => i.classList.contains('is-active')).length,
+    };
+  });
+  ok('Bottom nav: label hanya pada item aktif', bn.total === 4 && bn.labels === 1 && bn.active === 1,
+     JSON.stringify(bn));
+
   console.log('\n══════ HASIL UI-CHECK CATALOG ══════');
   if (browserLog.length) {
     console.log(`Log browser (${browserLog.length}):`);
