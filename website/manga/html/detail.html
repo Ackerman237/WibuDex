@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail — Wibudex</title>
+  <meta name="description" content="Detail manga — sinopsis, daftar chapter, dan rekomendasi seri sejenis.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/manga/css/home.css">
+  <link rel="stylesheet" href="/manga/css/detail.css">
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+  <!-- ================= NAV (identik home/catalog; tidak ada link aktif khusus) ================= -->
+  <header class="site-nav safe-top">
+    <div class="site-nav__inner container">
+      <a class="site-nav__brand ui-text" href="/manga/html/index.html">Wibu<span>dex</span></a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Navigasi utama">
+        <a href="/manga/html/index.html">Home</a>
+        <a href="/manga/html/catalog.html">Jelajah</a>
+        <a href="/video/html/">Video</a>
+        <a href="/manga/html/library.html">Library</a>
+        <a href="/manga/html/history.html">Riwayat</a>
+      </nav>
+
+      <form id="searchForm" class="nav-search" role="search">
+        <svg class="ic nav-search__icon" aria-hidden="true"><use href="/manga/icons.svg#i-search"></use></svg>
+        <input type="search" id="searchInput" placeholder="Cari judul…" autocomplete="off" aria-label="Cari manga">
+      </form>
+
+      <button class="nav-hamburger" id="navHamburger" type="button"
+              aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container detail-main">
+    <!-- Ambience tema dinamis cover (diisi cover-theme.js via --cover-accent;
+             tanpa JS = fallback amber dari var()) -->
+    <div class="detail-ambience" aria-hidden="true"></div>
+
+    <p id="detailLoading" class="loading">Memuat detail manga…</p>
+    <p id="detailError" class="error state-error" style="display:none"></p>
+
+    <div id="detailLayout" class="detail-layout" style="display:none">
+      <!-- ================= KOLOM COVER ================= -->
+      <section class="detail-cover-col" aria-label="Cover manga">
+        <div id="coverFrame" class="cover-frame">
+          <img id="coverImg" alt="" referrerpolicy="no-referrer">
+        </div>
+        <p class="detail-meta-strip ui-text">
+          <img id="mTypeFlag" class="detail-flag" alt="" style="display:none" referrerpolicy="no-referrer">
+          <span id="mTypeText">-</span>
+          <span class="meta-dot" aria-hidden="true">·</span>
+          <span id="mStatusText">-</span>
+        </p>
+      </section>
+
+      <!-- ================= KOLOM INFO ================= -->
+      <section class="detail-info-col">
+        <h1 id="mTitle" class="detail-title">Memuat…</h1>
+
+        <div class="alt-titles-block">
+          <p id="mAltTitlesShort" class="alt-titles">-</p>
+          <button id="altTitlesToggle" class="link-toggle text-micro" type="button">lihat semua</button>
+        </div>
+
+        <div class="rating-row">
+          <span id="ratingScore" class="rating-score-big numeric">-</span>
+          <span id="ratingStars" class="rating-stars" aria-hidden="true"></span>
+          <span class="views-chip numeric" title="Jumlah pembaca">
+            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-eye"></use></svg>
+            <span id="viewsValue">-</span>
+          </span>
+        </div>
+
+        <div id="genreTags" class="genre-tags" aria-label="Genre"></div>
+
+        <div class="detail-actions">
+          <button id="readNowBtn" class="btn-primary" type="button">
+            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>
+            READ NOW
+          </button>
+          <button id="bookmarkBtn" class="btn-secondary" type="button">BOOKMARK</button>
+          <button id="favoriteBtn" class="btn-favorite" type="button" aria-pressed="false">
+            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-heart"></use></svg>
+            <span>Favorit</span>
+          </button>
+        </div>
+
+        <div id="synopsisPanel" class="synopsis-panel">
+          <h2 class="panel-title">Sinopsis</h2>
+          <p id="synopsisText" class="synopsis-text"></p>
+          <button id="synopsisToggle" class="link-toggle text-micro" type="button">
+            SHOW MORE
+            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-chevron-down"></use></svg>
+          </button>
+        </div>
+
+        <!-- Tab: Detail Info ↔ More Series -->
+        <div class="tabs" role="tablist" aria-label="Informasi tambahan">
+          <button id="tabInfo" class="tab active" type="button" role="tab" aria-selected="true">Detail Info</button>
+          <button id="tabMoreSeries" class="tab" type="button" role="tab" aria-selected="false">More Series</button>
+        </div>
+
+        <div id="infoPanel" class="info-panel">
+          <div class="info-row">
+            <span class="info-label">Tipe</span>
+            <span class="info-value">
+              <img id="infoTypeFlag" class="detail-flag" alt="" style="display:none" referrerpolicy="no-referrer">
+              <span id="infoType">-</span>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span id="infoStatus" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Judul Alternatif</span>
+            <span id="infoAltTitles" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Author</span>
+            <span id="infoAuthors" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Group</span>
+            <span id="infoGroups" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Seri</span>
+            <span id="infoSeries" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Serialisasi</span>
+            <span id="infoSerialization" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Karakter</span>
+            <span id="infoCharacters" class="info-value">-</span>
+          </div>
+        </div>
+
+        <!-- ================= DAFTAR CHAPTER (di luar tab) ================= -->
+        <section class="chapters-section" aria-label="Daftar chapter">
+          <div class="chapters-toolbar">
+            <h2 class="panel-title">
+              Chapter
+              <span class="chapter-count-badge numeric"><span id="chapterCount">0</span></span>
+            </h2>
+            <div class="chapters-tools">
+              <input id="chapterSearch" class="chapter-search" type="search"
+                     placeholder="Cari chapter…" autocomplete="off" aria-label="Cari chapter">
+              <button id="chapterSortBtn" class="btn-icon btn-icon--sm" type="button"
+                      aria-label="Balik urutan chapter" title="Urutan: terbaru">
+                <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up-down"></use></svg>
+              </button>
+            </div>
+          </div>
+          <div id="chapterList" class="chapter-list"><!-- baris .chapter-row oleh detail.js --></div>
+        </section>
+      </section>
+    </div>
+
+    <!-- ================= REKOMENDASI (full width, di luar layout 2 kolom) ================= -->
+    <section id="recommendSection" class="recommend-section" style="display:none" aria-label="Rekomendasi seri sejenis">
+      <h2 class="section-title">
+        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-sparkles"></use></svg>
+        More Series Like This
+      </h2>
+      <div id="recommendGrid" class="manga-grid recommend-grid"><!-- kartu oleh detail.js --></div>
+      <div id="recommendMoreWrap" class="btn-more" style="display:none">
+        <button id="recommendMoreBtn" class="link-toggle text-micro" type="button">
+          <span id="recommendMoreText">See More</span>
+          <svg class="ic fdrop__chevron" aria-hidden="true"><use href="/manga/icons.svg#i-chevron-down"></use></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up"></use></svg>
+  </button>
+
+  <!-- Urutan penting: utils → ui → api → storage → nav → bottom-nav → cover-theme → screen -->
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/shared/ui.js" defer></script>
+  <script src="/shared/api.js" defer></script>
+  <script src="/shared/storage.js" defer></script>
+  <script src="/shared/nav.js" defer></script>
+  <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/manga/js/cover-theme.js" defer></script>
+  <script src="/manga/js/detail.js" defer></script>
+</body>
+</html>

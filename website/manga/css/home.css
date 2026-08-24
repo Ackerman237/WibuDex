@@ -32,6 +32,12 @@ main {
   padding-bottom: var(--space-8);
 }
 
+/* Target lompatan scroll (anchor/scrollIntoView) jangan tersembunyi di
+   balik nav sticky (~60px) — ditemukan lewat hit-test ui-check-detail */
+main [id] {
+  scroll-margin-top: 72px;
+}
+
 /* Ruang untuk bottom-nav mobile (dilempar shared/bottom-nav.js ≤700px) */
 @media (max-width: 700px) {
   main {

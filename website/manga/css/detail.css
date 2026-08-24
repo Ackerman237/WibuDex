@@ -1,0 +1,594 @@
+/* ==========================================================================
+   WIBUDEX MANGA — HALAMAN DETAIL
+   Reuse fondasi home.css (nav, state, back-to-top, manga-grid).
+   Signature sekunder: tema dinamis cover — CSS var --cover-accent di-set
+   cover-theme.js; tanpa JS semua fallback ke amber terkunci via var().
+   ========================================================================== */
+
+.detail-main {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------- */
+/* AMBIENCE — gradient lembut dari warna cover (signature sekunder)        */
+/* ---------------------------------------------------------------------- */
+.detail-ambience {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 420px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cover-accent, #D97706) 16%, transparent),
+    transparent 75%
+  );
+  transition: background var(--duration-slow) var(--ease-standard);
+}
+
+/* ---------------------------------------------------------------------- */
+/* LAYOUT 2 KOLOM (stack mobile)                                           */
+/* ---------------------------------------------------------------------- */
+.detail-layout {
+  display: grid; /* disembunyikan inline sampai data siap (detail.js) */
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: var(--space-6);
+  padding-top: var(--space-6);
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    padding-top: var(--space-4);
+  }
+
+  .detail-cover-col {
+    max-width: 220px;
+    margin-inline: auto;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* COVER — frame panel komik                                               */
+/* ---------------------------------------------------------------------- */
+.cover-frame {
+  aspect-ratio: 3 / 4.2;
+  border-radius: var(--radius-lg);
+  border: 1px solid
+    color-mix(in srgb, var(--cover-accent, #D97706) 30%, var(--border-subtle));
+  box-shadow: var(--elevation-2);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  /* Blur backdrop dari cover itu sendiri (di-set JS sebagai backgroundImage) */
+}
+
+.cover-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(24px) brightness(0.55);
+  -webkit-backdrop-filter: blur(24px) brightness(0.55);
+}
+
+.cover-frame {
+  position: relative;
+}
+
+.cover-img,
+.cover-frame img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.detail-flag {
+  height: 14px;
+  vertical-align: -2px;
+  border-radius: 2px;
+}
+
+.detail-meta-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.meta-dot {
+  color: var(--text-disabled);
+}
+
+/* ---------------------------------------------------------------------- */
+/* JUDUL, ALT TITLE, RATING                                                */
+/* ---------------------------------------------------------------------- */
+.detail-title {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(24px, 3.5vw, 36px);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.alt-titles-block {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  min-height: 1.4em;
+}
+
+.alt-titles {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.link-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-1);
+  color: var(--accent-primary);
+  text-transform: uppercase;
+}
+
+.link-toggle:hover {
+  color: var(--accent-primary-hover);
+}
+
+.link-toggle .ic {
+  width: 12px;
+  height: 12px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.rating-score-big {
+  font-family: var(--font-ui);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--warning);
+}
+
+.rating-stars {
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: var(--warning);
+}
+
+.views-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.views-chip .ic {
+  width: 13px;
+  height: 13px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* GENRE CHIPS                                                             */
+/* ---------------------------------------------------------------------- */
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.genre-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard);
+}
+
+.genre-tag:hover {
+  border-color: rgba(217, 119, 6, 0.45);
+  color: var(--accent-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* AKSI                                                                    */
+/* ---------------------------------------------------------------------- */
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
+  border: 1px solid
+    color-mix(in srgb, var(--cover-accent, #D97706) 40%, transparent);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-surface-raised);
+}
+
+.btn-secondary .btn-label {
+  font-weight: 700;
+}
+
+/* Favorit aktif → merah favorit (legacy alias --favorite = --error) */
+.btn-favorite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-favorite .ic {
+  width: 17px;
+  height: 17px;
+}
+
+.btn-favorite:hover {
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.btn-favorite.is-active {
+  color: var(--error);
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* CTA utama ikut aksen dinamis lewat border halus (style-guide:
+   "warna border CTA" — gradient ambience + border, tidak lebih) */
+#readNowBtn {
+  border: 1px solid
+    color-mix(in srgb, var(--cover-accent, #D97706) 55%, transparent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* SINOPSIS                                                                */
+/* ---------------------------------------------------------------------- */
+.synopsis-panel {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.synopsis-text {
+  margin: 0 0 var(--space-2);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.synopsis-text.expanded {
+  -webkit-line-clamp: unset;
+  display: block;
+}
+
+/* ---------------------------------------------------------------------- */
+/* TABS Detail Info ↔ More Series                                          */
+/* ---------------------------------------------------------------------- */
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-4);
+}
+
+.tab {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* INFO PANEL                                                              */
+/* ---------------------------------------------------------------------- */
+.info-panel {
+  margin-bottom: var(--space-6);
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .info-row {
+    grid-template-columns: 110px 1fr;
+  }
+}
+
+.info-label {
+  color: var(--text-disabled);
+  font-weight: 600;
+}
+
+.info-value {
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------------- */
+/* CHAPTERS                                                                */
+/* ---------------------------------------------------------------------- */
+.chapters-section {
+  margin-bottom: var(--space-7);
+}
+
+.chapters-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.chapter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--accent-primary-12);
+  color: var(--accent-primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.chapters-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 1 260px;
+}
+
+.chapter-search {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+}
+
+.chapter-search:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.btn-icon--sm {
+  width: 40px;
+  height: 40px;
+}
+
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.chapter-list .error {
+  padding: var(--space-5);
+  text-align: center;
+}
+
+/* Baris chapter — dibangun detail.js */
+.chapter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.chapter-row:last-child {
+  border-bottom: none;
+}
+
+.chapter-row:hover {
+  background: var(--bg-surface-raised);
+}
+
+.chapter-number {
+  min-width: 52px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.chapter-row-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.chapter-row-body h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chapter-row-meta {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: 2px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-disabled);
+}
+
+.meta-item .ic {
+  width: 12px;
+  height: 12px;
+}
+
+/* Chapter terbaru — penanda SFX miring ala komik */
+.chapter-row.is-latest .chapter-number {
+  position: relative;
+  border-color: var(--accent-primary);
+}
+
+.chapter-row.is-latest::after {
+  content: 'BARU';
+  transform: rotate(-6deg) translateY(-8px);
+  padding: 0 var(--space-1);
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: 3px;
+  align-self: flex-start;
+  margin-left: calc(var(--space-2) * -1);
+}
+
+@media (max-width: 480px) {
+  .chapter-row-meta .meta-item:last-child {
+    display: none; /* views disembunyikan di layar sempit — tanggal prioritas */
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* REKOMENDASI                                                             */
+/* ---------------------------------------------------------------------- */
+.recommend-section {
+  padding-top: var(--space-2);
+}
+
+.recommend-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 640px) {
+  .recommend-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .recommend-grid { grid-template-columns: repeat(5, 1fr); gap: var(--space-4); }
+}
+
+#recommendMoreWrap .fdrop__chevron {
+  width: 12px;
+  height: 12px;
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+#recommendMoreBtn.is-expanded .fdrop__chevron {
+  transform: rotate(180deg);
+}

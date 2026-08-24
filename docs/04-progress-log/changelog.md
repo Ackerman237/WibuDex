@@ -5,6 +5,36 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (8) — Halaman detail + tema dinamis cover (langkah 3 roadmap)
+
+### Baru
+- `website/manga/html/detail.html` — kontrak DOM penuh `js/detail.js`
+  (39 ID terverifikasi otomatis): layout 2 kolom/stack, frame cover panel
+  komik (backdrop blur dari cover), rating+views, chips genre, aksi
+  READ NOW/BOOKMARK/Favorit, sinopsis collapsible, tab Detail Info ↔
+  More Series, toolbar chapter (search + sort), rekomendasi full-width
+  dengan collapse "See More" per-baris desktop / carousel mobile.
+- `website/manga/css/detail.css` — semua komponen di atas dari token
+  terkunci; stempel "BARU" SFX miring untuk chapter terbaru.
+- **Signature sekunder**: `cover-theme.js` — warna rata-rata cover via
+  canvas (same-origin lewat image-proxy, anti-taint), di-softkan
+  (S≤0.62, L 0.35–0.55) → CSS var `--cover-accent` untuk gradient
+  ambience + border CTA & cover frame. Cache `dominantColor:<slug>`;
+  fallback amber terkunci bila apa pun gagal.
+
+### Fix yang ditemukan gate runtime (`ui-check-detail.mjs`, 12 cek)
+- Hit-test membuktikan tombol bookmark bisa tertutup nav sticky saat
+  posisi scroll tertentu → `main [id] { scroll-margin-top: 72px }`
+  di home.css (juga memperbaiki `scrollIntoView(block:'start')`
+  rekomendasi yang tadinya judul sectionnya lewat balik nav).
+- Gate kini menguji: render, chips, chapter list+badge sinkron,
+  pencarian chapter, bookmark/favorit dua arah (+audit hit-target),
+  tab rekomendasi, dan `--cover-accent` ter-set.
+
+npm test 194/194 · verify-icons · kontrak 39/39 · runtime 12/12 ✅. sw v14.
+
+---
+
 ## 2026-08-24 (7) — Verifikasi hasil multi-genre + fix badge & judul seksi
 
 Verifikasi diminta user bahwa filter multi-genre BENAR-BENAR memfilter
