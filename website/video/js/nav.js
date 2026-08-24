@@ -110,7 +110,7 @@
     }
 
     try {
-      const res = await fetch('/api/neko/categories');
+      const res = await fetch('/api/video/categories');
       const json = await res.json();
       const cats = Array.isArray(json?.data) ? json.data : [];
       if (cats.length === 0) throw new Error('kosong');

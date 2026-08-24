@@ -129,7 +129,7 @@ export const getStream = async (req, res) => {
     const proxyQuery = `url=${encodeURIComponent(safeUrl)}&slug=${encodeURIComponent(slug)}`;
     return res.json({
       success: true,
-      data: { type: extracted.type, proxyUrl: `/api/neko/stream-proxy?${proxyQuery}` },
+      data: { type: extracted.type, proxyUrl: `/api/video/stream-proxy?${proxyQuery}` },
     });
   } catch (err) {
     logger.error({ err }, 'getStream error');

@@ -102,35 +102,35 @@ describe('API Routes', () => {
     });
   });
 
-  describe('GET /api/neko/proxy-player (dihapus)', () => {
+  describe('GET /api/video/proxy-player (dihapus)', () => {
     it('returns 404 — endpoint usang sudah dihapus', async () => {
-      const res = await request(app).get('/api/neko/proxy-player');
+      const res = await request(app).get('/api/video/proxy-player');
       expect(res.status).toBe(404);
     });
   });
 
-  describe('GET /api/neko/player-mode', () => {
+  describe('GET /api/video/player-mode', () => {
     it('returns mode (default filtered)', async () => {
-      const res = await request(app).get('/api/neko/player-mode');
+      const res = await request(app).get('/api/video/player-mode');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(['filtered', 'direct']).toContain(res.body.data.mode);
     });
   });
 
-  describe('GET /api/neko/player-frame', () => {
+  describe('GET /api/video/player-frame', () => {
     it('returns 400 for missing url', async () => {
-      const res = await request(app).get('/api/neko/player-frame');
+      const res = await request(app).get('/api/video/player-frame');
       expect(res.status).toBe(400);
     });
 
     it('returns 400 for invalid url', async () => {
-      const res = await request(app).get('/api/neko/player-frame?url=javascript:alert(1)');
+      const res = await request(app).get('/api/video/player-frame?url=javascript:alert(1)');
       expect(res.status).toBe(400);
     });
 
     it('returns 400 for host outside allowlist (SSRF guard)', async () => {
-      const res = await request(app).get('/api/neko/player-frame?url=https://evil.com/embed');
+      const res = await request(app).get('/api/video/player-frame?url=https://evil.com/embed');
       expect(res.status).toBe(400);
     });
   });
@@ -142,56 +142,56 @@ describe('API Routes', () => {
     });
   });
 
-  describe('GET /api/neko', () => {
+  describe('GET /api/video', () => {
     it('returns neko list', async () => {
-      const res = await request(app).get('/api/neko?page=1');
+      const res = await request(app).get('/api/video?page=1');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });
   });
 
-  describe('GET /api/neko/categories', () => {
+  describe('GET /api/video/categories', () => {
     it('returns categories', async () => {
-      const res = await request(app).get('/api/neko/categories');
+      const res = await request(app).get('/api/video/categories');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });
   });
 
-  describe('GET /api/neko/category', () => {
+  describe('GET /api/video/category', () => {
     it('returns 400 for missing category', async () => {
-      const res = await request(app).get('/api/neko/category');
+      const res = await request(app).get('/api/video/category');
       expect(res.status).toBe(400);
     });
 
     it('returns category results', async () => {
-      const res = await request(app).get('/api/neko/category?category=ecchi');
+      const res = await request(app).get('/api/video/category?category=ecchi');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });
   });
 
-  describe('GET /api/neko/search', () => {
+  describe('GET /api/video/search', () => {
     it('returns 400 for missing query', async () => {
-      const res = await request(app).get('/api/neko/search');
+      const res = await request(app).get('/api/video/search');
       expect(res.status).toBe(400);
     });
 
     it('returns search results', async () => {
-      const res = await request(app).get('/api/neko/search?query=test');
+      const res = await request(app).get('/api/video/search?query=test');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });
   });
 
-  describe('GET /api/neko/detail', () => {
+  describe('GET /api/video/detail', () => {
     it('returns 400 for missing slug', async () => {
-      const res = await request(app).get('/api/neko/detail');
+      const res = await request(app).get('/api/video/detail');
       expect(res.status).toBe(400);
     });
 
     it('returns detail', async () => {
-      const res = await request(app).get('/api/neko/detail?slug=test');
+      const res = await request(app).get('/api/video/detail?slug=test');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });

@@ -1,7 +1,7 @@
 // video/js/watch.js — Neko Video watch page
 
 // Allowlist host player — fallback hardcoded; nilai resmi diambil dari
-// /api/neko/player-mode (field allowedHosts) saat halaman dimuat.
+// /api/video/player-mode (field allowedHosts) saat halaman dimuat.
 let playerAllowedHosts = ['playmogo.com', 'streampoi.com', 'yandex.ru'];
 
 function isAllowedPlayerUrl(rawUrl) {
@@ -46,7 +46,7 @@ async function goRandomVideo(btn) {
   const original = btn.textContent;
   btn.textContent = 'MENCARI...';
   try {
-    const res = await fetch('/api/neko/random');
+    const res = await fetch('/api/video/random');
     const result = await res.json();
     if (!result.success || !result.data?.slug) throw new Error(result.message || 'Gagal');
     window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;
@@ -69,7 +69,7 @@ function renderRandomRetry(playerBox) {
 // Mode player (kebijakan server via .env PLAYER_FRAME_MODE):
 //   'native'   = <video> milik sendiri memutar MP4 hasil ekstraksi server
 //                (nol JS penyedia — mustahil ada iklan/klik/redirect)
-//   'filtered' = embed penyedia disaring server (/api/neko/player-frame)
+//   'filtered' = embed penyedia disaring server (/api/video/player-frame)
 //   'direct'   = perilaku lama (iframe langsung ke penyedia)
 let playerMode = 'filtered';
 const pageSlug = () => new URLSearchParams(window.location.search).get('slug') || '';
@@ -144,7 +144,7 @@ async function tryNativeStream(playerUrl) {
   const timer = setTimeout(() => controller.abort(), NATIVE_TIMEOUT_MS);
   try {
     const res = await fetch(
-      `/api/neko/stream?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`,
+      `/api/video/stream?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`,
       { signal: controller.signal }
     );
     const json = await res.json();
@@ -160,7 +160,7 @@ async function tryNativeStream(playerUrl) {
 const failedNativeUrls = new Set();
 
 function mountNativeVideo(playerBox, playerUrl, streamSrc) {
-  // streamSrc = /api/neko/stream-proxy (server mengonsumsi token sekali-pakai
+  // streamSrc = /api/video/stream-proxy (server mengonsumsi token sekali-pakai
   // dan memipakan byte — browser tidak pernah melihat URL CDN)
   playerBox.innerHTML =
     `<video id="nativeVideo" src="${escapeHtml(streamSrc)}" controls playsinline preload="metadata" ` +
@@ -180,7 +180,7 @@ function mountNativeVideo(playerBox, playerUrl, streamSrc) {
 
 function mountFilteredFrame(playerBox, playerUrl) {
   playerBox.innerHTML =
-    `<iframe src="${escapeHtml(`/api/neko/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`)}" ` +
+    `<iframe src="${escapeHtml(`/api/video/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`)}" ` +
     `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
   showLoading(playerBox); // innerHTML menghapus overlay lama — pasang lagi sampai load
   const frame = playerBox.querySelector('iframe');
@@ -388,7 +388,7 @@ async function loadDetail() {
   try {
     // Ikuti kebijakan server (.env PLAYER_FRAME_MODE); jika gagal, tetap default
     try {
-      const modeRes = await fetch('/api/neko/player-mode');
+      const modeRes = await fetch('/api/video/player-mode');
       const modeJson = await modeRes.json();
       if (modeJson?.success && modeJson.data?.mode) playerMode = modeJson.data.mode;
       if (Array.isArray(modeJson?.data?.allowedHosts) && modeJson.data.allowedHosts.length > 0) {
@@ -398,7 +398,7 @@ async function loadDetail() {
       /* server lama / offline — pakai default */
     }
 
-    const res = await fetch(`/api/neko/detail?slug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/video/detail?slug=${encodeURIComponent(slug)}`);
     const result = await res.json();
     if (!result.success || !result.data) {
       throw new Error(result.message || 'Gagal memuat detail video.');

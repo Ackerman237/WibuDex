@@ -55,11 +55,11 @@ async function loadVideos(reset = false) {
     // Determin endpoint berdasarkan filter yang aktif
     let endpoint;
     if (currentCategory) {
-      endpoint = `/api/neko/category?category=${encodeURIComponent(currentCategory)}&page=${currentOffset}`;
+      endpoint = `/api/video/category?category=${encodeURIComponent(currentCategory)}&page=${currentOffset}`;
     } else if (currentQuery) {
-      endpoint = `/api/neko/search?query=${encodeURIComponent(currentQuery)}&page=${currentOffset}`;
+      endpoint = `/api/video/search?query=${encodeURIComponent(currentQuery)}&page=${currentOffset}`;
     } else {
-      endpoint = `/api/neko?page=${currentOffset}`;
+      endpoint = `/api/video?page=${currentOffset}`;
     }
 
     const res = await fetch(endpoint);
@@ -116,7 +116,7 @@ async function loadSchedule() {
   if (!container) return;
 
   try {
-    const res = await fetch('/api/neko/schedule');
+    const res = await fetch('/api/video/schedule');
     const result = await res.json();
     if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
       container.innerHTML = '<p class="error">Jadwal belum tersedia.</p>';
@@ -179,7 +179,7 @@ async function setupRandomButton() {
     const original = btn.textContent;
     btn.textContent = 'MENCARI...';
     try {
-      const res = await fetch('/api/neko/random');
+      const res = await fetch('/api/video/random');
       const result = await res.json();
       if (!result.success || !result.data?.slug) throw new Error(result.message || 'Gagal');
       window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;

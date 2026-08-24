@@ -40,7 +40,7 @@ async function loadSeries(reset = false) {
   }
 
   try {
-    const res = await fetch(`/api/neko/series?type=${encodeURIComponent(currentType)}&page=${currentPage}`);
+    const res = await fetch(`/api/video/series?type=${encodeURIComponent(currentType)}&page=${currentPage}`);
     const result = await res.json();
     if (!result.success) throw new Error(result.message || 'Gagal memuat daftar seri.');
 
