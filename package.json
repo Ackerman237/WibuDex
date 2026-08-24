@@ -1,9 +1,10 @@
 {
-  "name": "doujin-scraper",
+  "name": "wibudex",
   "version": "1.0.0",
-  "description": "Scraper untuk doujin.desu.xxx dan nekopoi.care",
+  "description": "Wibudex — aplikasi self-hosted PWA manga reader & video streaming",
   "main": "server.js",
   "type": "module",
+  "private": true,
   "scripts": {
     "start": "node --env-file=.env server.js",
     "test": "vitest run",
@@ -16,8 +17,8 @@
     "get-secret": "node --env-file=.env scripts/get-secret.js",
     "icons": "node scripts/generate-icons.mjs",
     "demo": "node --env-file=.env scripts/demo.js",
-    "demo:doujin": "node --env-file=.env scripts/demo.js --doujin-only",
-    "demo:neko": "node --env-file=.env scripts/demo.js --neko-only",
+    "demo:manga": "node --env-file=.env scripts/demo.js --manga-only",
+    "demo:video": "node --env-file=.env scripts/demo.js --video-only",
     "demo:fast": "node --env-file=.env scripts/demo.js --skip-images"
   },
   "dependencies": {

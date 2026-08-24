@@ -14,9 +14,11 @@
  *   npm run demo
  *
  * Flag opsional:
- *   node --env-file=.env scripts/demo.js --doujin-only   # hanya test doujin
- *   node --env-file=.env scripts/demo.js --neko-only     # hanya test nekopoi
+ *   node --env-file=.env scripts/demo.js --manga-only    # hanya test manga (doujin)
+ *   node --env-file=.env scripts/demo.js --video-only    # hanya test video (neko)
  *   node --env-file=.env scripts/demo.js --skip-images   # skip scrapeChapterImages (lambat)
+ *
+ * Alias lama (--doujin-only / --neko-only) masih diterima demi backward compat.
  */
 
 import {
@@ -38,9 +40,11 @@ import {
 import { disconnectVpn } from '../lib/vpn/vpnManager.js';
 
 // ── CLI flags ──────────────────────────────────────────────────────────────────
+// Nama baru (manga/video) konsisten dengan penamaan produk; alias lama
+// (--doujin-only / --neko-only) tetap diterima.
 const args = process.argv.slice(2);
-const DOUJIN_ONLY = args.includes('--doujin-only');
-const NEKO_ONLY = args.includes('--neko-only');
+const DOUJIN_ONLY = args.includes('--manga-only') || args.includes('--doujin-only');
+const NEKO_ONLY = args.includes('--video-only') || args.includes('--neko-only');
 const SKIP_IMAGES = args.includes('--skip-images');
 const RUN_DOUJIN = !NEKO_ONLY;
 const RUN_NEKO = !DOUJIN_ONLY;
