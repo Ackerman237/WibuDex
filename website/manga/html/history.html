@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Baca — Wibudex</title>
+  <meta name="description" content="Riwayat baca manga Anda — lanjutkan dari posisi terakhir.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/manga/css/home.css">
+  <link rel="stylesheet" href="/manga/css/collections.css">
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+  <!-- ================= NAV (identik; link aktif: Riwayat) ================= -->
+  <header class="site-nav safe-top">
+    <div class="site-nav__inner container">
+      <a class="site-nav__brand ui-text" href="/manga/html/index.html">Wibu<span>dex</span></a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Navigasi utama">
+        <a href="/manga/html/index.html">Home</a>
+        <a href="/manga/html/catalog.html">Jelajah</a>
+        <a href="/video/html/">Video</a>
+        <a href="/manga/html/library.html">Library</a>
+        <a href="/manga/html/history.html" class="is-active" aria-current="page">Riwayat</a>
+      </nav>
+
+      <form id="searchForm" class="nav-search" role="search">
+        <svg class="ic nav-search__icon" aria-hidden="true"><use href="/manga/icons.svg#i-search"></use></svg>
+        <input type="search" id="searchInput" placeholder="Cari judul…" autocomplete="off" aria-label="Cari manga">
+      </form>
+
+      <button class="nav-hamburger" id="navHamburger" type="button"
+              aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container collections-main">
+    <h1 class="section-title page-title">Riwayat Baca</h1>
+    <!-- Kartu riwayat (history-item oleh js/history.js, data dari server) -->
+    <div id="historyGrid" class="history-grid">
+      <p class="loading">Memuat riwayat…</p>
+    </div>
+  </main>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up"></use></svg>
+  </button>
+
+  <!-- Urutan penting: utils → ui → api → storage → nav → bottom-nav → screen -->
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/shared/ui.js" defer></script>
+  <script src="/shared/api.js" defer></script>
+  <script src="/shared/storage.js" defer></script>
+  <script src="/shared/nav.js" defer></script>
+  <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/manga/js/history.js" defer></script>
+</body>
+</html>

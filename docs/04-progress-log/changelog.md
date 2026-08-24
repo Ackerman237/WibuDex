@@ -5,6 +5,28 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (19) — Halaman Library & Riwayat (langkah 5 roadmap — SELESAI)
+
+### Baru
+- `website/manga/html/library.html` + `website/manga/css/collections.css`
+  (dipakai bersama history): kontrak penuh `js/library.js` — grid
+  favorit/bookmark, empty state mikrocopy aktif + CTA Jelajah, pencarian
+  koleksi, tombol SEE MORE (>6 item).
+- `website/manga/html/history.html`: kontrak `js/history.js` — kartu
+  riwayat server-side (cover, chapter·halaman, tanggal, LANJUT BACA),
+  empty/error state.
+
+### Gate
+`ui-check-collections.mjs` baru: **12 cek runtime lolos** — seed
+favorit/bookmark, see-more 6→8, hapus hanya di bookmark, pencarian
+menyaring ke empty state, riwayat kosong → POST /api/progress dengan
+deviceId halaman → kartu ter-render sesuai payload. sw v22.
+
+**ROADMAP UI MANGA SELESAI:** index ✓ catalog ✓ detail ✓ reader ✓
+library+history ✓ — 5 gate runtime otomatis menjaga semuanya.
+
+---
+
 ## 2026-08-24 (18) — Penanda baca di daftar chapter Detail (konsisten drawer reader)
 
 Daftar chapter di halaman detail kini memakai tier penanda yang sama:

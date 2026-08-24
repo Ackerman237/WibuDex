@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library — Wibudex</title>
+  <meta name="description" content="Koleksi favorit dan bookmark manga Anda.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/manga/css/home.css">
+  <link rel="stylesheet" href="/manga/css/collections.css">
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+  <!-- ================= NAV (identik; link aktif: Library) ================= -->
+  <header class="site-nav safe-top">
+    <div class="site-nav__inner container">
+      <a class="site-nav__brand ui-text" href="/manga/html/index.html">Wibu<span>dex</span></a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Navigasi utama">
+        <a href="/manga/html/index.html">Home</a>
+        <a href="/manga/html/catalog.html">Jelajah</a>
+        <a href="/video/html/">Video</a>
+        <a href="/manga/html/library.html" class="is-active" aria-current="page">Library</a>
+        <a href="/manga/html/history.html">Riwayat</a>
+      </nav>
+
+      <form id="searchForm" class="nav-search" role="search">
+        <svg class="ic nav-search__icon" aria-hidden="true"><use href="/manga/icons.svg#i-search"></use></svg>
+        <input type="search" id="searchInput" placeholder="Cari judul…" autocomplete="off" aria-label="Cari manga">
+      </form>
+
+      <button class="nav-hamburger" id="navHamburger" type="button"
+              aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container collections-main">
+    <h1 class="section-title page-title">Library</h1>
+
+    <!-- Pencarian koleksi (librarySearch oleh js/library.js) -->
+    <form class="collection-search" role="search" onsubmit="return false;">
+      <svg class="ic collection-search__icon" aria-hidden="true"><use href="/manga/icons.svg#i-search"></use></svg>
+      <input type="search" id="librarySearch" placeholder="Cari di favorit & bookmark…"
+             autocomplete="off" aria-label="Cari di library">
+    </form>
+
+    <!-- ================= FAVORIT ================= -->
+    <section class="collection-section" aria-label="Favorit">
+      <h2 class="section-title">
+        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-heart"></use></svg>
+        Favorit
+      </h2>
+      <div id="favoriteGrid" class="manga-grid"><!-- kartu oleh js/library.js --></div>
+      <div id="favoriteEmpty" class="library-empty" style="display:none">
+        <svg class="ic library-empty__icon" aria-hidden="true"><use href="/manga/icons.svg#i-heart"></use></svg>
+        <p class="library-empty__title">Belum ada favorit</p>
+        <p class="library-empty__hint">Tandai manga lewat ikon hati di halaman detail.</p>
+        <a class="retry-btn" href="/manga/html/catalog.html">JELAJAH MANGA</a>
+      </div>
+      <button id="favoriteSeeMore" class="see-more-btn" type="button">SEE MORE</button>
+    </section>
+
+    <!-- ================= BOOKMARK ================= -->
+    <section class="collection-section" aria-label="Bookmark">
+      <h2 class="section-title">
+        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-bookmark"></use></svg>
+        Bookmark
+      </h2>
+      <div id="bookmarkGrid" class="manga-grid"><!-- kartu oleh js/library.js --></div>
+      <div id="bookmarkEmpty" class="library-empty" style="display:none">
+        <svg class="ic library-empty__icon" aria-hidden="true"><use href="/manga/icons.svg#i-bookmark"></use></svg>
+        <p class="library-empty__title">Belum ada bookmark</p>
+        <p class="library-empty__hint">Simpan manga lewat ikon bookmark di halaman detail.</p>
+        <a class="retry-btn" href="/manga/html/catalog.html">JELAJAH MANGA</a>
+      </div>
+      <button id="bookmarkSeeMore" class="see-more-btn" type="button">SEE MORE</button>
+    </section>
+  </main>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up"></use></svg>
+  </button>
+
+  <!-- Urutan penting: utils → ui → api → storage → nav → bottom-nav → screen -->
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/shared/ui.js" defer></script>
+  <script src="/shared/api.js" defer></script>
+  <script src="/shared/storage.js" defer></script>
+  <script src="/shared/nav.js" defer></script>
+  <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/manga/js/library.js" defer></script>
+</body>
+</html>
