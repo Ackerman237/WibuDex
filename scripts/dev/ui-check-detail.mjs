@@ -88,6 +88,24 @@ try {
   ok('Blok alt-title bawah-judul sudah dihapus', !altProbe.legacyBlock);
   ok('Baris "Judul Alternatif" di info panel tetap terisi', altProbe.infoFilled);
 
+  // Alt title: struktur span-per-judul (koma menempel + gap antar judul)
+  const altStruct = await page.evaluate(() => {
+    const list = document.getElementById('infoAltTitles');
+    const items = [...list.querySelectorAll('.alt-title-item')];
+    return {
+      cls: list.classList.contains('alt-title-list'),
+      n: items.length,
+      lastClean: items.length === 0 ||
+        !items[items.length - 1].textContent.trim().endsWith(','),
+      everyEndsWithCommaExceptLast: items.every((s, i) =>
+        i === items.length - 1 ? true : s.textContent.trim().endsWith(',')),
+    };
+  });
+  ok('Alt title: container span-per-judul', altStruct.cls && altStruct.n >= 0,
+     `${altStruct.n} item`);
+  ok('Alt title: koma benar (semua kecuali terakhir)',
+     altStruct.lastClean && altStruct.everyEndsWithCommaExceptLast);
+
   // 4) Genre chips
   const genreCount = await page.evaluate(
     () => document.querySelectorAll('#genreTags .genre-tag').length
@@ -185,12 +203,17 @@ try {
 
   // 9) Tab rekomendasi
   await page.click('#tabMoreSeries');
-  await new Promise((r) => setTimeout(r, 1200));
-  let recVisible = await page.evaluate(
-    () => document.getElementById('recommendSection')?.style.display !== 'none'
-  );
+  // Fetch rekomendasi ke upstream bisa lambat → polling maks ~6 detik
+  let recVisible = false;
+  for (let i = 0; i < 12 && !recVisible; i++) {
+    await new Promise((r) => setTimeout(r, 500));
+    recVisible = await page.evaluate(
+      () => document.getElementById('recommendSection')?.style.display !== 'none'
+    );
+  }
   ok('Tab More Series menampilkan rekomendasi', recVisible);
-  await page.click('#tabInfo');
+  await page.evaluate(() => document.getElementById('tabInfo').click());
+  await new Promise((r) => setTimeout(r, 200));
   recVisible = await page.evaluate(
     () => document.getElementById('recommendSection')?.style.display !== 'none'
   );

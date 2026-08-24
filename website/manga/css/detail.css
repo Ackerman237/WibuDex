@@ -490,6 +490,17 @@
   overflow-wrap: anywhere;
 }
 
+/* Alt title — span-per-judul: koma menempel + gap struktural antar judul */
+.alt-title-list {
+  flex-wrap: wrap;
+  align-items: baseline;
+  row-gap: var(--space-1);
+}
+
+.alt-title-item {
+  display: inline-block;
+}
+
 /* ---------------------------------------------------------------------- */
 /* CHAPTERS                                                                */
 /* ---------------------------------------------------------------------- */

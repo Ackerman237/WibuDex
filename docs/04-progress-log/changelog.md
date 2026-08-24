@@ -5,6 +5,19 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (15) — Alt title span-per-judul: batas antar judul selalu jelas
+
+`detail.js`: infoAltTitles kini merender **span `.alt-title-item` per
+judul** dengan koma menempel di akhir (kecuali terakhir) + `detail.css`
+`.alt-title-list` flex-wrap dengan row-gap — pemisahan struktural, tidak
+bergantung pada string yang bisa mengandung tanda baca sendiri.
+Variabel mati `altShort` dibersihkan.
+
+Gate: +2 assertion struktur alt-title → `ui-check-detail.mjs` **26 cek,
+semua lolos** (satu flakiness klik fisik tab diganti evaluate-click).
+
+---
+
 ## 2026-08-24 (14) — Reader polish: side controls dihapus, bottombar vertikal, drawer ramping + penanda dibaca
 
 Semua atas masukan user saat QA visual reader.

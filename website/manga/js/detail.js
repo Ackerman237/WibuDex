@@ -171,7 +171,6 @@ async function renderDetail() {
       : typeof data.altTitles === 'string'
         ? data.altTitles.split(/[\,\n|]+/).map((s) => s.trim()).filter(Boolean)
         : [];
-    const altShort = altTitlesArr.join(", ") || "-";
     const genresArr = Array.isArray(data.genres) ? data.genres : [];
     const authorText = data.authors || data.author || "-";
     const groupsText = data.groups || "-";
@@ -221,7 +220,23 @@ async function renderDetail() {
     }
     if (el("infoType")) el("infoType").textContent = typeText;
     if (el("infoStatus")) el("infoStatus").textContent = statusText;
-    if (el("infoAltTitles")) el("infoAltTitles").textContent = altShort;
+    if (el("infoAltTitles")) {
+      const infoAlt = el("infoAltTitles");
+      // Render span-per-judul + koma menempel — pemisahan struktural agar
+      // batas antar judul selalu jelas (permintaan user 2026-08-24)
+      infoAlt.classList.add("alt-title-list");
+      infoAlt.textContent = "";
+      if (altTitlesArr.length === 0) {
+        infoAlt.textContent = "-";
+      } else {
+        altTitlesArr.forEach((t, i) => {
+          const span = document.createElement("span");
+          span.className = "alt-title-item";
+          span.textContent = i < altTitlesArr.length - 1 ? `${t},` : t;
+          infoAlt.appendChild(span);
+        });
+      }
+    }
     setInfoValue("infoAuthors", authorText);
     setInfoValue("infoGroups", groupsText);
     setInfoValue("infoSeries", seriesText);
