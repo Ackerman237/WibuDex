@@ -93,11 +93,25 @@ Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
 
 ## Alur Kerja yang Disarankan
 1. Jalankan `npm test` — pastikan baseline hijau sebelum menyentuh kode
-2. Kenali jenis task, muat skill terkait (lihat tabel di bawah)
+2. Kenali jenis task, muat skill terkait (lihat tabel di bawah) — **cek tabel ini SEBELUM eksekusi, bukan sesudah**
 3. Perubahan menengah-besar → buat branch git terpisah dulu
 4. Eksekusi → verifikasi (test/lint/QA skill) → commit
 5. Satu fitur satu commit; update `docs/04-progress-log/changelog.md`
 6. Keputusan arsitektur non-trivial → catat di `docs/08-decisions/decision-log.md`
+
+### Aturan QA Frontend (hasil postmortem 2026-08-24, lihat `docs/04-progress-log/reports/2026-08-24-dropdown-bug-postmortem.md`)
+- **Gate statis ≠ selesai.** Komponen interaktif frontend WAJIB QA runtime di
+  browser (klik buka/tutup, keyboard, 3 breakpoint: 360/768/1280px) sebelum
+  boleh dilaporkan selesai. Tanpa itu, laporan wajib berlabel
+  **"menunggu QA runtime"** — bukan "✅ terverifikasi".
+- **Popover/dropdown** selalu pakai `position: fixed` yang diukur dari rect
+  trigger (+ clamp viewport, tutup saat scroll). Dilarang absolute di dalam
+  ancestor scroll container (`overflow-x: auto` mengklip keturunan absolut).
+- **Satu state UI = satu mekanisme toggling** — jangan campur atribut
+  `[hidden]` dengan class; pilih class-driven visibility.
+- **Setiap batch perubahan aset statis (css/js/html baru/diubah) → bump
+  `CACHE_VERSION` di `website/sw.js`** — stale-while-revalidate menyajikan
+  aset lama pada kunjungan pertama tanpa bump.
 
 ## Skill Terkait (muat sesuai jenis task)
 

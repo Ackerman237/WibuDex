@@ -85,3 +85,9 @@ tempat sekaligus tanpa sepengetahuan user.
 - Melakukan banyak perbaikan logika sekaligus dalam satu perubahan tanpa memisahkan
   mana yang benar-benar terkait — ini bikin sulit melacak efek domino kalau ada
   yang salah.
+- **Dual source of truth untuk state UI** (hasil postmortem 2026-08-24):
+  mengelola satu kondisi lewat dua mekanisme sekaligus (mis. atribut `hidden`
+  + class `is-open`) lalu hanya membuka salah satunya — panel tak pernah
+  muncul. Satu state = satu mekanisme toggling; untuk popover pakai
+  class-driven visibility. Narasi: `docs/04-progress-log/reports/
+  2026-08-24-dropdown-bug-postmortem.md`.

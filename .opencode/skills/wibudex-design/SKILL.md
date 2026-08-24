@@ -72,4 +72,12 @@ This skill combines the audit protocol from `taste-skill/redesign-existing-proje
 **Gate QA akhir:** `node scripts/dev/verify-icons.mjs` lolos + cek manual 3 state
 (loading/error/empty) + audit `ai-tell-audit` untuk pola generik.
 
+**Gate QA runtime (wajib, hasil postmortem 2026-08-24):** gate statis TIDAK
+menggantikan uji perilaku. Komponen interaktif WAJIB dieksekusi nyata di
+browser sebelum dilaporkan selesai — minimal: klik buka/tutup tiap popover/
+toggle/tabs, keyboard (Escape/focus), dan 3 breakpoint (360/768/1280px).
+Tanpa runtime QA, laporan wajib berlabel **"menunggu QA runtime"** — dilarang
+menulis "✅ terverifikasi". Narasi lengkap: `docs/04-progress-log/reports/
+2026-08-24-dropdown-bug-postmortem.md`.
+
 ---
