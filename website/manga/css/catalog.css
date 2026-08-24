@@ -220,6 +220,104 @@
   font-weight: 800;
 }
 
+/* ---------------------------------------------------------------------- */
+/* MODE MULTI (genre) — konsep checkbox, tampilan tetap list               */
+/* ---------------------------------------------------------------------- */
+
+/* Badge jumlah genre ter-apply pada trigger */
+.fdrop__count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Baris info & warning & footer bukan opsi — netralkan efek li:hover */
+.fdrop__info:hover,
+.fdrop__warn:hover,
+.fdrop__footer:hover {
+  background: none;
+}
+
+/* Baris info "Pilih maksimal N" — bukan opsi, tak bisa diklik */
+.fdrop__info {
+  min-height: 28px;
+  padding: var(--space-1) var(--space-3) 0;
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-disabled);
+  font-size: 11px;
+  cursor: default;
+}
+
+/* Peringatan batas genre — muncul via .hidden=false dari JS */
+.fdrop__warn {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.12); /* --error 12% */
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.fdrop__warn[hidden] {
+  display: none;
+}
+
+/* Footer aksi multi-select */
+.fdrop__footer {
+  position: sticky;
+  bottom: calc(var(--space-2) * -1); /* offset padding panel */
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-2) calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+  padding: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  cursor: default;
+}
+
+.fdrop__footer button {
+  flex: 1;
+  height: 36px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.fdrop__clear {
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.fdrop__clear:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-raised);
+}
+
+.fdrop__apply {
+  background: var(--accent-primary);
+  color: var(--bg-base);
+}
+
+.fdrop__apply:hover {
+  background: var(--accent-primary-hover);
+}
+
 /* Dropdown option mengikuti tema via color-scheme dari tokens.css */
 
 /* ---------------------------------------------------------------------- */

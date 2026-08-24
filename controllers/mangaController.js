@@ -4,7 +4,7 @@ import {
   scrapeChapterImages,
   scrapeGenres,
 } from '../lib/scraper/index.js';
-import { validatePage, validateLimit, validateQuery, validateSlug, validateId, validateCategory, validateEnum } from '../lib/validator.js';
+import { validatePage, validateLimit, validateQuery, validateSlug, validateId, validateCategoryList, validateEnum } from '../lib/validator.js';
 import { respondUpstreamError } from '../middleware/upstreamResponse.js';
 
 // Engine proxy gambar dipindah ke lib/imageProxy.js (SoC) — controller hanya
@@ -20,7 +20,9 @@ export const getMangaList = async (req, res) => {
     const page = validatePage(req.query.page);
     const limit = validateLimit(req.query.limit);
     const query = validateQuery(req.query.query);
-    const genre = validateCategory(req.query.genre) || '';
+    // Multi-genre koma-separated (maks 6, tiap item slug tervalidasi);
+    // single genre tetap lewat jalur yang sama ("ecchi" === "ecchi," tunggal)
+    const genre = validateCategoryList(req.query.genre) || '';
     const sort = validateEnum(req.query.sort, VALID_SORTS, 'newest');
     const status = validateEnum(req.query.status, VALID_STATUSES, '');
     const type = validateEnum(req.query.type, VALID_TYPES, '');

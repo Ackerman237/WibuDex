@@ -6,6 +6,7 @@ import {
   validateSlug,
   validateId,
   validateCategory,
+  validateCategoryList,
   validateUrl,
   validateEnum,
 } from '../lib/validator.js';
@@ -125,6 +126,55 @@ describe('validateCategory', () => {
 
   it('returns trimmed category', () => {
     expect(validateCategory('  ecchi  ')).toBe('ecchi');
+  });
+});
+
+describe('validateCategoryList', () => {
+  it('returns null for non-string', () => {
+    expect(validateCategoryList(123)).toBeNull();
+  });
+
+  it('returns null for empty string', () => {
+    expect(validateCategoryList('')).toBeNull();
+  });
+
+  it('returns null when no item is valid', () => {
+    expect(validateCategoryList(',,,')).toBeNull();
+    expect(validateCategoryList('bad genre!, <script>')).toBeNull();
+  });
+
+  it('passes a single slug through unchanged', () => {
+    expect(validateCategoryList('ecchi')).toBe('ecchi');
+  });
+
+  it('splits comma-separated slugs and joins them back', () => {
+    expect(validateCategoryList('ahegao,ecchi')).toBe('ahegao,ecchi');
+  });
+
+  it('trims whitespace around items', () => {
+    expect(validateCategoryList(' ahegao , ecchi ')).toBe('ahegao,ecchi');
+  });
+
+  it('lowercases and drops duplicates', () => {
+    expect(validateCategoryList('Ecchi,Ahegao,ECCHI')).toBe('ecchi,ahegao');
+  });
+
+  it('drops items with invalid characters', () => {
+    expect(validateCategoryList('ahegao,<script>,ecchi;drop,x.y')).toBe('ahegao');
+  });
+
+  it('drops items longer than 50 chars', () => {
+    const tooLong = `${'a'.repeat(51)}`;
+    expect(validateCategoryList(`ecchi,${tooLong}`)).toBe('ecchi');
+  });
+
+  it('caps result at 6 items by default', () => {
+    const seven = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7'].join(',');
+    expect(validateCategoryList(seven)).toBe('g1,g2,g3,g4,g5,g6');
+  });
+
+  it('honors custom max', () => {
+    expect(validateCategoryList('a,b,c', 2)).toBe('a,b');
   });
 });
 

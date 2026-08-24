@@ -56,7 +56,9 @@
          [data-default] = nilai netral untuk state aktif dropdown kustom;
          native select tetap dipakai sebagai fallback tanpa JS. -->
     <div class="filter-bar" role="group" aria-label="Filter katalog">
-      <select id="genreSelect"  class="filter-select" data-default="" data-placeholder="Genre" aria-label="Filter genre"></select>
+      <select id="genreSelect" class="filter-select" multiple data-default="" data-placeholder="Genre"
+              data-max="6" data-warning-msg="Maksimal 6 genre — lepas salah satu dulu."
+              aria-label="Filter genre"></select>
       <select id="statusSelect" class="filter-select" data-default="" data-placeholder="Status" aria-label="Filter status">
         <option value="">Semua Status</option>
         <option value="ongoing">Ongoing</option>

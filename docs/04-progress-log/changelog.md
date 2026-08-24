@@ -5,6 +5,36 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (6) — Multi-genre katalog (maks 6, konfirmasi, peringatan ke-7)
+
+Semantik OR/union diverifikasi empiris ke API sumber: `genre=a,b` → hasil
+gabungan (9 halaman tunggal → 19 halaman gabungan); `validateCategory` lama
+memang loloskan string koma, jadi backend tinggal diperketat.
+
+### Backend
+- `lib/validator.js`: fungsi baru `validateCategoryList(value, max=6)` —
+  pecah koma, tiap item wajib slug `[a-z0-9-]` ≤50 char, dedupe +
+  lowercase, potong ke 6. Fungsi existing tak tersentuh (+11 unit test,
+  total suite 183 → 194).
+- `mangaController.js`: param genre kini lewat validator daftar tersebut.
+
+### Frontend
+- `filter-dropdown.js`: mode multi untuk `select.multiple` — pending state
+  (klik = toggle, panel tetap terbuka), footer **Terapkan/Bersihkan**
+  sticky, counter "x/6", pilihan ke-7 ditolak + peringatan inline merah.
+  Klik-luar/Escape = batalkan pending. Single-select tak berubah.
+- `catalog.js`: URL `genre=a,b` ↔ `selectedOptions`; `loadGenres()`
+  me-rebuild option tapi kini re-select dari URL (dulu seleksi hilang).
+- `catalog.html/css`: atribut multiple + data-max/warning-msg; style badge
+  jumlah, baris info, warning, footer aksi.
+
+### Gate
+- `ui-check-catalog.mjs` +3 cek runtime (total 9): Terapkan → URL
+  `genre=a,b` ✓, pilihan ke-7 ditolak & peringatan tampil ✓ — semua lolos
+  di Chrome nyata. `sw.js` CACHE_VERSION v12.
+
+---
+
 ## 2026-08-24 (5) — Fix dropdown katalog + searchbar mobile + gate QA runtime
 
 Postmortem lengkap: `reports/2026-08-24-dropdown-bug-postmortem.md`.

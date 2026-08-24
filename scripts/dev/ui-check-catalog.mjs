@@ -10,6 +10,8 @@
  *      listener catalog.js ikut (goToPage via ?sort=...)
  *   4. Mobile 360px: hamburger & searchbar SATU BARIS dengan logo?
  *      (regresi: flex-basis auto dari lebar intrinsik input)
+ *   5. Multi-genre: toggle 2 opsi → Terapkan → URL ?genre=a,b
+ *   6. Multi-genre: pilihan ke-7 ditolak + peringatan tampil
  *
  * Jalankan (server harus sudah berjalan):
  *   node scripts/dev/ui-check-catalog.mjs [base-url]
@@ -86,6 +88,61 @@ try {
     .waitForFunction(() => location.search.includes('sort=rating'), { timeout: 10000 })
     .then(() => ok("Pilih opsi → navigasi '?sort=rating'", true))
     .catch(() => ok("Pilih opsi → navigasi '?sort=rating'", false, `url=${page.url()}`));
+
+  // ── 5) Multi-genre: toggle 2 opsi → Terapkan → URL ?genre=a,b ──
+  await page.waitForFunction(
+    () => document.querySelectorAll('#genreSelect option').length >= 7,
+    { timeout: 30000 }
+  );
+  await page.click('.fdrop__trigger'); // genreSelect = trigger pertama
+  await new Promise((r) => setTimeout(r, 150));
+  const picked = await page.evaluate(() => {
+    // Toggle 2 opsi pertama yang bukan "Semua Genre"
+    const lis = [...document.querySelectorAll('.fdrop.is-open .fdrop__panel li[role="option"]')]
+      .filter((li) => li.dataset.value !== '');
+    lis[0]?.click();
+    lis[1]?.click();
+    return [lis[0]?.dataset.value, lis[1]?.dataset.value];
+  });
+  await new Promise((r) => setTimeout(r, 100));
+  // Terapkan memicu navigasi full-page (goToPage) → tunggu dokumen baru siap
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {}),
+    page.click('.fdrop__apply'),
+  ]);
+  await page.waitForSelector('.fdrop__trigger', { timeout: 15000 });
+  await new Promise((r) => setTimeout(r, 500)); // rAF sinkron awal dropdown
+  await page
+    .waitForFunction(
+      (vals) => new URLSearchParams(location.search).get('genre') === vals.join(','),
+      { timeout: 10000 },
+      picked.filter(Boolean)
+    )
+    .then(() => ok('Multi-genre: Terapkan → URL ?genre=a,b', true, `genre=${picked.join(',')}`))
+    .catch(() => ok('Multi-genre: Terapkan → URL ?genre=a,b', false, `url=${page.url()}`));
+
+  // ── 6) Multi-genre: pilihan ke-7 ditolak + peringatan tampil ──
+  await page.click('.fdrop__trigger'); // buka genre lagi (URL sudah bawa 2 genre)
+  await new Promise((r) => setTimeout(r, 150));
+  const warnProbe = await page.evaluate(() => {
+    const panel = document.querySelector('.fdrop.is-open .fdrop__panel');
+    if (!panel) return { open: false };
+    // Klik semua opsi tersisa sampai melewati batas 6
+    [...panel.querySelectorAll('li[role="option"]')]
+      .filter((li) => li.dataset.value !== '')
+      .forEach((li) => li.click());
+    const warn = panel.querySelector('.fdrop__warn');
+    const pendingCount = panel.querySelectorAll('li[role="option"].is-selected').length;
+    return {
+      open: true,
+      warnVisible: warn ? !warn.hidden : false,
+      pendingCount,
+      capped: pendingCount <= 6,
+    };
+  });
+  ok('Multi-genre: pilihan ke-7 ditolak (≤6 terpilih)', warnProbe.open && warnProbe.capped,
+     `pending=${warnProbe.pendingCount ?? '-'}`);
+  ok('Multi-genre: peringatan maksimum tampil', warnProbe.warnVisible === true);
 
   // ── Mobile 360px ─────────────────────────────────────────────────────
   await page.setViewport({ width: 360, height: 740 });

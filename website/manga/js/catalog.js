@@ -35,17 +35,39 @@ function hideFilters() {
 
 // Initialize filter values from URL params
 function initFiltersFromURL() {
-  if (genreSelect) genreSelect.value = currentGenre || '';
+  if (genreSelect) {
+    if (genreSelect.multiple) {
+      // Multi-genre: URL "genre=a,b" → tandai tiap option yang cocok
+      const wanted = new Set((currentGenre || '').split(',').filter(Boolean));
+      [...genreSelect.options].forEach((o) => {
+        o.selected = wanted.has(o.value);
+      });
+    } else {
+      genreSelect.value = currentGenre || '';
+    }
+  }
   if (statusSelect) statusSelect.value = currentStatus || '';
   if (typeSelect) typeSelect.value = currentType || '';
   if (sortSelect) sortSelect.value = (urlParams.get('sort') || 'newest');
+}
+
+/** Baca nilai efektif sebuah select — mendukung mode multiple. */
+function readSelectValue(sel) {
+  if (!sel) return '';
+  if (sel.multiple) {
+    return [...sel.selectedOptions]
+      .map((o) => o.value)
+      .filter(Boolean)
+      .join(',');
+  }
+  return sel.value;
 }
 
 // Event listeners for filter changes
 function setupFilterListeners() {
   if (genreSelect) {
     genreSelect.addEventListener('change', () => {
-      currentGenre = genreSelect.value;
+      currentGenre = readSelectValue(genreSelect);
       goToPage(1);
     });
   }
@@ -83,14 +105,23 @@ async function loadGenres() {
 
     // Keep select in sync: reset and add default "Semua Genre" first
     select.innerHTML = '<option value="">Semua Genre</option>';
-    
+
     genres.forEach((g) => {
       const option = document.createElement('option');
       option.value = g.slug || g.name;
       option.textContent = g.name;
-      if ((g.slug || g.name) === currentGenre) option.selected = true;
       select.appendChild(option);
     });
+
+    // Re-select dari URL — innerHTML reset di atas menghapus seleksi awal
+    // (multi: "genre=a,b"; single: satu slug).
+    const wanted = new Set((currentGenre || '').split(',').filter(Boolean));
+    [...select.options].forEach((o) => {
+      o.selected = wanted.has(o.value);
+    });
+    if (!select.multiple && !wanted.size) {
+      select.selectedIndex = 0; // "Semua Genre"
+    }
   } catch {
     // Fallback jika API gagal: pastikan minimal ada opsi default
     if (select.children.length === 0) {
@@ -183,7 +214,7 @@ function buildListParams(page) {
 function goToPage(page) {
   if (page < 1) return;
   currentPage = page;
-  currentGenre = genreSelect ? genreSelect.value : '';
+  currentGenre = readSelectValue(genreSelect);
   currentStatus = statusSelect ? statusSelect.value : '';
   currentType = typeSelect ? typeSelect.value : '';
   currentSort = sortSelect ? sortSelect.value : 'newest';
