@@ -166,8 +166,7 @@ vite.config.ts.timestamp-*
 # Kiro AI
 kiro-cli.exe
 
-# SQLite database
-data/
+# Runtime data (SQLite + VPN state)
+.runtime/
 
 # VPN manager persistent state
-.data/

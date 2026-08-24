@@ -22,7 +22,7 @@ if (!slug || slug.startsWith('http')) {
   process.exit(1);
 }
 
-const url = `${base}/nekoPage/html/watch.html?slug=${encodeURIComponent(slug)}`;
+const url = `${base}/video/html/watch.html?slug=${encodeURIComponent(slug)}`;
 console.log(`[ui-check] membuka ${url}`);
 
 let popupCount = 0;
@@ -58,14 +58,14 @@ try {
   const fetchProbe = await page.evaluate(async () => {
     const t0 = performance.now();
     try {
-      const res = await fetch('/api/neko/player-mode');
+      const res = await fetch('/api/video/player-mode');
       const json = await res.json();
       return { ok: res.ok, mode: json?.data?.mode ?? '?', ms: Math.round(performance.now() - t0) };
     } catch (err) {
       return { ok: false, error: String(err), ms: Math.round(performance.now() - t0) };
     }
   });
-  console.log(`[probe] fetch in-page /api/neko/player-mode: ${JSON.stringify(fetchProbe)}`);
+  console.log(`[probe] fetch in-page /api/video/player-mode: ${JSON.stringify(fetchProbe)}`);
 
   // Apakah watch.js?v=3 benar-benar terunduh & tereksekusi?
   await new Promise((r) => setTimeout(r, 1500));

@@ -7,14 +7,14 @@ const warn = (m) => console.log('WARN:', m);
 const bad = (m) => { console.log('FAIL:', m); fail = true; };
 
 // 1) kumpulkan ID yang tersedia di sprite
-const sprite = fs.readFileSync('website/doujinPage/icons.svg', 'utf8');
+const sprite = fs.readFileSync('website/manga/icons.svg', 'utf8');
 const available = new Set([...sprite.matchAll(/id="i-([a-z0-9-]+)"/g)].map((m) => m[1]));
 console.log('Sprite berisi', available.size, 'ikon:', [...available].join(', '));
 
 if (!/^<svg[\s\S]*<\/svg>\s*$/i.test(sprite.trim())) bad('icons.svg tidak well-formed');
 
-// 2) pemindaian emoji sisa di HTML & JS doujin
-const dirs = ['website/doujinPage/html', 'website/doujinPage/js', 'website/doujinPage/shared'];
+// 2) pemindaian emoji sisa di HTML & JS frontend
+const dirs = ['website/manga/js', 'website/shared', 'website/video/js', 'website/video/html'];
 const emojiRe = /[\u2190-\u2BFF\u{1F000}-\u{1FAFF}\uFE0F]/gu;
 const ALLOWED = /^[★☆›‹]$/u; // rating bintang & chevron tipografis reader
 
@@ -54,10 +54,10 @@ for (const c of ['jp', 'kr', 'cn']) {
   if (!fs.existsSync(p)) bad(`flag hilang: ${p}`);
 }
 
-// 5) tidak ada U+FFFD (mojibake) di file yang pernah rusak
-for (const f of ['detail.html', 'index.html', 'library.html']) {
-  const s = fs.readFileSync(`website/doujinPage/html/${f}`, 'utf8');
-  if (s.includes('\uFFFD')) bad(`${f} masih mengandung U+FFFD`);
+// 5) tidak ada U+FFFD (mojibake) di file frontend yang pernah rusak
+for (const f of ['index.js', 'detail.js', 'reader.js']) {
+  const s = fs.readFileSync(`website/manga/js/${f}`, 'utf8');
+  if (s.includes('\uFFFD')) bad(`manga/js/${f} masih mengandung U+FFFD`);
 }
 
 console.log(fail ? '\n=== GAGAL ===' : '\n=== SEMUA VERIFIKASI LOLOS ===');
