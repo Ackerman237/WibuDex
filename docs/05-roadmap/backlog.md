@@ -25,5 +25,11 @@ _Core P0/P1 migration items completed 2026-08-21 (SSRF protection, proxy size/ty
 
 ## Not scheduled yet (parking lot)
 - [ ] **Kandidat Skill QA**: Install & adaptasi skill `redesign-existing-projects` (`Leonxlnx/taste-skill`) sebagai alat bantu QA/polish (audit spacing, hirarki, motion quality). Posisi: alat bantu QA, BUKAN pengganti `WIBUDEX-MASTER-SPEC.md`. Dievaluasi setelah Fase 1–2 selesai.
+- [ ] **TODO jika suatu saat republish ke GitHub**: repo lama masih bernama
+      generik `Scrapper-manga` (github.com/Ackerman237/Scrapper-manga). Sebelum
+      publik ulang, rename repo agar konsisten dengan identitas produk
+      (`wibudex`). GitHub otomatis redirect dari URL lama, jadi aman.
+      (Proyek saat ini sengaja terisolasi — remote dihapus 2026-08-24.)
+
 
 

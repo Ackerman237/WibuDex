@@ -301,7 +301,7 @@ async function main() {
     console.error('\n[get-secret] Langkah debug:');
     console.error('  - Buka DevTools situs secara manual dan cari "X-App-Secret" atau "appSecret" di Sources.');
     console.error('  - Update pola regex di SECRET_PATTERNS dan SALT_PATTERNS di scripts/get-secret.js.');
-    console.error('  - Catat perubahan di manga-scraper-docs/04-progress-log/changelog.md.');
+    console.error('  - Catat perubahan di docs/04-progress-log/changelog.md.');
     process.exit(1);
   }
 
