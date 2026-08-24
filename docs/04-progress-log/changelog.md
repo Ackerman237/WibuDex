@@ -8,13 +8,54 @@ notes live in `reports/`.
 
 ---
 
-## 2026-08-24 (20) - Reset global link tanpa underline
+## 2026-08-24 (21) — Video V1.1: konsolidasi card + FIX pencarian rusak & path tokens watch
+
+### Konsolidasi card (V1.1)
+- File baru `video/js/cards.js`: **satu sumber markup kartu**
+  (`renderMediaCard(item, {variant, isActive})`) menggantikan 4+ blok
+  innerHTML di index/series/watch.js — escaping seragam via
+  `shared/utils.escapeHtml` (dulu: series.js lupa escape src thumb,
+  index.js pakai escape manual no-op yang bocor XSS), fallback thumb
+  seragam, navigasi watch.html konsisten.
+- Kelas CSS per-konteks dipetakan lewat `MEDIA_CARD_VARIANTS` — styling
+  existing (hover spotlight, is-active, focus-visible) tak berubah.
+
+### FIX bug produk yang ditemukan gate pertama ini
+1. **Pencarian video rusak total**: submit memanggil `loadVideos(true)`
+   yang me-RESET `currentQuery=''` sebelum endpoint dibangun → hasil
+   pencarian SELALU menampilkan video terbaru. Fix: kosongkan grid manual
+   + panggil tanpa reset.
+2. **watch.html path tokens salah** (`/website/css/...` — sisa
+   restrukturisasi): design token tak pernah termuat di halaman watch +
+   request ditolak (MIME JSON). Fix → `/css/wibudex-tokens.css`.
+
+### Gate
+`ui-check-video-home.mjs` baru dengan **request interception offline**
+(7 cek: render stub, struktur `<a>`, escape XSS, fallback thumb, klik→
+watch, pencarian → "Hasil Pencarian"). sw v24.
+
+---
+
 
 Teks link ke halaman lain tampil bergaris bawah - akar: tidak pernah ada reset global `a`; hanya 5 override per-komponen yang tersebar, sisanya jatuh ke default browser.
 
 - tokens.css BASE: a { color: inherit; text-decoration: none } berlaku global (manga & video); affordance tetap lewat hover state tiap komponen.
 - 5 deklarasi text-decoration:none redundan di home.css dibersihkan.
 - Gate: +1 assertion (link empty-state library -> text-decoration-line none) -> ui-check-collections.mjs 13/13 runtime. sw v23.
+
+---
+
+## 2026-08-24 (20) — Reset global link tanpa underline
+
+Teks link ke halaman lain tampil bergaris bawah — akar: tidak pernah ada
+reset global `a`; hanya 5 override per-komponen yang tersebar, sisanya
+jatuh ke default browser.
+
+- tokens.css BASE: a { color: inherit; text-decoration: none } berlaku global (manga & video); affordance tetap lewat hover state tiap komponen.
+- 5 deklarasi text-decoration:none redundan di home.css dibersihkan.
+- Gate: +1 assertion (link empty-state library -> text-decoration-line none) -> ui-check-collections.mjs 13/13 runtime. sw v23.
+
+---
 
 ## 2026-08-24 (19) — Halaman Library & Riwayat (langkah 5 roadmap — SELESAI)
 

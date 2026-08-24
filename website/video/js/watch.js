@@ -263,23 +263,10 @@ function renderEpisodeSidebar(episodes, currentSlug) {
     container.innerHTML = '';
     episodes.forEach((ep) => {
       if (!ep?.slug) return;
-
-      const card = document.createElement('a');
-      card.className = 'episode-card';
-      if (ep.slug === currentSlug) card.classList.add('is-active');
-      card.href = `/video/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
-
-      const thumbUrl = ep.thumb || 'https://placehold.co/224x126?text=Episode';
-      const title = escapeHtml(ep.title || 'Episode');
-
-      card.innerHTML = `
-        <img class="episode-thumb" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-        <div class="episode-info">
-          <div class="episode-number">Ep. ${escapeHtml(ep.number || '')}</div>
-          <div class="episode-title">${title}</div>
-        </div>
-      `;
-      container.appendChild(card);
+      container.appendChild(renderMediaCard(ep, {
+        variant: 'episode',
+        isActive: ep.slug === currentSlug,
+      }));
     });
     if (sidebarSection) sidebarSection.style.display = 'block';
   }
@@ -291,21 +278,10 @@ function renderEpisodeSidebar(episodes, currentSlug) {
     mobileList.innerHTML = '';
     episodes.forEach((ep) => {
       if (!ep?.slug) return;
-
-      const card = document.createElement('a');
-      card.className = 'episode-card-mobile';
-      if (ep.slug === currentSlug) card.classList.add('is-active');
-      card.href = `/video/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
-
-      const thumbUrl = ep.thumb || 'https://placehold.co/280x158?text=Episode';
-      const title = escapeHtml(ep.title || 'Episode');
-
-      card.innerHTML = `
-        <img class="episode-thumb-mobile" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-        <div class="episode-number-mobile">Ep. ${escapeHtml(ep.number || '')}</div>
-        <div class="episode-title-mobile">${title}</div>
-      `;
-      mobileList.appendChild(card);
+      mobileList.appendChild(renderMediaCard(ep, {
+        variant: 'episodeMobile',
+        isActive: ep.slug === currentSlug,
+      }));
     });
     if (mobileSection && mobileList.children.length > 0) {
       mobileSection.style.display = 'block';
@@ -325,50 +301,22 @@ function renderRelatedSidebar(related) {
     if (mobileSection) mobileSection.style.display = 'none';
     return;
   }
-  
+
   // Desktop sidebar
   if (sidebarContainer) {
     sidebarContainer.innerHTML = '';
     related.forEach((item) => {
       if (!item?.slug) return;
-      
-      const card = document.createElement('a');
-      card.className = 'related-card';
-      card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
-      
-      const thumbUrl = item.thumb || 'https://placehold.co/256x144?text=Video';
-      const title = escapeHtml(item.title || 'Video Terkait');
-      const type = item.type ? escapeHtml(item.type) : '';
-      
-      card.innerHTML = `
-        <img class="related-thumb" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-        <div class="related-info">
-          <div class="related-name">${title}</div>
-          ${type ? `<div class="related-type">${type}</div>` : ''}
-        </div>
-      `;
-      sidebarContainer.appendChild(card);
+      sidebarContainer.appendChild(renderMediaCard(item, { variant: 'related' }));
     });
   }
-  
+
   // Mobile horizontal scroll
   if (mobileContainer) {
     mobileContainer.innerHTML = '';
     related.forEach((item) => {
       if (!item?.slug) return;
-      
-      const card = document.createElement('a');
-      card.className = 'related-card-mobile';
-      card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
-      
-      const thumbUrl = item.thumb || 'https://placehold.co/256x144?text=Video';
-      const title = escapeHtml(item.title || 'Video Terkait');
-      
-      card.innerHTML = `
-        <img class="related-thumb-mobile" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-        <div class="related-name-mobile">${title}</div>
-      `;
-      mobileContainer.appendChild(card);
+      mobileContainer.appendChild(renderMediaCard(item, { variant: 'relatedMobile' }));
     });
   }
 }

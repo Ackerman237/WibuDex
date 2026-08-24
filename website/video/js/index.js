@@ -5,37 +5,8 @@ let currentCategory = new URLSearchParams(window.location.search).get('category'
 let currentQuery = '';
 
 function renderVideoCard(video) {
-  const card = document.createElement('div');
-  card.className = 'video-card';
-
-  const thumbUrl = video.thumb || 'https://placehold.co/480x270?text=No+Thumb';
-  const title = video.title || 'Tanpa Judul';
-  // Escape penuh sebelum interpolasi innerHTML (versi lama no-op — tiap
-  // karakter dipetakan ke dirinya sendiri sehingga XSS tetap lolos).
-  const escapedTitle = String(title)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-  const date = video.date || '-';
-  const slug = video.slug || '';
-
-  card.innerHTML = `
-    <img class="video-thumb" src="${escapeHtml(thumbUrl)}" alt="${escapedTitle}" loading="lazy" referrerpolicy="no-referrer">
-    <div class="video-info">
-      <h3 class="video-title">${escapedTitle}</h3>
-      <div class="video-date">${escapeHtml(date)}</div>
-    </div>
-  `;
-
-  if (slug) {
-    card.addEventListener('click', () => {
-      window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(slug)}`;
-    });
-  }
-
-  return card;
+  // Markup terkonsolidasi di cards.js (escaping + fallback thumb seragam)
+  return renderMediaCard(video, { variant: 'grid' });
 }
 
 async function loadVideos(reset = false) {
@@ -200,9 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchForm) {
     searchForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      // FIX BUG: dulu memakai loadVideos(true) yang me-RESET currentQuery=''
+      // sebelum endpoint dibangun → pencarian selalu menampilkan video
+      // terbaru. Sekarang: kosongkan grid manual + jalankan tanpa reset.
       currentQuery = searchInput ? searchInput.value.trim() : '';
       currentOffset = 1;
-      loadVideos(true);
+      const grid = document.getElementById('videoGrid');
+      if (grid) grid.innerHTML = '';
+      loadVideos(false);
     });
   }
 

@@ -4,27 +4,8 @@ let currentType = 'hentai';
 let currentPage = 1;
 
 function renderSeriesCard(item) {
-  const card = document.createElement('div');
-  card.className = 'video-card';
-
-  const thumbUrl = item.thumb || 'https://placehold.co/480x270?text=No+Thumb';
-  const title = item.title || 'Tanpa Judul';
-  const slug = item.slug || '';
-
-  card.innerHTML = `
-    <img class="video-thumb" src="${thumbUrl}" alt="${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer">
-    <div class="video-info">
-      <h3 class="video-title">${escapeHtml(title)}</h3>
-    </div>
-  `;
-
-  if (slug) {
-    card.addEventListener('click', () => {
-      window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(slug)}`;
-    });
-  }
-
-  return card;
+  // Markup terkonsolidasi di cards.js (dulu: src thumb lupa di-escape)
+  return renderMediaCard(item, { variant: 'grid' });
 }
 
 async function loadSeries(reset = false) {
