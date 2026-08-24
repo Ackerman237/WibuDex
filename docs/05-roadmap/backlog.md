@@ -9,7 +9,7 @@ _All items shipped 2026-08-20. Moved to changelog._
 
 ## Frontend / UX polish (from session notes, uncommitted ideas)
 - [ ] Show total page count once the backend exposes it.
-- [ ] De-duplicate shared logic between `index.js` and `allManga.js` into
+- [ ] De-duplicate shared logic between `index.js` and `catalog.js` into
       a common helper module.
 - [ ] Re-verify `NEXT`-disable logic under search-time backend filtering
       (result count can legitimately be `< limit` mid-list when filtered).

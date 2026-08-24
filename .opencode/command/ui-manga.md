@@ -1,5 +1,5 @@
 ---
-description: Bangun UI manga Wibudex sesuai rencana (rencana-ui-manga.md). Argumen opsional: nama halaman (index/allManga/detail/reader/library/history).
+description: Bangun UI manga Wibudex sesuai rencana (rencana-ui-manga.md). Argumen opsional: nama halaman (index/catalog/detail/reader/library/history).
 agent: build
 ---
 
@@ -19,7 +19,7 @@ Kemudian muat skill: `comic-design` (proses desain) + `wibudex-design`
 Halaman yang dikerjakan: $ARGUMENTS
 
 - Kalau argumen kosong → lanjutkan urutan rencana (cek halaman mana yang
-  belum ada di `website/manga/html/`; urutan: index → allManga → detail →
+  belum ada di `website/manga/html/`; urutan: index → catalog → detail →
   reader → library → history).
 - Kerjakan SATU halaman saja per sesi/kommit. Ikuti kontrak DOM persis;
   kalau JS perlu diadaptasi kecil, boleh — catat perubahannya.

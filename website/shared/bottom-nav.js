@@ -4,7 +4,7 @@
   const currentPath = window.location.pathname;
   const navItems = [
     { label: 'Home', path: '/manga/html/index.html', icon: 'home' },
-    { label: 'Jelajah', path: '/manga/html/allManga.html', icon: 'compass' },
+    { label: 'Jelajah', path: '/manga/html/catalog.html', icon: 'compass' },
     { label: 'Video', path: '/video/html/', icon: 'video' },
     { label: 'Library', path: '/manga/html/library.html', icon: 'bookmark' }
   ];

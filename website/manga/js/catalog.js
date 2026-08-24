@@ -1,4 +1,4 @@
-// allManga.js — Paginated manga list with Floating Pill Filter Bar & Bento Grid
+// catalog.js — Paginated manga list with Floating Pill Filter Bar & Bento Grid
 
 const currentLimit = 50;
 
@@ -139,7 +139,7 @@ async function loadManga(query = '', page = 1, sort = 'newest', genre = '', stat
 
       const btnLabel = query ? 'LIHAT SEMUA MANGA' : page > 1 ? `${ic('arrow-left')} KEMBALI KE HALAMAN SEBELUMNYA` : null;
       const btnAction = query
-        ? () => { window.location.href = '/manga/html/allManga.html?page=1'; }
+        ? () => { window.location.href = '/manga/html/catalog.html?page=1'; }
         : page > 1
           ? () => goToPage(page - 1)
           : null;
@@ -189,7 +189,7 @@ function goToPage(page) {
   currentSort = sortSelect ? sortSelect.value : 'newest';
   
   const params = buildListParams(page);
-  window.location.href = `/manga/html/allManga.html?${params.toString()}`;
+  window.location.href = `/manga/html/catalog.html?${params.toString()}`;
 }
 
 function renderPagination(pagination) {
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       currentQuery = searchInput ? searchInput.value.trim() : '';
       const params = buildListParams(1);
-      window.location.href = `/manga/html/allManga.html?${params.toString()}`;
+      window.location.href = `/manga/html/catalog.html?${params.toString()}`;
     });
   }
 

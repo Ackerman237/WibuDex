@@ -14,7 +14,7 @@ Desain: `docs/06-architecture/style-guide.md` (final, tersinkron) +
 
 Urutan eksekusi (satu halaman satu commit):
 - [ ] `index.html` — hero carousel + riwayat + grid populer/rilis terbaru
-- [ ] `allManga.html` — katalog: filter bar + pagination numerik
+- [ ] `catalog.html` — katalog: filter bar + pagination numerik
 - [ ] `detail.html` — cover, meta, chapter list, tabs (+ tema dinamis cover)
 - [ ] `reader.html` — shell minimal (chrome dibangun reader.js)
       (+ signature element: cover-expand via View Transitions API)
@@ -74,8 +74,8 @@ Shipped:
 Status: **COMPLETE ✅ (3 bug fixes shipped, 1 known issue dicatat)**
 
 Shipped:
-- [x] Gambar reader tidak muncul dari filter allManga — `loadInitialPages` selalu dipanggil.
-- [x] Cover manga hilang saat back dari reader (bfcache) — `pageshow` listener di `allManga.js`.
+- [x] Gambar reader tidak muncul dari filter catalog — `loadInitialPages` selalu dipanggil.
+- [x] Cover manga hilang saat back dari reader (bfcache) — `pageshow` listener di `catalog.js`.
 - [x] Error server dari detail → reader tidak tertangkap — `formatFetchError` diperluas + `fetchChapterWithRetry` + retry button.
 - [x] Continue reading / scroll ke halaman tersimpan dinonaktifkan sementara (`restoreReadingPosition` hanya baca posisi, tidak scroll).
 

@@ -15,7 +15,7 @@ Dua modul produk:
 Ikuti rencana lengkap di `docs/05-roadmap/rencana-ui-manga.md` — di sana ada
 kontrak DOM per halaman (ID yang wajib disediakan HTML untuk JS screens
 existing), wireframe, dan urutan eksekusi:
-`index.html → allManga → detail → reader → library/history`.
+`index.html → catalog → detail → reader → library/history`.
 Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
 `website/css/wibudex-tokens.css`. Satu halaman satu commit, QA tiap halaman.
 

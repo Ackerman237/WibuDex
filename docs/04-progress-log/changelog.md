@@ -5,6 +5,23 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (2) — Rename halaman katalog: allManga → catalog
+
+Keputusan: `docs/08-decisions/decision-log.md` (2026-08-24). Satu-satunya
+nama camelCase multi-kata di antara halaman single-word; semantiknya juga
+kurang tepat (halaman ini katalog dengan filter/sort/pagination).
+
+- `git mv website/manga/js/allManga.js → catalog.js`; 3 redirect internal
+  + header komentar ikut diupdate ke `/manga/html/catalog.html`.
+- Referensi kode hidup: `shared/bottom-nav.js`, redirect search
+  `js/detail.js`, nav "Jelajah" di `index.html`.
+- Docs hidup anti-drift: AGENTS.md, rencana-ui-manga, current-sprint,
+  backlog, command ui-manga, module-map (+ perbaikan drift `#allMangaGrid`
+  → `#mangaGrid` sesuai ID aktual di screen script), system-architecture.
+- Entri historis (archive, changelog lama) sengaja tidak disentuh.
+
+---
+
 ## 2026-08-24 (1) — Halaman home manga + fondasi CSS dari tokens terkunci
 
 Langkah 1 roadmap UI manga (`docs/05-roadmap/rencana-ui-manga.md`): HTML/CSS

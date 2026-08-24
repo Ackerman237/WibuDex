@@ -109,12 +109,12 @@ IIFE perender bottom navigation bar khusus mobile (lebar <= 700px).
 
 ---
 
-### `js/allManga.js`
+### `js/catalog.js`
 **Klasifikasi: UI-BOUND (screen catalog)**
 
 | Fungsi | Klasifikasi | Alasan |
 |---|---|---|
-| `loadManga(...)` | UI-bound | Fetch list terfilter & render kartu ke `#allMangaGrid` |
+| `loadManga(...)` | UI-bound | Fetch list terfilter & render kartu ke `#mangaGrid` |
 | `loadGenres()` | UI-bound | Isi dropdown `<select id="genreSelect">` |
 | `goToPage(page)` | UI-bound | Manipulasi query string URL + reload |
 | `buildListParams(page)` | **Logic murni** | Pure perakitan `URLSearchParams` dari state |

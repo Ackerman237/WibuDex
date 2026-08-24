@@ -47,7 +47,7 @@ helper `ic()`.
 | `popularGrid` | Grid populer |
 | `sectionTitle`, `searchForm`, `searchInput`, `backToTop` | Umum |
 
-### `allManga.html` ← `js/allManga.js`
+### `catalog.html` ← `js/catalog.js`
 | ID | Peran |
 |---|---|
 | `mangaGrid` | Grid katalog |
@@ -97,7 +97,7 @@ drawer, settings panel) dibangun programmatically oleh `build*()` functions.
 └──────────────────────────────────────┘
 ```
 
-### 3.2 Catalog (`allManga.html`)
+### 3.2 Catalog (`catalog.html`)
 Filter bar sticky di bawah nav (select ringan, amber saat aktif) → grid
 media-card → pagination numerik (komponen `.page-number`). State loading =
 `.media-card--skeleton` (shimmer dari tokens).
@@ -121,7 +121,7 @@ aktif + ilustrasi ikon sprite (`ic('book-open')` dsb), tombol aksi ke catalog.
 ## 4. Urutan Eksekusi Indikatif
 
 1. `index.html` + css (fondasi: nav, card, grid, state helpers)
-2. `allManga.html` (reuse penuh komponen home)
+2. `catalog.html` (reuse penuh komponen home)
 3. `detail.html` + tema dinamis cover
 4. `reader.html` + cover-expand transition (signature, paling sensitif)
 5. `library.html`, `history.html` (paling cepat, reuse semua)

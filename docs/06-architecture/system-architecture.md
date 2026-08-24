@@ -54,7 +54,7 @@ scraping modules: **Doujin** and **Neko**.
 | Page | Files | Responsibility |
 |---|---|---|
 | HOME | `index.html/js/css` | Shows recent/updated manga |
-| ALL MANGA | `allManga.html/js/css` | Full library browse: 50/page, prev/next pagination, search — all state kept in the URL (`?page=`, `?query=`) |
+| ALL MANGA | `catalog.html/js/css` | Full library browse: 50/page, prev/next pagination, search — all state kept in the URL (`?page=`, `?query=`) |
 | DETAIL | `detail.html/js` | Manga detail view |
 | READER | `reader.html/js` | Chapter reader |
 

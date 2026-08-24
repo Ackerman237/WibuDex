@@ -5,6 +5,25 @@ the "why" doesn't only live in chat history. Newest first.
 
 ---
 
+### 2026-08-24 — Rename halaman katalog `allManga` → `catalog`
+**Decision:** File halaman katalog & screen scriptnya dinamai
+`catalog.html` / `catalog.js` (bukan `allManga.html` / `allManga.js`).
+Referensi hidup (bottom-nav, redirect detail.js, docs) ikut diupdate;
+catatan historis di archive/changelog lama tidak disentuh.
+
+**Why:** `allManga` adalah satu-satunya nama camelCase multi-kata di antara
+halaman single-word lowercase (`index`, `detail`, `reader`, `library`,
+`history`) — inkonsistensi akan terkunci selama 4 halaman lagi dibangun.
+Secara semantik halaman ini adalah katalog (filter + sort + pagination +
+search), bukan sekadar "semua manga". Pre-release, jadi tidak ada bookmark
+eksternal yang rusak dan tidak perlu redirect stub.
+
+**Alternatives considered:**
+- Biarkan `allManga.html` — rejected: inkonsistensi permanen.
+- `all-manga.html` — rejected: tetap satu-satunya multi-word ber-hyphen.
+
+---
+
 ### 2026-08-20 — SQLite via node:sqlite for server-side reading position
 **Decision:** Pakai `node:sqlite` (built-in Node 22+) sebagai storage untuk
 reading position, bukan `better-sqlite3`, PostgreSQL, atau MongoDB.

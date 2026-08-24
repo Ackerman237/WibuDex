@@ -485,7 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setupBackToTop(el("backToTop"), 400);
 
-  // Search dari halaman detail → redirect ke allManga dengan query
+  // Search dari halaman detail → redirect ke catalog dengan query
   const searchForm = document.getElementById('searchForm');
   const searchInput = document.getElementById('searchInput');
   if (searchForm) {
@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams();
       params.set('page', '1');
       params.set('query', query);
-      window.location.href = `/manga/html/allManga.html?${params.toString()}`;
+      window.location.href = `/manga/html/catalog.html?${params.toString()}`;
     });
   }
 
