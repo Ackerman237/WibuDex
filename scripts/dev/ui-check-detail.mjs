@@ -241,6 +241,51 @@ try {
     ok('Nav ber-class has-cover-accent (scope detail)', themeProbe.navClass === true);
   }
 
+  // ── Kontras tombol READ NOW diuji pada 3 cover berbeda ──
+  // (regresi kelas: teks accent di atas bg accent, Koutei no Shinanyaku
+  //  terbukti kontras cuma 2.00)
+  const readNowSlugs = [slug];
+  try {
+    const rK = await fetch(
+      `${base}/api/manga?limit=5&query=Koutei no Shinanyaku`,
+      { signal: AbortSignal.timeout(30000) }
+    );
+    const sK = (await rK.json())?.data?.[0]?.slug;
+    if (sK && !readNowSlugs.includes(sK)) readNowSlugs.push(sK);
+  } catch { /* best-effort */ }
+  if (slugCompleted && !readNowSlugs.includes(slugCompleted)) {
+    readNowSlugs.push(slugCompleted);
+  }
+
+  for (const s of readNowSlugs) {
+    await openDetail(page, s);
+    await page.waitForFunction(
+      () => document.documentElement.style.getPropertyValue('--cover-accent').trim() !== '',
+      { timeout: 25000 }
+    );
+    await new Promise((r) => setTimeout(r, 200));
+    const btnProbe = await page.evaluate(() => {
+      const cs = getComputedStyle(document.getElementById('readNowBtn'));
+      const lum = (cssColor) => {
+        const m = cssColor.match(/\d+/g).map(Number);
+        const f = (v) => {
+          const c = v / 255;
+          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * f(m[0]) + 0.7152 * f(m[1]) + 0.0722 * f(m[2]);
+      };
+      const l1 = lum(cs.backgroundColor);
+      const l2 = lum(cs.color);
+      return {
+        bg: cs.backgroundColor,
+        color: cs.color,
+        contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05),
+      };
+    });
+    ok(`READ NOW kontras ≥4.5 (${s})`, btnProbe.contrast >= 4.49,
+       `${btnProbe.bg} / ${btnProbe.color} = ${btnProbe.contrast.toFixed(2)}`);
+  }
+
   // ── Stempel TAMAT pada manga completed ──
   if (slugCompleted) {
     await openDetail(page, slugCompleted);

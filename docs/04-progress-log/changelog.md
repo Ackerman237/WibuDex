@@ -5,6 +5,32 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (11) — Fix teks READ NOW tak terlihat + restyle info panel
+
+### Bug (terbukti via probe computed-style)
+Koutei no Shinanyaku: teks READ NOW tak terlihat. Akar masalah —
+`textSafe()` menjamin kontras teks vs **background halaman**, padahal
+konsumennya tombol berlatar **accent itu sendiri**: cover ber-accent
+terang → teks terang di atas terang (kontras terukur 2.00).
+
+### Fix
+- Variabel ketiga **`--cover-accent-contrast`**: dipilih otomatis antara
+  ivory `#F3EFEA` / espresso `#0D0C0C`, mana yang kontrasnya lebih besar
+  vs accent. Cache JSON {accent,text,contrast}; cache lama dimigrasi saat
+  apply.
+- Audit seluruh konsumen var: `--cover-accent-text` hanya dipakai di atas
+  permukaan gelap (aman); accent-as-background hanya READ NOW.
+- Restyle info panel (pilihan user: dua kolom tanpa garis): label Plus
+  Jakarta 11px uppercase micro, nilai Inter 14px primary line-height
+  1.55, garis pemisah dihapus — menghilangkan kesan "kaku/formal".
+
+### Gate
+`ui-check-detail.mjs` **23 cek runtime, semua lolos** — termasuk kontras
+READ NOW ≥4.5 pada 3 cover beda: kanojo-no-ane… = 4.82,
+**koutei-no-shinanyaku = 5.62**, completed slug ✓. npm test 194/194. sw v16.
+
+---
+
 ## 2026-08-24 (10) — Detail dipertegas: tema dinamis v2 + UX batch (permintaan user)
 
 ### Tema dinamis v2 ("kelihatan hampir sama semua" → dipertegas)

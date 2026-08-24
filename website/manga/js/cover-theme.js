@@ -8,12 +8,21 @@
 // longgar (S≤0.85, L 0.28–0.62) agar karakter cover terasa.
 //
 // DUA VARIABEL dengan jaminan kontras:
-//   --cover-accent      → permukaan (bg tombol, gradient, border, badge)
-//   --cover-accent-text → teks/ikon/garis; lightness diiterasi otomatis
-//                         sampai kontras ≥4.5:1 terhadap --bg-base
+//   --cover-accent          → permukaan (bg tombol, gradient, border, badge)
+//   --cover-accent-text     → teks/ikon/garis DI ATAS PERMUKAAN GELAP;
+//                             lightness diiterasi otomatis sampai kontras
+//                             ≥4.5:1 terhadap --bg-base
+//   --cover-accent-contrast → teks DI ATAS permukaan accent itu sendiri
+//                             (mis. tombol READ NOW bg=accent): dipilih
+//                             otomatis antara ivory/espresso mana yang
+//                             kontrasnya lebih besar vs accent.
+//                             (Bug terbukti 2026-08-24: Koutei no
+//                             Shinanyaku — teks terang di atas accent
+//                             terang, kontras 2.00.)
 //
-// Cache localStorage `dominantColor:<slug>` = JSON {accent,text}
-// (format lama string hex tetap dibaca). Fallback: amber terkunci.
+// Cache localStorage `dominantColor:<slug>` = JSON {accent,text,contrast}
+// (cache lama tanpa key `contrast` → dihitung ulang saat apply).
+// Fallback: amber terkunci.
 //
 // POSTMORTEM-CLASS NOTES: canvas same-origin via image-proxy (anti-taint);
 // textarea-decode tidak dipakai di sini — hanya DOM read.
@@ -158,6 +167,14 @@
     return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
   }
 
+  const IVORY = [243, 239, 234]; // #F3EFEA --text-primary
+
+  /** Teks untuk DI ATAS permukaan accent: ivory vs espresso, pilih menang. */
+  function pickOnAccent(accentHex) {
+    const rgb = accentHex.match(/\w\w/g).map((v) => parseInt(v, 16));
+    return contrast(rgb, IVORY) >= contrast(rgb, BG_BASE) ? '#F3EFEA' : '#0D0C0C';
+  }
+
   /** Hex → varian yang lolos kontras ≥4.5 vs bg-base (geser lightness). */
   function textSafe(hex) {
     const rgb = hex.match(/\w\w/g).map((v) => parseInt(v, 16));
@@ -174,8 +191,10 @@
   }
 
   function applyPair(pair) {
+    const onAccent = pair.contrast || pickOnAccent(pair.accent); // migrasi cache lama
     document.documentElement.style.setProperty('--cover-accent', pair.accent);
     document.documentElement.style.setProperty('--cover-accent-text', pair.text);
+    document.documentElement.style.setProperty('--cover-accent-contrast', onAccent);
     document.documentElement.classList.add('has-cover-accent');
   }
 
@@ -226,7 +245,11 @@
 
       const dominant = extractDominant(img);
       const accent = vividClamp(dominant);
-      const pair = { accent, text: textSafe(accent) };
+      const pair = {
+        accent,
+        text: textSafe(accent),
+        contrast: pickOnAccent(accent),
+      };
       applyPair(pair);
       writeCache(slug, pair);
     } catch {
