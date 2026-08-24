@@ -1,0 +1,132 @@
+/* ==========================================================================
+   WIBUDEX MANGA — HALAMAN KATALOG
+   Reuse penuh fondasi home.css (grid, card, state, pagination, back-to-top).
+   File ini hanya: page title, filter bar sticky, select, tombol panah.
+   ========================================================================== */
+
+.page-title {
+  margin-top: var(--space-6);
+}
+
+/* ---------------------------------------------------------------------- */
+/* FILTER BAR — sticky di bawah nav                                        */
+/* ---------------------------------------------------------------------- */
+.filter-bar {
+  position: sticky;
+  top: 60px; /* tinggi nav desktop; mobile auto (nav bisa wrap) */
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  margin-bottom: var(--space-5);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 700px) {
+  /* Nav mobile membungkus jadi lebih tinggi → ikut alur dokumen saja,
+     tidak menempel (menghindari offset yang harus ditebak). */
+  .filter-bar {
+    position: static;
+  }
+}
+
+/* Select ringan; amber saat punya nilai (aktif) */
+.filter-select {
+  height: 40px;
+  padding: 0 calc(var(--space-4) + 18px) 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239E9690' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color var(--duration-base) var(--ease-standard),
+              background-color var(--duration-base) var(--ease-standard),
+              color var(--duration-base) var(--ease-standard);
+  max-width: 100%;
+}
+
+.filter-select:hover {
+  border-color: var(--text-disabled);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+/* Punya nilai ≠ default → tandai aktif dengan aksen.
+   Default per select beda: filter kosong = value "", sort = "newest".
+   :has dipakai progresif; browser lama tetap tampil netral tanpa rusak. */
+.filter-select {
+  color: var(--text-secondary);
+}
+
+/* Sort: netral saat masih "Terbaru", amber saat pilihan lain */
+.filter-select--sort:not(:has(option[value="newest"]:checked)),
+/* Filter lain: amber saat value "" TIDAK terpilih */
+.filter-select:not(.filter-select--sort):not(:has(option[value=""]:checked)) {
+  border-color: rgba(217, 119, 6, 0.45); /* spotlight terkunci, versi tenang */
+  background-color: var(--accent-primary-12);
+  color: var(--accent-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23D97706' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+/* Dropdown option mengikuti tema via color-scheme dari tokens.css */
+
+/* ---------------------------------------------------------------------- */
+/* TOMBOL PANAH PAGINATION (page-number ada di home.css)                   */
+/* ---------------------------------------------------------------------- */
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+}
+
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.page-btn .ic {
+  width: 16px;
+  height: 16px;
+}
+
+/* Label teks disembunyikan di layar sempit — cukup panah (tetap ≥44px) */
+@media (max-width: 640px) {
+  .page-btn span {
+    display: none;
+  }
+  .page-btn {
+    padding: 0 var(--space-3);
+  }
+}
+
+.page-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}

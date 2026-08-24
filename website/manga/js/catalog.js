@@ -284,26 +284,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
-// Helper: icon SVG placeholder (digunakan di pagination btn)
-function ic(name) {
-  const icons = {
-    'arrow-left': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>',
-  };
-  return icons[name] || '';
-}
-
-// Fetch helper with timeout
-async function fetchJsonWithTimeout(url, timeout = 10000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
-  } catch (error) {
-    throw error;
-  } finally {
-    clearTimeout(id);
-  }
-}

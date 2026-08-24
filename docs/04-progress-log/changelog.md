@@ -5,6 +5,32 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (3) — Halaman katalog catalog.html (langkah 2 roadmap)
+
+Reuse penuh fondasi home.css; file baru hanya komponen khas katalog.
+
+### Baru
+- `website/manga/html/catalog.html` — kontrak DOM aktual `js/catalog.js`
+  (12 ID: filter selects, `mangaGrid`, `sectionTitle`, pagination, umum).
+  Opsi select = enum valid server (`VALID_SORTS/STATUSES/TYPES` di
+  mangaController); genre diisi ulang dari `/api/manga/categories`.
+- `website/manga/css/catalog.css` — filter bar sticky di bawah nav
+  (mobile: static, menghindari offset nav wrap), select ringan dengan
+  state aktif amber via `:has()` progresif (default per select dibedakan:
+  filter `value=""`, sort `"newest"`), tombol panah pagination.
+
+### Perbaikan ikutan
+- `js/catalog.js`: hapus duplikasi global `ic()` + `fetchJsonWithTimeout()`
+  yang menimpa versi shared — ikon bintang rating-tag sempat hilang di
+  halaman katalog karena `ic()` lokal hanya kenal `arrow-left`.
+- Drift docs: module-map `#allMangaGrid` → `#mangaGrid` (sesuai kode).
+
+### Verifikasi
+npm test 183/183 · verify-icons lolos · kontrak DOM 12/12 ID · syntax OK ·
+smoke HTTP 200.
+
+---
+
 ## 2026-08-24 (2) — Rename halaman katalog: allManga → catalog
 
 Keputusan: `docs/08-decisions/decision-log.md` (2026-08-24). Satu-satunya

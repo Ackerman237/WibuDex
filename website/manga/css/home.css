@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WIBUDEX MANGA — FONDASI HOME (dipakai ulang allManga/detail nanti)
+   WIBUDEX MANGA — FONDASI HOME (dipakai ulang catalog/detail nanti)
    Nav glassmorphism · hero featured · rail riwayat · grid media-card
    Semua nilai dari wibudex-tokens.css — dilarang hardcode hex baru.
    ========================================================================== */
@@ -792,7 +792,7 @@ main {
 }
 
 /* ---------------------------------------------------------------------- */
-/* 7. PAGINATION (reuse allManga)                                          */
+/* 7. PAGINATION (reuse catalog — tombol panah di catalog.css)             */
 /* ---------------------------------------------------------------------- */
 .pagination {
   display: flex;

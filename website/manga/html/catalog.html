@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Katalog — Wibudex</title>
+  <meta name="description" content="Jelajah katalog manga, manhwa, dan manhua — filter genre, status, tipe, dan sorting.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/manga/css/home.css">
+  <link rel="stylesheet" href="/manga/css/catalog.css">
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+  <!-- ================= NAV (identik home; link aktif: Jelajah) ================= -->
+  <header class="site-nav safe-top">
+    <div class="site-nav__inner container">
+      <a class="site-nav__brand ui-text" href="/manga/html/index.html">Wibu<span>dex</span></a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Navigasi utama">
+        <a href="/manga/html/index.html">Home</a>
+        <a href="/manga/html/catalog.html" class="is-active" aria-current="page">Jelajah</a>
+        <a href="/video/html/">Video</a>
+        <a href="/manga/html/library.html">Library</a>
+        <a href="/manga/html/history.html">Riwayat</a>
+      </nav>
+
+      <form id="searchForm" class="nav-search" role="search">
+        <svg class="ic nav-search__icon" aria-hidden="true"><use href="/manga/icons.svg#i-search"></use></svg>
+        <input type="search" id="searchInput" placeholder="Cari judul…" autocomplete="off" aria-label="Cari manga">
+      </form>
+
+      <button class="nav-hamburger" id="navHamburger" type="button"
+              aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Judul seksi (teks diubah catalog.js sesuai filter aktif) -->
+    <h1 class="section-title page-title" id="sectionTitle">All Series</h1>
+
+    <!-- Filter bar sticky di bawah nav. Opsi = enum valid server
+         (controllers/mangaController.js). Genre diisi ulang dari
+         /api/manga/categories oleh catalog.js. -->
+    <div class="filter-bar" role="group" aria-label="Filter katalog">
+      <select id="genreSelect"  class="filter-select" aria-label="Filter genre"></select>
+      <select id="statusSelect" class="filter-select" aria-label="Filter status">
+        <option value="">Semua Status</option>
+        <option value="ongoing">Ongoing</option>
+        <option value="completed">Completed</option>
+        <option value="hiatus">Hiatus</option>
+      </select>
+      <select id="typeSelect"   class="filter-select" aria-label="Filter tipe">
+        <option value="">Semua Tipe</option>
+        <option value="manga">Manga</option>
+        <option value="manhwa">Manhwa</option>
+        <option value="manhua">Manhua</option>
+      </select>
+      <select id="sortSelect"   class="filter-select filter-select--sort" aria-label="Urutkan">
+        <option value="newest">Terbaru</option>
+        <option value="rating">Rating Tertinggi</option>
+        <option value="title">Judul A–Z</option>
+      </select>
+    </div>
+
+    <!-- Grid hasil (renderMangaCard dari shared/ui.js) -->
+    <div class="manga-grid" id="mangaGrid"><!-- diisi js/catalog.js --></div>
+
+    <!-- Pagination numerik (renderPaginationControls mengelola disabled/aktif) -->
+    <nav class="pagination" aria-label="Navigasi halaman">
+      <button id="prevBtn" class="page-btn page-btn--prev" type="button">
+        <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-left"></use></svg>
+        <span>Sebelumnya</span>
+      </button>
+      <div id="pageNumbers" class="page-numbers"><!-- tombol .page-number diisi ui.js --></div>
+      <button id="nextBtn" class="page-btn page-btn--next" type="button">
+        <span>Berikutnya</span>
+        <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-right"></use></svg>
+      </button>
+    </nav>
+  </main>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up"></use></svg>
+  </button>
+
+  <!-- Urutan penting: utils → ui → api → storage → nav → bottom-nav → screen -->
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/shared/ui.js" defer></script>
+  <script src="/shared/api.js" defer></script>
+  <script src="/shared/storage.js" defer></script>
+  <script src="/shared/nav.js" defer></script>
+  <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/manga/js/catalog.js" defer></script>
+</body>
+</html>
