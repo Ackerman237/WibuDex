@@ -19,7 +19,7 @@ function renderHomeHistory() {
 
   history.slice(0, 5).forEach(item => {
     const card = document.createElement('a');
-    card.href = `/doujinPage/html/detail.html?slug=${encodeURIComponent(item.slug)}`;
+    card.href = `/manga/html/detail.html?slug=${encodeURIComponent(item.slug)}`;
     card.className = 'history-card';
 
     // stempel bendera (entri riwayat lama tanpa `type` → tanpa stempel)
@@ -168,7 +168,7 @@ function applyHeroSlide(manga) {
   if (flag) banner.dataset.flag = flag; else delete banner.dataset.flag;
 
   const slug = manga.slug || '';
-  const detailHref = slug ? `/doujinPage/html/detail.html?slug=${encodeURIComponent(slug)}` : '#';
+  const detailHref = slug ? `/manga/html/detail.html?slug=${encodeURIComponent(slug)}` : '#';
   [readBtn, infoBtn].forEach((a) => {
     a.href = detailHref;
     a.style.opacity = slug ? '' : '0.5';

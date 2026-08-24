@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar Seri - Neko</title>
+  <title>Neko Video Streaming</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="/nekoPage/css/base.css">
-  <link rel="stylesheet" href="/nekoPage/css/index.css">
+  <link rel="stylesheet" href="/video/css/base.css">
+  <link rel="stylesheet" href="/video/css/index.css">
 
   <!-- Favicon & tema browser mobile -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
@@ -35,6 +35,10 @@
           </div>
         </div>
       </nav>
+      <form id="searchForm" class="search-box">
+        <input type="text" id="searchInput" placeholder="Cari video Neko...">
+        <button type="submit">CARI</button>
+      </form>
       <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
         <span></span><span></span><span></span>
       </button>
@@ -42,17 +46,27 @@
   </header>
 
   <main>
+    <!-- Aksi cepat (kategori kini lewat dropdown CATEGORIES di navbar) -->
     <section class="categories-section">
-      <div id="typeTabsContainer" class="categories-grid">
-        <button class="category-btn" data-type="hentai" type="button">DAFTAR HENTAI</button>
-        <button class="category-btn" data-type="jav" type="button">DAFTAR JAV</button>
+      <div class="categories-actions">
+        <button id="randomBtn" class="category-btn random-btn" type="button">🎲 ACAK</button>
+        <a class="category-btn" href="/video/html/series.html?type=hentai">DAFTAR HENTAI</a>
+        <a class="category-btn" href="/video/html/series.html?type=jav">DAFTAR JAV</a>
+      </div>
+    </section>
+
+    <!-- Jadwal New Hentai -->
+    <section class="manga-section schedule-section">
+      <h2 class="section-title">📅 Jadwal New Hentai</h2>
+      <div id="scheduleContainer">
+        <p class="loading">Memuat jadwal...</p>
       </div>
     </section>
 
     <section class="manga-section">
-      <h2 id="sectionTitle" class="section-title">Daftar Seri Hentai</h2>
-      <div id="seriesGrid" class="video-grid">
-        <p class="loading">Memuat daftar seri...</p>
+      <h2 id="sectionTitle" class="section-title">Video Terbaru</h2>
+      <div id="videoGrid" class="video-grid">
+        <p class="loading">Memuat video...</p>
       </div>
       <div class="load-more-container">
         <button id="loadMoreBtn" class="btn-see-more">SEE MORE</button>
@@ -62,7 +76,7 @@
 
   <button id="backToTop" class="back-to-top" title="Kembali ke atas">▲</button>
 
-  <script src="/nekoPage/js/nav.js" defer></script>
-  <script src="/nekoPage/js/series.js" defer></script>
+  <script src="/video/js/nav.js" defer></script>
+  <script src="/video/js/index.js" defer></script>
 </body>
 </html>

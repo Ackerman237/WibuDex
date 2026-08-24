@@ -1,5 +1,5 @@
 // shared/ui.js — UI helper functions
-// Catatan: escapeHtml & setupBackToTop dipindah ke /website/shared/utils.js (shared bersama nekoPage)
+// Catatan: escapeHtml & setupBackToTop dipindah ke /website/shared/utils.js (shared bersama video)
 
 function el(id) {
   return document.getElementById(id);
@@ -140,9 +140,9 @@ function renderPaginationControls({
   });
 }
 
-/** Markup ikon SVG dari sprite bersama (lihat doujinPage/icons.svg). */
+/** Markup ikon SVG dari sprite bersama (lihat manga/icons.svg). */
 function ic(name) {
-  return `<svg class="ic" aria-hidden="true"><use href="/doujinPage/icons.svg#i-${name}"></use></svg>`;
+  return `<svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-${name}"></use></svg>`;
 }
 
 /**
@@ -180,7 +180,7 @@ function renderMangaCard(manga) {
       const isNew = ch.isNew ? '<span class="badge-new">NEW</span>' : '';
       const chTitle = escapeHtml(ch.title || 'Chapter ' + ch.chapter);
       chaptersHTML += `
-        <a href="/doujinPage/html/reader.html?id=${encodeURIComponent(chId)}" class="chapter-btn" onclick="event.stopPropagation();">
+        <a href="/manga/html/reader.html?id=${encodeURIComponent(chId)}" class="chapter-btn" onclick="event.stopPropagation();">
           <span>${chTitle} ${isNew}</span>
           <span class="time-ago">${escapeHtml(ch.date || ch.releaseTime || '')}</span>
         </a>
@@ -203,7 +203,7 @@ function renderMangaCard(manga) {
   if (mangaSlug) {
     card.querySelectorAll('[data-slug]').forEach((el) => {
       el.addEventListener('click', () => {
-        window.location.href = `/doujinPage/html/detail.html?slug=${encodeURIComponent(mangaSlug)}`;
+        window.location.href = `/manga/html/detail.html?slug=${encodeURIComponent(mangaSlug)}`;
       });
     });
   }

@@ -62,16 +62,14 @@ app.use(
   express.static(path.join(__dirname, 'website'), { setHeaders: staticCacheHeaders })
 );
 
-app.use('/neko', express.static(path.join(__dirname, 'website', 'nekoPage'), { setHeaders: staticCacheHeaders }));
-
+// Semua folder di website/ otomatis ter-serve lewat satu express.static di atas:
+//   /manga/...  → website/manga/
+//   /video/...  → website/video/
+// Tidak perlu mounting eksplisit tambahan per-folder.
 app.get('/', (_req, res) => {
-  res.redirect('/doujinPage/html/index.html');
+  // Interim: halaman manga belum dibangun ulang — arahkan ke video yang hidup.
+  res.redirect('/video/html/');
 });
-
-app.use(
-  '/doujinPage/html',
-  express.static(path.join(__dirname, 'website', 'doujinPage'), { setHeaders: staticCacheHeaders })
-);
 
 // 3. Routing API
 app.use('/api', apiRoutes);

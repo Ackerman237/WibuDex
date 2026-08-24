@@ -1,4 +1,4 @@
-// nekoPage/js/index.js — Neko Video list page
+// video/js/index.js — Neko Video list page
 
 let currentOffset = 1;
 let currentCategory = new URLSearchParams(window.location.search).get('category') || '';
@@ -31,7 +31,7 @@ function renderVideoCard(video) {
 
   if (slug) {
     card.addEventListener('click', () => {
-      window.location.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(slug)}`;
+      window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(slug)}`;
     });
   }
 
@@ -139,7 +139,7 @@ async function loadSchedule() {
       (dayGroup.series || []).forEach((item) => {
         const card = document.createElement('a');
         card.className = 'schedule-card';
-        card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
+        card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
 
         const thumbUrl = item.thumb || 'https://placehold.co/100x140?text=?';
         const title = escapeHtml(item.title || '');
@@ -182,7 +182,7 @@ async function setupRandomButton() {
       const res = await fetch('/api/neko/random');
       const result = await res.json();
       if (!result.success || !result.data?.slug) throw new Error(result.message || 'Gagal');
-      window.location.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;
+      window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;
     } catch (err) {
       console.error('Gagal ambil video acak:', err);
       alert('Gagal mengambil video acak, coba lagi.');

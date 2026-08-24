@@ -1,8 +1,8 @@
-// nekoPage/js/nav.js — Hamburger mobile + dropdown CATEGORIES dinamis
+// video/js/nav.js — Hamburger mobile + dropdown CATEGORIES dinamis
 // Load di semua halaman neko (index, series, watch).
 
 (function () {
-  // ─── Hamburger (port pola doujinPage/shared/nav.js) ─────────────────────
+  // ─── Hamburger (port pola manga/shared/nav.js) ─────────────────────
   const hamburger = document.getElementById('navHamburger');
   const navLinks = document.getElementById('navLinks');
 
@@ -88,7 +88,7 @@
     cats.forEach((cat) => {
       if (!cat?.slug) return;
       const a = document.createElement('a');
-      a.href = `/nekoPage/html/index.html?category=${encodeURIComponent(cat.slug)}`;
+      a.href = `/video/html/index.html?category=${encodeURIComponent(cat.slug)}`;
       a.textContent = cat.name || cat.slug;
       menu.appendChild(a);
     });
@@ -97,7 +97,7 @@
   function renderFallback() {
     menu.innerHTML = '';
     const a = document.createElement('a');
-    a.href = '/nekoPage/html/series.html?type=hentai';
+    a.href = '/video/html/series.html?type=hentai';
     a.textContent = 'Daftar Lengkap →';
     menu.appendChild(a);
   }

@@ -35,12 +35,12 @@ async function loadServerHistory() {
       const flag = typeof getMangaFlag === 'function' ? getMangaFlag(row.manga_type) : '';
 
       card.innerHTML = `
-        <a class="history-cover" ${flag ? `data-flag="${flag}"` : ''} href="/doujinPage/html/detail.html?slug=${encodeURIComponent(row.manga_slug)}">
+        <a class="history-cover" ${flag ? `data-flag="${flag}"` : ''} href="/manga/html/detail.html?slug=${encodeURIComponent(row.manga_slug)}">
           <img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer">
         </a>
         <div class="history-info">
           <h3 class="history-title">
-            <a href="/doujinPage/html/detail.html?slug=${encodeURIComponent(row.manga_slug)}">${escapeHtml(title)}</a>
+            <a href="/manga/html/detail.html?slug=${encodeURIComponent(row.manga_slug)}">${escapeHtml(title)}</a>
           </h3>
           <p class="history-meta">Chapter ${escapeHtml(chapterNum)} · halaman ${Number(row.page) || 1}</p>
           <p class="history-date">${escapeHtml(updatedText)}</p>
@@ -49,7 +49,7 @@ async function loadServerHistory() {
       `;
 
       card.querySelector('.btn-continue').addEventListener('click', () => {
-        window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(row.chapter_id)}`;
+        window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(row.chapter_id)}`;
       });
 
       grid.appendChild(card);

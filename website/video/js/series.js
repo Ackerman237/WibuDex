@@ -1,4 +1,4 @@
-// nekoPage/js/series.js — Halaman daftar seri Hentai/JAV
+// video/js/series.js — Halaman daftar seri Hentai/JAV
 
 let currentType = 'hentai';
 let currentPage = 1;
@@ -20,7 +20,7 @@ function renderSeriesCard(item) {
 
   if (slug) {
     card.addEventListener('click', () => {
-      window.location.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(slug)}`;
+      window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(slug)}`;
     });
   }
 

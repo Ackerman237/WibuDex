@@ -46,7 +46,7 @@ function renderChapterList() {
       const chViews = ch.views ? Number(ch.views).toLocaleString("id-ID") : "-";
 
       const row = document.createElement("a");
-      row.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(chId)}`;
+      row.href = `/manga/html/reader.html?id=${encodeURIComponent(chId)}`;
       row.className = "chapter-row" + (idx === 0 && chapterOrder === 'desc' ? " is-latest" : "");
 
       const numberDiv = document.createElement("div");
@@ -245,14 +245,14 @@ async function renderDetail() {
       if (lastRead) {
         readNowBtn.innerHTML = `${ic('play')} CONTINUE CHAPTER ${lastRead.chapter}`;
         readNowBtn.onclick = () => {
-          window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(lastRead.chapterId)}`;
+          window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(lastRead.chapterId)}`;
         };
       } else if (chaptersAsc.length > 0) {
         const firstCh = chaptersAsc[0];
         const firstChId = firstCh.id || firstCh.chapter_id || firstCh.number || firstCh.chapter;
         readNowBtn.innerHTML = `${ic('play')} READ NOW`;
         readNowBtn.onclick = () => {
-          window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(firstChId)}`;
+          window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(firstChId)}`;
         };
       } else {
         readNowBtn.style.display = "none";
@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams();
       params.set('page', '1');
       params.set('query', query);
-      window.location.href = `/doujinPage/html/allManga.html?${params.toString()}`;
+      window.location.href = `/manga/html/allManga.html?${params.toString()}`;
     });
   }
 

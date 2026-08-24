@@ -1,4 +1,4 @@
-// nekoPage/js/watch.js — Neko Video watch page
+// video/js/watch.js — Neko Video watch page
 
 // Allowlist host player — fallback hardcoded; nilai resmi diambil dari
 // /api/neko/player-mode (field allowedHosts) saat halaman dimuat.
@@ -30,7 +30,7 @@ function renderEpisodeList(episodes) {
     if (!ep?.slug) return;
     const a = document.createElement('a');
     a.className = 'server-btn';
-    a.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
+    a.href = `/video/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
     a.textContent = ep.title || ep.slug;
     wrap.appendChild(a);
   });
@@ -49,7 +49,7 @@ async function goRandomVideo(btn) {
     const res = await fetch('/api/neko/random');
     const result = await res.json();
     if (!result.success || !result.data?.slug) throw new Error(result.message || 'Gagal');
-    window.location.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;
+    window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;
   } catch (err) {
     console.error('Gagal ambil video acak:', err);
     btn.disabled = false;
@@ -267,7 +267,7 @@ function renderEpisodeSidebar(episodes, currentSlug) {
       const card = document.createElement('a');
       card.className = 'episode-card';
       if (ep.slug === currentSlug) card.classList.add('is-active');
-      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
+      card.href = `/video/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
 
       const thumbUrl = ep.thumb || 'https://placehold.co/224x126?text=Episode';
       const title = escapeHtml(ep.title || 'Episode');
@@ -295,7 +295,7 @@ function renderEpisodeSidebar(episodes, currentSlug) {
       const card = document.createElement('a');
       card.className = 'episode-card-mobile';
       if (ep.slug === currentSlug) card.classList.add('is-active');
-      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
+      card.href = `/video/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
 
       const thumbUrl = ep.thumb || 'https://placehold.co/280x158?text=Episode';
       const title = escapeHtml(ep.title || 'Episode');
@@ -334,7 +334,7 @@ function renderRelatedSidebar(related) {
       
       const card = document.createElement('a');
       card.className = 'related-card';
-      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
+      card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
       
       const thumbUrl = item.thumb || 'https://placehold.co/256x144?text=Video';
       const title = escapeHtml(item.title || 'Video Terkait');
@@ -359,7 +359,7 @@ function renderRelatedSidebar(related) {
       
       const card = document.createElement('a');
       card.className = 'related-card-mobile';
-      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
+      card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
       
       const thumbUrl = item.thumb || 'https://placehold.co/256x144?text=Video';
       const title = escapeHtml(item.title || 'Video Terkait');

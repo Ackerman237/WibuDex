@@ -258,11 +258,11 @@ function buildTopBar({ mangaTitle, chapterLabelText, mangaSlug }) {
     className: 'reader-tb-btn',
     onClick: () => {
       if (mangaSlug) {
-        window.location.href = `/doujinPage/html/detail.html?slug=${encodeURIComponent(mangaSlug)}`;
+        window.location.href = `/manga/html/detail.html?slug=${encodeURIComponent(mangaSlug)}`;
       } else if (document.referrer) {
         window.history.back();
       } else {
-        window.location.href = '/doujinPage/html/';
+        window.location.href = '/manga/html/';
       }
     },
   });
@@ -286,7 +286,7 @@ function buildTopBar({ mangaTitle, chapterLabelText, mangaSlug }) {
   titleWrap.append(seriesSpan, arrowSpan, chapterSpan);
 
   const homeBtn = document.createElement('a');
-  homeBtn.href = '/doujinPage/html/index.html';
+  homeBtn.href = '/manga/html/index.html';
   homeBtn.className = 'reader-tb-btn';
   homeBtn.setAttribute('aria-label', 'Beranda');
   homeBtn.title = 'Beranda';
@@ -306,7 +306,7 @@ function buildBottomBar({ prevChapter, nextChapter, onPlayToggle, onSettings, on
     className: 'reader-bb-btn',
     disabled: !prevChapter,
     onClick: prevChapter ? () => {
-      window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(getChapterId(prevChapter))}`;
+      window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(getChapterId(prevChapter))}`;
     } : null,
   });
 
@@ -337,7 +337,7 @@ function buildBottomBar({ prevChapter, nextChapter, onPlayToggle, onSettings, on
     className: 'reader-bb-btn',
     disabled: !nextChapter,
     onClick: nextChapter ? () => {
-      window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(getChapterId(nextChapter))}`;
+      window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(getChapterId(nextChapter))}`;
     } : null,
   });
 
@@ -421,7 +421,7 @@ function buildChapterDrawer({ chapters, currentChapterId }) {
         item.disabled = true;
       } else {
         item.addEventListener('click', () => {
-          window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(id)}`;
+          window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(id)}`;
         });
       }
 
@@ -796,7 +796,7 @@ async function loadChapter() {
 
     const goNext = () => {
       if (!nextChapter) return;
-      window.location.href = `/doujinPage/html/reader.html?id=${encodeURIComponent(getChapterId(nextChapter))}`;
+      window.location.href = `/manga/html/reader.html?id=${encodeURIComponent(getChapterId(nextChapter))}`;
     };
 
     const goNextBtn = document.createElement('button');
