@@ -135,6 +135,20 @@ function heroProxyImage(thumb) {
 const HERO_PLACEHOLDER_BG =
   'url("https://placehold.co/1200x400/201b16/ece6dc?text=Featured+Manga")';
 
+/** Chapter pertama (nomor terkecil) dari payload list; null bila tak ada. */
+function getFirstChapter(manga) {
+  const chapters = Array.isArray(manga?.chapters) ? [...manga.chapters] : [];
+  if (chapters.length === 0) return null;
+  chapters.sort((a, b) => {
+    const an = Number(a.number ?? a.chapter ?? 0);
+    const bn = Number(b.number ?? b.chapter ?? 0);
+    return an - bn;
+  });
+  const first = chapters[0];
+  const id = first?.id ?? first?.chapter_id ?? '';
+  return id ? { id: String(id), num: first.number ?? first.chapter } : null;
+}
+
 /** Terapkan satu manga ke seluruh elemen hero (dengan crossfade halus). */
 function applyHeroSlide(manga) {
   const bg = document.getElementById('heroBg');
@@ -169,8 +183,26 @@ function applyHeroSlide(manga) {
 
   const slug = manga.slug || '';
   const detailHref = slug ? `/manga/html/detail.html?slug=${encodeURIComponent(slug)}` : '#';
+
+  // BACA SEKARANG → langsung reader: chapter tersimpan (lanjutan) atau Ch 1.
+  // Fallback ke detail bila data chapter tak tersedia di payload list.
+  const lastRead = typeof getLastReadChapter === 'function' && slug
+    ? getLastReadChapter(slug)
+    : null;
+  const firstChapter = getFirstChapter(manga);
+  let readHref = detailHref;
+  if (lastRead?.chapterId) {
+    readHref = `/manga/html/reader.html?id=${encodeURIComponent(lastRead.chapterId)}`;
+    readBtn.innerHTML = `${ic('play')} LANJUT CH ${lastRead.chapter}`;
+  } else if (firstChapter) {
+    readHref = `/manga/html/reader.html?id=${encodeURIComponent(firstChapter.id)}`;
+    readBtn.innerHTML = `${ic('play')} BACA SEKARANG`;
+  } else {
+    readBtn.innerHTML = `${ic('play')} BACA SEKARANG`;
+  }
+
   [readBtn, infoBtn].forEach((a) => {
-    a.href = detailHref;
+    a.href = a === infoBtn ? detailHref : readHref;
     a.style.opacity = slug ? '' : '0.5';
     if (!slug) a.setAttribute('aria-disabled', 'true');
     else a.removeAttribute('aria-disabled');

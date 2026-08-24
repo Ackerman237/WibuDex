@@ -5,6 +5,20 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (16) — Hero: BACA SEKARANG langsung ke reader + LANJUT cerdas
+
+Dua tombol hero sebelumnya sama-sama ke detail. Kini:
+- **BACA SEKARANG** → langsung `reader.html?id=` — chapter tersimpan di
+  riwayat baca (label "LANJUT CH X") bila ada, jika tidak → Chapter 1
+  (nomor terkecil dari payload list).
+- **INFO** → tetap detail.
+- Fallback aman: payload tanpa chapter → perilaku lama.
+
+Gate baru `ui-check-home.mjs` (5 cek runtime): CTA aktif, href reader,
+href detail, riwayat → LANJUT CH + id tersimpan. sw v20.
+
+---
+
 ## 2026-08-24 (15) — Alt title span-per-judul: batas antar judul selalu jelas
 
 `detail.js`: infoAltTitles kini merender **span `.alt-title-item` per
