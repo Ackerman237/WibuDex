@@ -98,7 +98,6 @@ href detail, riwayat → LANJUT CH + id tersimpan. sw v20.
 
 ---
 
-## 2026-08-24 (16) — Hero: BACA SEKARANG langsung ke reader + LANJUT cerdas
 ## 2026-08-24 (15) — Alt title span-per-judul: batas antar judul selalu jelas
 
 `detail.js`: infoAltTitles kini merender **span `.alt-title-item` per
