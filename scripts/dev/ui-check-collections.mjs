@@ -103,6 +103,12 @@ try {
   }));
   ok('Pencarian: favorit tersaring jadi empty state', searchProbe.favVisible === 0 && searchProbe.favEmptyShown);
   ok('Pencarian: bookmark cocok tetap tampil', searchProbe.bmVisible === 1);
+
+  // Link tanpa underline (reset global a di tokens.css)
+  const linkDeco = await page.evaluate(() =>
+    getComputedStyle(document.querySelector('#favoriteEmpty a.retry-btn')).textDecorationLine
+  );
+  ok('Link empty-state tanpa underline', linkDeco === 'none', `deco=${linkDeco}`);
   await page.evaluate(() => {
     const s = document.getElementById('librarySearch');
     s.value = '';

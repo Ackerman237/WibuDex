@@ -11,6 +11,7 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v23: reset global link tanpa underline (a color:inherit di tokens.css).
 // v22: halaman Library & Riwayat (library/history.html, collections.css) +
 // gate ui-check-collections.
 // v21: penanda baca di daftar chapter detail (is-finished-ch/is-read-ch).
@@ -35,7 +36,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v22';
+const CACHE_VERSION = 'v23';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

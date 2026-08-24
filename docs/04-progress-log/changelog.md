@@ -5,6 +5,17 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (20) - Reset global link tanpa underline
+
+Teks link ke halaman lain tampil bergaris bawah - akar: tidak pernah ada reset global `a`; hanya 5 override per-komponen yang tersebar, sisanya jatuh ke default browser.
+
+- tokens.css BASE: a { color: inherit; text-decoration: none } berlaku global (manga & video); affordance tetap lewat hover state tiap komponen.
+- 5 deklarasi text-decoration:none redundan di home.css dibersihkan.
+- Gate: +1 assertion (link empty-state library -> text-decoration-line none) -> ui-check-collections.mjs 13/13 runtime. sw v23.
+
 ## 2026-08-24 (19) — Halaman Library & Riwayat (langkah 5 roadmap — SELESAI)
 
 ### Baru

@@ -190,6 +190,14 @@ body, .media-card, .bottom-nav, .reader__nav-btn {
   display: none !important;
 }
 
+/* Link mengikuti warna teks induknya — UI app-style tanpa underline
+   bawaan browser; affordance interaksi tetap diberikan oleh hover state
+   tiap komponen. Berlaku global (manga & video). */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
 html {
   background: var(--bg-base);
 }
