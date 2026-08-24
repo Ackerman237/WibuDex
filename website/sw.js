@@ -11,6 +11,7 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v13: badge jumlah genre + judul seksi nama-genre (bukan slug).
 // v12: multi-genre katalog (filter-dropdown.js, catalog.js/html/css) +
 // fix searchbar mobile & gate ui-check-catalog.
 // v11: fix dropdown katalog (filter-dropdown.js) + searchbar mobile
@@ -19,7 +20,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v12';
+const CACHE_VERSION = 'v13';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

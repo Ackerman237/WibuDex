@@ -96,6 +96,11 @@
     countBadge.className = 'fdrop__count numeric';
     countBadge.hidden = !isMulti;
 
+    // Urutan trigger: label → badge jumlah → chevron
+    // (POSTMORTEM 2026-08-24: badge ini pernah dibuat tapi tak pernah
+    // di-append — elemen tanpa sambungan DOM tidak akan pernah tampil)
+    if (isMulti) trigger.appendChild(countBadge);
+
     trigger.insertAdjacentHTML(
       'beforeend',
       '<svg class="ic fdrop__chevron" aria-hidden="true"><use href="/manga/icons.svg#i-chevron-down"></use></svg>'

@@ -95,6 +95,31 @@ function setupFilterListeners() {
 
 // --- Load Genres from API & Initialize ---
 
+/** Slug genre → nama tampilan (dari opsi select); fallback slug mentah. */
+function prettyGenre(genreCsv) {
+  if (!genreCsv || !genreSelect) return genreCsv;
+  return genreCsv
+    .split(',')
+    .map((slug) => {
+      const opt = [...genreSelect.options].find((o) => o.value === slug);
+      return opt ? opt.textContent.trim() : slug;
+    })
+    .join(', ');
+}
+
+/** Set teks judul seksi sesuai filter aktif. */
+function updateSectionTitle(query, genre, page) {
+  const sectionTitle = document.getElementById('sectionTitle');
+  if (!sectionTitle) return;
+  if (query) {
+    sectionTitle.textContent = `Search Results — "${query}"`;
+  } else if (genre) {
+    sectionTitle.textContent = `Genre: ${prettyGenre(genre)} — Page ${page}`;
+  } else {
+    sectionTitle.textContent = `All Series — Page ${page}`;
+  }
+}
+
 async function loadGenres() {
   const select = document.getElementById('genreSelect');
   if (!select) return;
@@ -121,6 +146,12 @@ async function loadGenres() {
     });
     if (!select.multiple && !wanted.size) {
       select.selectedIndex = 0; // "Semua Genre"
+    }
+
+    // Nama genre baru saja tersedia → segarkan judul seksi yang tadinya
+    // terlanjur memakai fallback slug (loadManga bisa lebih dulu jalan)
+    if (!currentQuery && currentGenre) {
+      updateSectionTitle('', currentGenre, currentPage);
     }
   } catch {
     // Fallback jika API gagal: pastikan minimal ada opsi default
@@ -181,13 +212,7 @@ async function loadManga(query = '', page = 1, sort = 'newest', genre = '', stat
     }
 
     if (sectionTitle) {
-      if (query) {
-        sectionTitle.textContent = `Search Results — "${query}"`;
-      } else if (genre) {
-        sectionTitle.textContent = `Genre: ${genre} — Page ${page}`;
-      } else {
-        sectionTitle.textContent = `All Series — Page ${page}`;
-      }
+      updateSectionTitle(query, genre, page);
     }
 
     mangaList.forEach(manga => {

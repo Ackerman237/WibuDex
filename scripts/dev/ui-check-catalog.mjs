@@ -12,6 +12,8 @@
  *      (regresi: flex-basis auto dari lebar intrinsik input)
  *   5. Multi-genre: toggle 2 opsi → Terapkan → URL ?genre=a,b
  *   6. Multi-genre: pilihan ke-7 ditolak + peringatan tampil
+ *   7. Badge jumlah genre ter-render di trigger ("2")
+ *   8. Judul seksi memakai nama genre (bukan slug)
  *
  * Jalankan (server harus sudah berjalan):
  *   node scripts/dev/ui-check-catalog.mjs [base-url]
@@ -112,6 +114,35 @@ try {
   ]);
   await page.waitForSelector('.fdrop__trigger', { timeout: 15000 });
   await new Promise((r) => setTimeout(r, 500)); // rAF sinkron awal dropdown
+
+  // Badge jumlah genre pada trigger harus ter-render dengan angka yang benar
+  // (regresi: elemen badge dibuat tapi tak pernah di-append ke DOM)
+  await page
+    .waitForFunction(
+      () => {
+        const b = document.querySelector('.fdrop__count');
+        return b && !b.hidden && b.textContent === '2';
+      },
+      { timeout: 10000 }
+    )
+    .then(() => ok('Badge jumlah genre tampil "2" di trigger', true))
+    .catch(() => ok('Badge jumlah genre tampil "2" di trigger', false));
+
+  // Judul seksi memakai NAMA genre (bukan slug mentah) setelah daftar genre
+  // selesai dimuat dari API
+  await page
+    .waitForFunction(
+      () => /Age Progression/.test(document.getElementById('sectionTitle')?.textContent || ''),
+      { timeout: 15000 }
+    )
+    .then(() => ok('Judul seksi memakai nama genre (bukan slug)', true))
+    .catch(() =>
+      ok(
+        'Judul seksi memakai nama genre (bukan slug)',
+        false,
+        document.getElementById('sectionTitle')?.textContent || '(kosong)'
+      )
+    );
   await page
     .waitForFunction(
       (vals) => new URLSearchParams(location.search).get('genre') === vals.join(','),

@@ -5,6 +5,31 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (7) — Verifikasi hasil multi-genre + fix badge & judul seksi
+
+Verifikasi diminta user bahwa filter multi-genre BENAR-BENAR memfilter
+(bukan cuma mengubah URL).
+
+### Bukti kebenaran filter (OR-union eksak)
+Ambil seluruh judul per genre lewat API: A=27, B=31, irisan=3 → union
+teoretis 55; hasil `genre=A,B` aktual = **55, 0 di luar union, 0 hilang**.
+Render visual di Chrome nyata: 50 kartu halaman 1, judul campuran kedua
+genre, label dropdown tersinkron URL.
+
+### Fix yang ketahuan dari verifikasi ini
+- **Badge jumlah genre tak pernah tampil** — elemen `.fdrop__count` dibuat
+  tapi tidak pernah di-append ke trigger (kelas sama dengan postmortem:
+  elemen dibangun, tak tersambung DOM). Kini ter-append saat mode multi.
+- **Judul seksi slug mentah** → fungsi `prettyGenre()` +
+  `updateSectionTitle()`: nama genre tampilan ("Age Progression, Age
+  Regression"); disegarkan ulang setelah daftar genre selesai dimuat.
+
+### Gate
+`ui-check-catalog.mjs` +2 assertion runtime (badge "2" ✓, judul pretty ✓)
+→ total 11 cek, semua lolos. `npm test` 194/194. sw v13.
+
+---
+
 ## 2026-08-24 (6) — Multi-genre katalog (maks 6, konfirmasi, peringatan ke-7)
 
 Semantik OR/union diverifikasi empiris ke API sumber: `genre=a,b` → hasil
