@@ -1,7 +1,8 @@
 # MODULE_MAP.md — Klasifikasi Logic Murni vs UI-Bound
 
 Laporan klasifikasi seluruh file `.js` di project WibuDex.
-Terakhir diperbarui: 2026-08-24 (setelah refactor `refactor-shared-utils`).
+Terakhir diperbarui: 2026-08-24 (setelah restrukturisasi produk: manga/video,
+API /api/video, routes per domain, shared terpusat).
 
 **Kategori:**
 - **LOGIC MURNI** — tidak menyentuh DOM sama sekali (tidak ada `document.*`, `getElementById`, `addEventListener`, `innerHTML`, atau referensi ke class/id HTML). Portable: bisa dipindah ke project baru tanpa perubahan.
@@ -24,7 +25,7 @@ File kanonik bersama untuk fungsi yang dibutuhkan lintas bagian (doujin & neko).
 
 ---
 
-## FRONTEND — `website/doujinPage/shared/`
+## SHARED — `website/shared/` (semua file shared kini di sini, bukan nested per modul)
 
 ### `shared/api.js`
 **Klasifikasi: LOGIC MURNI (100% portable)**
@@ -74,7 +75,7 @@ Semua fungsi hanya melakukan fetch HTTP dan mengembalikan data. Tidak ada refere
 | `showError(container, message, onRetry)` | UI-bound | Injeksi markup error + pasang event listener retry |
 | `showEmpty(container, message, btnLabel, onAction)` | UI-bound | Injeksi markup empty-state + pasang listener aksi |
 | `renderPaginationControls(options)` | **UI Component** | Menerima elemen penampung sebagai parameter (`pageNumbersEl`, `prevBtnEl`, `nextBtnEl`), render angka halaman |
-| `ic(name)` | **Logic murni** | Return string markup SVG sprite `<use href="/doujinPage/icons.svg#i-...">` |
+| `ic(name)` | **Logic murni** | Return string markup SVG sprite `<use href="/manga/icons.svg#i-...">` |
 | `getMangaFlag(type)` | **Logic murni** | Pure mapping string type → kode bendera (`'jp'|'kr'|'cn'|''`) |
 | `renderMangaCard(manga)` | UI-bound | `document.createElement`, manipulasi class, event delegation |
 
@@ -94,7 +95,7 @@ IIFE perender bottom navigation bar khusus mobile (lebar <= 700px).
 
 ---
 
-## FRONTEND — `website/doujinPage/js/` (screens)
+## FRONTEND — `website/manga/js/` (screens)
 
 ### `js/index.js`
 **Klasifikasi: UI-BOUND (screen homepage)**
@@ -158,23 +159,23 @@ Fetch riwayat tersimpan dari backend (`/api/progress/all`) dan render ke `#histo
 
 ---
 
-## FRONTEND — `website/nekoPage/`
+## FRONTEND — `website/video/`
 
-*Semua HTML nekoPage (`index.html`, `series.html`, `watch.html`) sekarang meng-include `/shared/utils.js`.*
+*Semua HTML video (`index.html`, `series.html`, `watch.html`) sekarang meng-include `/shared/utils.js`.*
 
-### `nekoPage/js/nav.js`
+### `video/js/nav.js`
 **Klasifikasi: UI-BOUND**
 Hamburger toggle & fetch kategori dengan caching di `sessionStorage` (TTL 10m).
 
-### `nekoPage/js/index.js`
+### `video/js/index.js`
 **Klasifikasi: UI-BOUND**
 Video list, jadwal rilis Hentai, tombol acak (random), pagination tombol "See More". Menggunakan `escapeHtml` & `setupBackToTop` dari `/shared/utils.js`.
 
-### `nekoPage/js/series.js`
+### `video/js/series.js`
 **Klasifikasi: UI-BOUND**
 Daftar seri Hentai/JAV dengan tab filter tipe. Menggunakan `escapeHtml` & `setupBackToTop` dari `/shared/utils.js`.
 
-### `nekoPage/js/watch.js`
+### `video/js/watch.js`
 **Klasifikasi: CAMPURAN**
 - **Logic Murni:** `isAllowedPlayerUrl(rawUrl)` (validasi allowlist host), `tryNativeStream(playerUrl)` (fetch API stream dengan AbortController).
 - **UI-Bound:** Mounting player (`mountNativeVideo`, `mountFilteredFrame`, `mountDirectFrame`), switch server, sidebar episode/related, synopsis expand/collapse toggle. Menggunakan `escapeHtml` dari `/shared/utils.js`.
@@ -209,9 +210,10 @@ Seluruh modul di `lib/` tidak bersentuhan dengan DOM browser dan fully testable:
 | File | Peran | Klasifikasi |
 |---|---|---|
 | `server.js` | Entry point Express, static routing, helmet CSP, graceful shutdown | Backend Logic |
-| `routes/api.js` | Routing tabel endpoint REST API | Backend Logic |
+| outes/index.js | Mount semua sub-router domain | Backend Logic |
+| outes/manga.routes.js / ideo.routes.js / progress.routes.js / pn.routes.js | Routing per domain | Backend Logic |
 | `controllers/mangaController.js` | Handler API manga/doujin | Controller Logic |
-| `controllers/nekoController.js` | Handler API video neko, stream proxy, player frame | Controller Logic |
+| `controllers/videoController.js` | Handler API video neko, stream proxy, player frame | Controller Logic |
 | `controllers/progressController.js`| Handler API sync progress baca via SQLite | Controller Logic |
 | `website/sw.js` | Service Worker (PWA caching strategies: SWR, network-first, offline fallback) | Service Worker Logic |
 | `website/js/register-sw.js` | PWA service worker registration script | UI Helper |
