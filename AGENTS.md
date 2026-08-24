@@ -10,6 +10,15 @@ Dua modul produk:
 - **Manga** (`website/manga/`) — katalog, detail chapter, reader
 - **Video** (`website/video/`) — daftar video, watch page dengan player
 
+## Fokus Saat Ini
+**Task aktif: BANGUN UI MANGA dari nol.**
+Ikuti rencana lengkap di `docs/05-roadmap/rencana-ui-manga.md` — di sana ada
+kontrak DOM per halaman (ID yang wajib disediakan HTML untuk JS screens
+existing), wireframe, dan urutan eksekusi:
+`index.html → allManga → detail → reader → library/history`.
+Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
+`website/css/wibudex-tokens.css`. Satu halaman satu commit, QA tiap halaman.
+
 ## Batasan Teknis Penting
 - **Runtime:** Node.js ≥22.5 (`node:sqlite` built-in), ESM (`"type": "module"`)
 - **Server:** Express 4 (`server.js`), helmet CSP, rate limiting
@@ -84,11 +93,25 @@ Dua modul produk:
 
 ## Alur Kerja yang Disarankan
 1. Jalankan `npm test` — pastikan baseline hijau sebelum menyentuh kode
-2. Perubahan menengah-besar → buat branch git terpisah dulu
-3. Satu fitur satu commit; update `docs/04-progress-log/changelog.md`
-4. Keputusan arsitektur non-trivial → catat di `docs/08-decisions/decision-log.md`
+2. Kenali jenis task, muat skill terkait (lihat tabel di bawah)
+3. Perubahan menengah-besar → buat branch git terpisah dulu
+4. Eksekusi → verifikasi (test/lint/QA skill) → commit
+5. Satu fitur satu commit; update `docs/04-progress-log/changelog.md`
+6. Keputusan arsitektur non-trivial → catat di `docs/08-decisions/decision-log.md`
 
-## Skill Terkait
-- `wibudex-design` — QA/refinement UI (dark-first #121316/#0D0C0C, single accent amber, thumb-reachable)
-- `comic-design` — identitas visual digali dari bahasa visual komik
-- `careful-logic-change` — wajib untuk perubahan logika/perbaikan bug
+## Skill Terkait (muat sesuai jenis task)
+
+| Jenis task | Skill |
+|---|---|
+| Visual / CSS / komponen UI | `comic-design` (proses desain) + `wibudex-design` (QA token & standar) |
+| Selesai bikin halaman/komponen visual | `ai-tell-audit` (pass akhir anti-pola generik) |
+| Alur interaksi / state / navigasi | `wibudex-ux` |
+| Ubah logika / bug fix | `careful-logic-change` |
+| Sentuh `sw.js` / caching | `pwa-caching` |
+| Route baru / titik input luar | `security-review` |
+| Tulis/ubah test | `vitest-testing` |
+| Scraper gagal / ubah parser | `scraper-resilience` |
+| Baca AGENTS/README/module-map sebagai konteks | `docs-sync` |
+
+Standar desain terkunci: dark-first `#0D0C0C`, single accent Cognac Amber
+`#D97706`, motion ≤300ms, thumb-reachable — detail di skill `wibudex-design`.

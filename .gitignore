@@ -79,11 +79,13 @@ server.err
 server-test.err
 
 # Agent/AI tool configs (internal)
-# .opencode/skills sengaja DI-VERSIONING — skill adalah aset knowledge project.
+# .opencode/skills & .opencode/command sengaja DI-VERSIONING —
+# keduanya aset knowledge project (skill suite + slash command).
 # Sisanya (node_modules, dll) tetap diabaikan; lihat juga .opencode/.gitignore.
 .agents/
 .opencode/*
 !.opencode/skills/
+!.opencode/command/
 
 # AI tool configs (contains API keys)
 opencode.json
@@ -164,9 +166,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
-
-# Kiro AI
-kiro-cli.exe
 
 # Runtime data (SQLite + VPN state)
 .runtime/

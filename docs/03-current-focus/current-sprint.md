@@ -1,8 +1,32 @@
 # Current Focus
 
-_Last updated: 2026-08-23_
+_Last updated: 2026-08-24_
 
 ## Active Track
+
+### Track WIBUDEX v2 — Manga UI Rebuild
+Status: **ACTIVE 🚧**
+
+Rencana lengkap: `docs/05-roadmap/rencana-ui-manga.md`
+Kontrak DOM per halaman sudah diaudit dari JS screens existing.
+Desain: `docs/06-architecture/style-guide.md` (final, tersinkron) +
+`website/css/wibudex-tokens.css`.
+
+Urutan eksekusi (satu halaman satu commit):
+- [ ] `index.html` — hero carousel + riwayat + grid populer/rilis terbaru
+- [ ] `allManga.html` — katalog: filter bar + pagination numerik
+- [ ] `detail.html` — cover, meta, chapter list, tabs (+ tema dinamis cover)
+- [ ] `reader.html` — shell minimal (chrome dibangun reader.js)
+      (+ signature element: cover-expand via View Transitions API)
+- [ ] `library.html`, `history.html`
+
+Cara memulai di sesi baru: ketik `/ui-manga [nama-halaman]`.
+QA tiap halaman: `verify-icons.mjs` + standar skill `wibudex-design`
++ audit `ai-tell-audit`.
+
+---
+
+## Riwayat Track
 
 ### Track WIBUDEX v1 — Design system unification & Fixes
 Status: **COMPLETE ✅**
