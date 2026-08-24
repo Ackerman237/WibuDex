@@ -241,25 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupFilterListeners();
 
-  // Status and type selects
-  const statusSelect = document.getElementById('statusSelect');
-  const typeSelect = document.getElementById('typeSelect');
-
-  if (statusSelect) {
-    statusSelect.value = currentStatus;
-    statusSelect.addEventListener('change', () => {
-      currentStatus = statusSelect.value;
-      goToPage(1);
-    });
-  }
-
-  if (typeSelect) {
-    typeSelect.value = currentType;
-    typeSelect.addEventListener('change', () => {
-      currentType = typeSelect.value;
-      goToPage(1);
-    });
-  }
+  // CATATAN: listener change untuk statusSelect/typeSelect cukup satu kali —
+  // sudah dipasang setupFilterListeners() di atas (dulu terpasang dobel di
+  // sini, membuat goToPage(1) terpanggil dua kali per ganti filter).
 
   setupBackToTop(backToTopBtn, 300);
 

@@ -52,22 +52,24 @@
 
     <!-- Filter bar sticky di bawah nav. Opsi = enum valid server
          (controllers/mangaController.js). Genre diisi ulang dari
-         /api/manga/categories oleh catalog.js. -->
+         /api/manga/categories oleh catalog.js.
+         [data-default] = nilai netral untuk state aktif dropdown kustom;
+         native select tetap dipakai sebagai fallback tanpa JS. -->
     <div class="filter-bar" role="group" aria-label="Filter katalog">
-      <select id="genreSelect"  class="filter-select" aria-label="Filter genre"></select>
-      <select id="statusSelect" class="filter-select" aria-label="Filter status">
+      <select id="genreSelect"  class="filter-select" data-default="" aria-label="Filter genre"></select>
+      <select id="statusSelect" class="filter-select" data-default="" aria-label="Filter status">
         <option value="">Semua Status</option>
         <option value="ongoing">Ongoing</option>
         <option value="completed">Completed</option>
         <option value="hiatus">Hiatus</option>
       </select>
-      <select id="typeSelect"   class="filter-select" aria-label="Filter tipe">
+      <select id="typeSelect"   class="filter-select" data-default="" aria-label="Filter tipe">
         <option value="">Semua Tipe</option>
         <option value="manga">Manga</option>
         <option value="manhwa">Manhwa</option>
         <option value="manhua">Manhua</option>
       </select>
-      <select id="sortSelect"   class="filter-select filter-select--sort" aria-label="Urutkan">
+      <select id="sortSelect"   class="filter-select" data-default="newest" aria-label="Urutkan">
         <option value="newest">Terbaru</option>
         <option value="rating">Rating Tertinggi</option>
         <option value="title">Judul A–Z</option>
@@ -103,6 +105,7 @@
   <script src="/shared/storage.js" defer></script>
   <script src="/shared/nav.js" defer></script>
   <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/manga/js/filter-dropdown.js" defer></script>
   <script src="/manga/js/catalog.js" defer></script>
 </body>
 </html>

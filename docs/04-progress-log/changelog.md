@@ -5,6 +5,28 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (4) — QA katalog: cache v10, rail filter mobile, dropdown kustom
+
+### Cache
+- `sw.js` `CACHE_VERSION` v9 → v10: CSS via stale-while-revalidate membuat
+  kunjungan pertama pasca-revisi masih menyajikan aset lama (inilah sebab
+  nav mobile "masalah sama seperti home" terlihat berulang). Bump =
+  invalidasi pasti. Pelajaran: bump WAJIB tiap batch asset (roadmap §5).
+
+### Katalog
+- Filter bar mobile: satu rail horizontal scroll-snap (nowrap), lebar
+  select mengikuti isi, scrollbar disembunyikan.
+- Dropdown kustom `filter-dropdown.js`: progressive enhancement di atas
+  `<select>` native — panel glassmorphism (blur 20px/nav-bg, radius-lg,
+  elevation-modal), centang opsi terpilih, tutup via klik-luar/Escape,
+  state amber `.is-active` dikontrol JS (ganti trik `:has()`).
+  Pilih opsi → tulis `select.value` + dispatch event `change` ASLI, jadi
+  listener catalog.js tak tersentuh. Tanpa JS: fallback native berfungsi.
+- `catalog.js`: hapus listener `change` ganda pada statusSelect/typeSelect
+  (dipasang dua tempat → `goToPage(1)` dobel per ganti filter).
+
+---
+
 ## 2026-08-24 (3) — Halaman katalog catalog.html (langkah 2 roadmap)
 
 Reuse penuh fondasi home.css; file baru hanya komponen khas katalog.
