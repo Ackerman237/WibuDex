@@ -1,124 +1,94 @@
-# AGENTS.md — Comic Reader (Personal Project)
+# AGENTS.md — WibuDex (Self-hosted Manga Reader & Video Streaming)
 
 ## Ringkasan Proyek
-Website baca komik untuk penggunaan pribadi, **tanpa sistem login/akun**.
-Terinspirasi dari fitur-fitur situs seperti Shinigami, Mangadesu, Doujindesu — tapi
-tampilan HARUS punya identitas visual sendiri, bukan tiruan/generic clone.
+**Wibudex** adalah aplikasi web self-hosted untuk membaca manga/manhwa dan
+menonton video streaming, dipakai secara pribadi. Konten dikumpulkan live dari
+situs sumber melalui scraper internal — tidak ada CMS, tidak ada konten yang
+disimpan permanen.
+
+Dua modul produk:
+- **Manga** (`website/manga/`) — katalog, detail chapter, reader
+- **Video** (`website/video/`) — daftar video, watch page dengan player
 
 ## Batasan Teknis Penting
-- **Tidak ada backend/database.** Semua data komik disimpan sebagai file JSON lokal
-  di `/data/`. Semua data personal (bookmark, riwayat baca, posisi scroll terakhir)
-  disimpan di **localStorage** browser, bukan server.
-- Stack: HTML/CSS/JS vanilla. Boleh pakai **Alpine.js** untuk interaktivitas ringan
-  jika perlu, tapi jangan tambah framework build-tool berat (React/Vue/dst) kecuali
-  diminta eksplisit.
-- Semua halaman harus tetap berfungsi dibuka langsung dari file (atau live server
-  sederhana), tanpa proses build wajib.
+- **Runtime:** Node.js ≥22.5 (`node:sqlite` built-in), ESM (`"type": "module"`)
+- **Server:** Express 4 (`server.js`), helmet CSP, rate limiting
+- **Logger:** Pino (`lib/logger.js`) — SELALU `logger.info/warn/error`, dilarang `console.log`
+- **Test:** Vitest — `npm test` WAJIB hijau sebelum & sesudah perubahan apa pun
+- **Zero runtime dependency baru** tanpa persetujuan eksplisit
+- **Frontend:** HTML/CSS/JS vanilla tanpa build step — semua halaman berjalan
+  langsung dari Express static
 
 ## Struktur Folder
 ```
-/index.html              → homepage (highlight, rilisan terbaru)
-/catalog.html             → daftar semua komik + filter genre/status/tipe + search
-/detail.html?id=...       → detail komik (sinopsis, daftar chapter, tags)
-/reader.html?id=..&ch=..  → halaman baca
-/assets/css/
-/assets/js/
-  /core/                 → LOGIC MURNI, tidak boleh menyentuh DOM sama sekali
-    - storage.js         → helper localStorage (bookmark, history, last-read position)
-    - data.js            → loader & parsing data komik dari JSON lokal
-    - (fungsi bisnis lain: filter/sort katalog, hitung progress, format data, dst)
-  /screens/              → UI-BOUND, boleh manipulasi DOM & terikat struktur HTML tertentu
-    - home.js            → perilaku index.html
-    - catalog.js         → perilaku catalog.html
-    - detail.js          → perilaku detail.html
-    - reader.js          → perilaku reader.html
-/data/comics.json         → data komik (dummy/koleksi pribadi)
+/server.js               → Entry point Express (static serve + API mount)
+/controllers/            → Handler API per domain (tanpa logic scraping)
+  mangaController.js     → Endpoint /api/manga/*, /api/chapter
+  videoController.js     → Endpoint /api/video/*, player-frame, stream proxy
+  progressController.js  → CRUD posisi baca (SQLite)
+/vpnController...        → Status VPN
+/routes/                 → Routing per domain
+  index.js               → Mount semua sub-router
+  manga.routes.js / video.routes.js / progress.routes.js / vpn.routes.js
+/lib/                    → Logic murni (portable, tanpa DOM)
+  scraper/               → Lapisan INTERNAL — boleh menyebut nama situs sumber
+    doujinScraper.js       Scraper API JSON terenkripsi (doujin.desu.xxx)
+    nekoScraper.js         Scraper HTML WordPress (nekopoi.care)
+    fetcher.js             Fetch + concurrency queue + timeout + retry
+    cache.js               CacheManager (TTL + maxSize + byte budget)
+    normalizer.js          Normalisasi data + repair mojibake
+    decryptor.js           Dekripsi respons terenkripsi
+    playerFrame.js         Sanitasi embed player + sandbox CSP
+    streamExtract.js       Ekstraksi stream MP4/HLS dari player penyedia
+  security.js            SSRF guard, allowlist domain gambar, stripHtml
+  validator.js           Validasi input request
+  db.js                  SQLite via node:sqlite (posisi baca)
+  vpn/vpnManager.js      Manajemen VPN otomatis (WARP) anti-blokir
+/middleware/             → errorHandler, rateLimit, upstreamResponse
+/tests/                  → Vitest unit + integration (mock/offline, tanpa situs live)
+/scripts/                → get-secret.js, demo.js, generate-icons.mjs, dev/
+/website/                → Frontend statis
+  css/wibudex-tokens.css → Design token pusat (dark-first, accent amber)
+  shared/                → JS bersama kedua modul (utils/api/storage/ui/nav)
+  js/register-sw.js      → Registrasi service worker
+  manga/                 → Screen scripts manga (js/) + icons.svg
+  video/                 → Halaman video lengkap (html/css/js)
+/data/                   → Runtime SQLite (gitignored)
+/.data/                  → State VPN runtime (gitignored)
+/docs/                   → Dokumentasi terstruktur (01- s.d. 08-)
 ```
 
-**Aturan pemisahan /core/ vs /screens/ (wajib dipatuhi):**
-- File di `/core/` DILARANG berisi `document.querySelector`, `getElementById`,
-  `addEventListener`, `innerHTML`, atau referensi apa pun ke struktur/class/id HTML.
-  Kalau sebuah fungsi butuh itu, fungsi itu bukan logic murni — taruh di `/screens/`.
-- File di `/screens/` boleh memanggil fungsi dari `/core/`, tapi tidak sebaliknya —
-  `/core/` tidak boleh bergantung pada `/screens/`.
-- Tujuannya: kalau suatu saat UI didesain ulang dari nol, seluruh isi `/core/` bisa
-  langsung di-copy ke project baru tanpa perlu ditulis ulang, karena tidak terikat
-  pada struktur HTML/tampilan yang mana pun.
+## Prinsip Arsitektur (WAJIB)
+1. **Pemisahan lapisan:** controller tidak berisi logic scraping; scraper tidak
+   tahu frontend; frontend tidak tahu scraper.
+2. **Nama situs sumber** (doujin.desu.xxx, nekopoi.care) hanya boleh ada di
+   `lib/scraper/`. Lapisan produk (folder web, controller, route, package)
+   memakai penamaan domain: manga & video.
+3. **Semua data upstream = untrusted** → wajib lolos `validator.js` +
+   `security.js` (`safeHttpUrl`, `stripHtml`) sebelum sampai client.
+4. **Keamanan non-negotiable:** jangan bocorkan error internal ke client,
+   jangan commit secret (.env), jangan log kredensial.
+5. **Logic murni vs UI-bound:** helper portable tanpa DOM taruh di
+   `website/shared/`; kode yang menyentuh struktur HTML tetap di screen
+   script masing-masing halaman. Referensi audit: `docs/06-architecture/module-map.md`.
 
-## Fitur Wajib
-- Homepage: carousel/highlight komik populer + rilisan terbaru
-- Katalog dengan filter (genre, status ongoing/tamat, tipe manga/manhwa/manhua) + search instan
-- Halaman detail: sinopsis, daftar chapter, tags, rating
-- Reader dengan 2 mode: **vertical scroll** (manhwa) dan **page-by-page** (manga), bisa di-toggle
-- Bookmark / Favorit → localStorage
-- Riwayat baca + "Lanjutkan membaca" dari posisi terakhir → localStorage
-- Dark mode sebagai default (bukan opsional tambahan)
-- Reader: auto-hide navbar saat scroll, progress bar chapter, tombol next/prev chapter,
-  preload gambar chapter berikutnya
+## Fitur Utama
+- Katalog manga: pagination numerik, filter genre/status/tipe, sorting, search
+- Reader: lazy-load gambar, progress bar, auto-hide chrome, drawer chapter,
+  retry gambar gagal, restore posisi baca (localStorage + sinkron server)
+- Video: daftar/kategori/search/jadwal/random, player anti-iklan bertingkat
+  (native stream → filtered frame → direct embed), episode & related sidebar
+- Bookmark/favorit/riwayat via localStorage; posisi baca tersinkron ke server
+  per device ID anonim (header `x-device-id`)
+- PWA: service worker (stale-while-revalidate + network-first + offline.html)
 
-## Prinsip Desain — WAJIB DIBACA SEBELUM MENULIS UI
-Gunakan skill `comic-design` (lihat `.opencode/skills/comic-design/SKILL.md`) setiap kali
-mengerjakan tampilan/UI. Jangan langsung menulis CSS/komponen visual tanpa melalui skill ini.
+## Alur Kerja yang Disarankan
+1. Jalankan `npm test` — pastikan baseline hijau sebelum menyentuh kode
+2. Perubahan menengah-besar → buat branch git terpisah dulu
+3. Satu fitur satu commit; update `docs/04-progress-log/changelog.md`
+4. Keputusan arsitektur non-trivial → catat di `docs/08-decisions/decision-log.md`
 
-Untuk perubahan logika/fungsi (bukan tampilan) — terutama perbaikan bug — gunakan skill
-`careful-logic-change` (lihat `.opencode/skills/careful-logic-change/SKILL.md`) setiap kali.
-Jangan langsung menambal kode tanpa menelusuri akar masalah dan dampaknya ke bagian lain.
-
-Poin singkat yang tidak boleh dilanggar:
-- Dilarang pakai 3 pola desain "default AI": (1) krem + serif kontras + aksen terracotta,
-  (2) hitam pekat + 1 aksen neon generik, (3) broadsheet garis tipis ala koran — kecuali
-  memang sudah dipertimbangkan sadar dan punya alasan kuat untuk proyek ini.
-- Warna, tipografi, dan elemen UI harus digali dari dunia komik itu sendiri (panel, speech
-  bubble, sound effect/SFX, halftone, garis speed-line), bukan dari template dashboard/SaaS umum.
-- Sebelum menulis kode UI baru, buat dulu "token plan" singkat (warna, tipografi, layout,
-  signature element) dan minta konfirmasi/review singkat sebelum lanjut coding.
-
-## Alur Kerja yang Disarankan (kerjakan bertahap, jangan sekaligus)
-1. Setup struktur file + `data/comics.json` (data dummy)
-2. Homepage + catalog (grid, filter, search) — fokus styling di tahap ini dulu
-3. Halaman detail komik
-4. Halaman reader (paling kompleks — kerjakan terpisah, jangan digabung tahap lain)
-5. Integrasi localStorage (bookmark, history, continue reading)
-6. Polish akhir: dark mode konsistensi, animasi secukupnya, cek responsive mobile/desktop
-
-## Aturan Branching untuk Perubahan Menengah-Besar
-
-Untuk perubahan yang lumayan besar (reorganisasi file, fitur baru, refactor
-signifikan — bukan sekadar typo/tweak kecil), buat dulu branch git terpisah
-sebelum mulai mengerjakan, jangan langsung kerja di branch utama. Tujuannya
-supaya progres tiap perubahan besar bisa dilacak dan mudah di-rollback kalau
-ada yang salah. Beri nama branch yang jelas sesuai perubahannya (misal:
-`reorganize-js-structure`, `feature-reader-page-mode`).
-
-## Aturan Reorganisasi File (Pemindahan Folder/File)
-
-Kalau diminta memindahkan file atau folder (HTML, CSS, JS, dsb) ke lokasi lain,
-ini HARUS berupa **pure file move**, bukan menulis ulang isi file:
-
-- Gunakan perintah `git mv` (atau `mv` biasa) untuk memindahkan file. JANGAN membaca
-  isi file lalu menuliskannya kembali dari awal di lokasi baru — cara ini berisiko
-  diam-diam mengubah/menambah logika tanpa disadari.
-- Satu-satunya isi yang boleh diubah setelah file dipindah adalah:
-  a) path di `<script src="...">` / `<link href="...">` pada HTML yang mereferensikan file tersebut
-  b) path import/relative path di dalam file JS itu sendiri, jika ada
-- DILARANG menambah, menghapus, atau mengubah fungsi/logika apa pun di dalam file
-  JS/CSS selama proses reorganisasi. Kalau ada fungsi yang terlihat perlu diperbaiki
-  atau direfactor, JANGAN dilakukan saat ini — laporkan dulu ke user, biarkan itu
-  jadi task terpisah yang diminta secara eksplisit.
-- Setelah selesai, tunjukkan `git diff` (atau perbandingan isi sebelum-sesudah) untuk
-  setiap file yang dipindah, supaya user bisa memverifikasi bahwa hanya path yang berubah.
-- Setelah dipindah, jalankan ulang dev server dan pastikan semua screen tetap berfungsi
-  sama seperti sebelumnya (bookmark, riwayat baca, reader mode, dst — lihat bagian
-  "Sebelum Menyatakan Task Selesai" di bawah).
-
-## Sebelum Menyatakan Task Selesai
-- Jalankan/preview hasil di browser (atau screenshot jika environment mendukung) sebelum bilang selesai.
-- Cek responsive minimal di lebar mobile (~375px) dan desktop.
-- Pastikan localStorage benar-benar menyimpan & memuat ulang data dengan benar (reload halaman untuk tes).
-- Jangan tambah dependency/library baru tanpa menyebutkannya secara eksplisit ke user.
-
-## Dokumentasi Pemetaan Modul
-Kalau user meminta analisa/klasifikasi ulang mana kode yang logic murni vs UI-bound
-(misal setelah menambah banyak fitur baru), tulis hasilnya ke `MODULE_MAP.md` di root
-project — daftar tiap file, klasifikasinya (logic murni / UI-bound), dan alasan singkat.
-Ini murni laporan/dokumentasi, jangan mengubah isi file kode saat membuat laporan ini.
+## Skill Terkait
+- `wibudex-design` — QA/refinement UI (dark-first #121316/#0D0C0C, single accent amber, thumb-reachable)
+- `comic-design` — identitas visual digali dari bahasa visual komik
+- `careful-logic-change` — wajib untuk perubahan logika/perbaikan bug
