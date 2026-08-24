@@ -18,50 +18,51 @@ sampai kamu sendiri yang memutuskan untuk mengubahnya.
 > tetap berlaku di atas semua rekomendasi di file ini.
 
 ## Warna
-| Nama Token | Hex | Dipakai untuk |
+
+> Status: FINAL — sinkron dengan `website/css/wibudex-tokens.css` (2026-08-24).
+> Jangan menambah warna di luar sistem ini; semua halaman wajib pakai token.
+
+| Token (tokens.css) | Hex | Dipakai untuk |
 |---|---|---|
-| `--color-bg` | _(isi)_ | Background utama |
-| `--color-surface` | _(isi)_ | Card, panel |
-| `--color-text` | _(isi)_ | Teks utama |
-| `--color-text-muted` | _(isi)_ | Teks sekunder (caption, meta info) |
-| `--color-accent` | _(isi)_ | Aksen utama (badge, tombol, highlight) |
-| `--color-accent-2` | _(isi, opsional)_ | Aksen kedua kalau perlu |
+| `--bg-base` | `#0D0C0C` | Background utama (Espresso) |
+| `--bg-surface` | `#181615` | Card, panel (Warm Charcoal) |
+| `--bg-surface-raised` | `#22201D` | Card hover, elemen raised |
+| `--border-subtle` | `#2E2A27` | Border tipis card/panel/divider |
+| `--text-primary` | `#F3EFEA` | Teks utama (Warm Ivory) |
+| `--text-secondary` | `#9E9690` | Teks sekunder (caption, meta info) |
+| `--text-disabled` | `#5E5854` | Teks disabled |
+| `--accent-primary` | `#D97706` | Aksen utama (Cognac Amber) — badge, tombol, highlight |
+| `--accent-primary-hover` | `#F59E0B` | Hover state aksen |
+| `--accent-primary-12` | `rgba(217,119,6,.12)` | Background pill/active state |
+
+Light theme juga sudah didefinisikan di tokens.css (`[data-theme="light"]`) —
+nilai lengkap lihat file token; prinsipnya sama, hanya inversi surface/text.
 
 ## Tipografi
 
-> Status: REKOMENDASI awal, belum final. Ganti kolom "Font" kalau setelah dicoba
-> kamu pilih arah lain — tapi begitu dipakai, jangan ganti-ganti lagi tanpa dicatat
-> di "Catatan Perubahan" di bawah.
+> Status: FINAL (2026-08-24) — mengikuti `--font-ui`/`--font-body` yang sudah
+> terkunci di tokens.css. Rekomendasi awal (Cabinet Grotesk + IBM Plex Sans)
+> TIDAK jadi dipakai.
 
-Karena ada judul alternatif dalam 3 skrip (Jepang, Korea, China), pakai SATU
-keluarga font yang punya varian resmi untuk tiap skrip, supaya terasa konsisten
-dan bukan tempelan asal fallback ke font sistem.
-
-| Peran | Font | Alasan dipilih |
+| Peran | Font | Catatan |
 |---|---|---|
-| Display (judul utama, Latin) | **Cabinet Grotesk** atau **General Sans** | Condensed-bold, berkarakter, cocok untuk judul komik; dipakai secukupnya (hanya judul besar), bukan di semua teks |
-| Body (sinopsis, teks panjang, UI) | **IBM Plex Sans** | Netral, mudah dibaca, dan satu keluarga dengan varian CJK di bawah — menjaga konsistensi lintas skrip |
-| Judul alternatif — Jepang | **IBM Plex Sans JP** | Varian resmi IBM Plex untuk Jepang, seragam gaya dengan body Latin |
-| Judul alternatif — Korea | **IBM Plex Sans KR** | Varian resmi IBM Plex untuk Korea |
-| Judul alternatif — China | **IBM Plex Sans SC** (simplified) / **TC** (traditional) | Varian resmi IBM Plex untuk China, pilih SC/TC sesuai mayoritas koleksi |
-| Utility (caption/label) | IBM Plex Sans (weight lebih ringan) | Konsisten dengan body, cukup beda lewat ukuran/weight saja |
+| Display / UI (judul, tombol, label) | **Plus Jakarta Sans** (`--font-ui`) | Weight 700/800 untuk judul, tracking -0.02em |
+| Body (sinopsis, teks panjang) | **Inter** (`--font-body`) | 15px / line-height 1.6 |
+| Judul alternatif Jepang/Korea/China | **IBM Plex Sans JP/KR/SC** *(OPSIONAL)* | Satu-satunya font ketiga yang diizinkan: HANYA untuk alt-title CJK di card/halaman detail |
 
-**Catatan implementasi penting:** jangan load seluruh font CJK sekaligus (bisa >10MB
-karena ribuan karakter). Gunakan subsetting — load hanya karakter yang benar-benar
-dipakai di judul komik yang ada (parameter `text=` di Google Fonts), atau load
-font CJK secara dinamis lewat JS hanya saat halaman menampilkan judul dalam
-skrip itu.
+**Aturan load font CJK (wajib bila diaktifkan):** full CJK font bisa >10MB.
+Load dengan subsetting Google Fonts (parameter `text=` berisi karakter yang
+benar-benar muncul), atau lazy-load via JS hanya saat halaman memuat judul
+dalam skrip itu. Jangan pernah load varian CJK secara global.
 
 ## Icon
 
-> Status: REKOMENDASI awal.
+> Status: FINAL (2026-08-24) — sudah terimplementasi.
 
-Pakai SVG inline/self-hosted, bukan icon font (FontAwesome dkk — berat & generik):
-- **Phosphor Icons** — punya varian weight (thin/regular/bold/duotone), fleksibel untuk dark mode
-- Alternatif: **Tabler Icons** — clean, stroke-width konsisten, ringan
-
-Simpan sebagai sprite SVG di `/assets/icons/`, jangan load dari CDN pihak ketiga
-supaya tidak bergantung pada koneksi eksternal saat load.
+SVG sprite self-hosted di `website/manga/icons.svg` (30 ikon, prefix `i-`),
+dikonsumsi lewat helper `ic(name)` dari `website/shared/ui.js`. Bendera negara
+di `website/icons/flags/` (jp/kr/cn). Verifikasi: `node scripts/dev/verify-icons.mjs`.
+Tidak ada icon font dan tidak ada load dari CDN.
 
 ## Desain Card Komik
 
@@ -112,10 +113,11 @@ mengubah warna dasar situs secara keseluruhan (homepage/catalog tetap pakai
    di bawah standar aksesibilitas (lihat bagian Aksesibilitas), jangan pakai
    warna itu langsung — gelapkan/terangkan otomatis, atau fallback ke
    `--color-accent` default supaya teks tetap terbaca
-4. Hasil ekstraksi warna per komik bisa **di-cache** (misal disimpan sekali di
-   `comics.json` sebagai field tambahan `dominantColor`, dihitung manual/lewat
-   script sekali saat menambah komik baru) supaya tidak menghitung ulang tiap
-   kali halaman dibuka — lebih ringan daripada ekstraksi real-time terus-menerus
+4. Hasil ekstraksi warna per komik di-**cache per slug di `localStorage`**
+   (mis. key `dominantColor:<slug>`) supaya tidak menghitung ulang tiap kali
+   halaman dibuka — lebih ringan daripada ekstraksi real-time terus-menerus.
+   *(Catatan sinkronisasi 2026-08-24: referensi lama ke `comics.json` sudah
+   tidak relevan — data sekarang live dari scraper, bukan file statis.)*
 
 **Batasan supaya tidak berlebihan:**
 - Efeknya HALUS — cukup gradient/tint lembut di area tertentu (misal bagian atas
@@ -254,17 +256,36 @@ gelap). Alternatif:
   (Open Graph image) — meski situs personal, ini kecil tapi bikin terasa lebih "jadi"
 
 ## Layout
-- Grid katalog: _(isi jumlah kolom mobile/desktop, lihat rekomendasi di "Sistem Spacing & Grid")_
-- Rasio cover: 2:3 (default, ubah kalau berbeda)
-- _(tambahkan aturan spacing/breakpoint spesifik kalau berbeda dari rekomendasi di atas)_
+- Grid katalog: 2 kolom mobile / 3 tablet / 5–6 desktop (mengikuti rekomendasi
+  "Sistem Spacing & Grid"; final saat eksekusi per halaman)
+- Rasio cover: ~2:3 (media-card di tokens.css memakai 3/4.2 ≈ 1:1.4 — mendekati)
 
 ## Signature Element
-Elemen unik yang membedakan desain ini dari template comic-reader lain:
-_(isi — misal: transisi buka chapter meniru membalik halaman, badge chapter baru
-berbentuk SFX komik, dsb)_
+
+> Status: FINAL (2026-08-24). Dua elemen dengan pembagian lapis yang ketat —
+> lihat Catatan Perubahan.
+
+**Utama (interaksi): Cover-expand transition.**
+Saat membuka chapter dari halaman detail, cover "meluas" mulus menjadi
+full-screen reader via **View Transitions API** (fallback otomatis: tanpa
+animasi di browser lama). Ini momen khas yang diingat orang dari Wibudex.
+
+**Sekunder (ambiance, terbatas): Tema dinamis dari cover.**
+HANYA di halaman detail, HANYA sebagai gradient lembut area header + warna
+border CTA. Saturasi diturunkan, kontras wajib lolos WCAG AA, fallback ke
+`--accent-primary`. Kalau saat eksekusi terasa ramai berdampingan dengan
+signature utama, elemen inilah yang dikorbankan duluan (prinsip restraint).
 
 ## Catatan Perubahan
 Kalau style guide ini direvisi di kemudian hari, catat di sini kapan dan kenapa,
 supaya ada jejak keputusan desain.
 
-- _(tanggal)_ — _(perubahan apa dan alasannya)_
+- **2026-08-24 — Sinkronisasi menyeluruh dengan kondisi project saat ini:**
+  (1) Tabel warna diisi nilai final dari `wibudex-tokens.css` (palet Amber/
+  Espresso terkunci); (2) tipografi diputuskan mengikuti token terkunci
+  (Plus Jakarta Sans + Inter) — rekomendasi awal Cabinet Grotesk/IBM Plex Sans
+  tidak jadi; IBM Plex CJK tetap opsional khusus alt-title; (3) bagian Icon
+  diperbarui ke realita sprite `website/manga/icons.svg`; (4) referensi usang
+  `comics.json` diganti cache localStorage; (5) Signature Element diisi:
+  cover-expand (utama) + tema dinamis cover (sekunder terbatas).
+- _(sebelumnya)_ — dokumen dibuat dengan status REKOMENDASI awal.
