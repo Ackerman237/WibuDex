@@ -5,6 +5,36 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (14) — Reader polish: side controls dihapus, bottombar vertikal, drawer ramping + penanda dibaca
+
+Semua atas masukan user saat QA visual reader.
+
+### Perubahan
+- **Side controls dihapus total** — panah atas/bawah mengambang mengganggu
+  pembaca; scroll native + auto-scroll + back-to-top menutup fungsi.
+- **Bottombar animasi murni vertikal**: posisi di-refactor dari trik
+  `left:50%+translate(-50%)` ke `inset-inline:0; margin-inline:auto` —
+  show = naik dari bawah, hide = turun tertelan (+mount animation sekali).
+- Prev/Next chapter pakai ikon sprite `arrow-left/right` (dulu karakter
+  teks `<` `>` — kecil & baseline tidak center).
+- Load status jadi mini-pill satu baris (track 90px, teks 10px).
+- Page indicator mengecil + opacity 0.75, menempel sudut.
+- Drawer chapter: mobile = bottom sheet 60vh dari bawah (dulu slide kanan
+  88vw ≈ seluruh layar), desktop dipangkas 340→320px.
+- Drawer tanpa tanggal — cukup nomor chapter.
+- **Penanda "pernah dibaca"**: storage baru `getReadChapters`/
+  `markChapterRead` per-slug (`readChapters:<slug>`, cap 300); chapter
+  dibuka otomatis tercatat; drawer memberi class `.is-read`
+  (pudar + centang hijau), `.is-current` tetap menang.
+
+### Gate
+`ui-check-reader.mjs` **16 cek runtime, semua lolos** (termasuk drawer
+tanpa tanggal + tercatatnya chapter aktif). Catatan proses: assertion
+pertama sempat salah baca kunci (chapter-id vs slug) — ketemu via
+monkey-patch setItem + dump localStorage, diperbaiki pada uji itu sendiri.
+
+---
+
 ## 2026-08-24 (13) — Fix nav mobile: menu vs auto-hide + bottom nav label aktif-only
 
 ### Bug hamburger (dua laporan user)

@@ -302,7 +302,7 @@ function buildBottomBar({ prevChapter, nextChapter, onPlayToggle, onSettings, on
 
   const prevBtn = makeIconButton({
     label: 'Chapter sebelumnya',
-    text: '‹',
+    icon: 'arrow-left',
     className: 'reader-bb-btn',
     disabled: !prevChapter,
     onClick: prevChapter ? () => {
@@ -333,7 +333,7 @@ function buildBottomBar({ prevChapter, nextChapter, onPlayToggle, onSettings, on
 
   const nextBtn = makeIconButton({
     label: 'Chapter berikutnya',
-    text: '›',
+    icon: 'arrow-right',
     className: 'reader-bb-btn',
     disabled: !nextChapter,
     onClick: nextChapter ? () => {
@@ -345,29 +345,11 @@ function buildBottomBar({ prevChapter, nextChapter, onPlayToggle, onSettings, on
   return bar;
 }
 
-function buildSideControls() {
-  const wrap = document.createElement('div');
-  wrap.className = 'reader-side-controls';
+// Side controls (panah atas/bawah mengambang) DIHAPUS 2026-08-24 atas
+// masukan user: mengganggu pembaca — scroll native + auto-scroll +
+// back-to-top sudah menutup fungsinya.
 
-  const upBtn = makeIconButton({
-    label: 'Scroll ke atas',
-    icon: 'chevron-up',
-    className: 'reader-side-btn',
-    onClick: () => window.scrollBy({ top: -Math.round(window.innerHeight * 0.8), behavior: 'smooth' }),
-  });
-
-  const downBtn = makeIconButton({
-    label: 'Scroll ke bawah',
-    icon: 'chevron-down',
-    className: 'reader-side-btn',
-    onClick: () => window.scrollBy({ top: Math.round(window.innerHeight * 0.8), behavior: 'smooth' }),
-  });
-
-  wrap.append(upBtn, downBtn);
-  return wrap;
-}
-
-function buildChapterDrawer({ chapters, currentChapterId }) {
+function buildChapterDrawer({ chapters, currentChapterId, readSet }) {
   const drawer = document.createElement('div');
   drawer.className = 'reader-drawer';
 
@@ -402,6 +384,8 @@ function buildChapterDrawer({ chapters, currentChapterId }) {
       item.type = 'button';
       item.className = 'reader-drawer-item';
       if (isCurrent) item.classList.add('is-current');
+      // Penanda "pernah dibaca" (readSet dari storage.getReadChapters)
+      else if (readSet && readSet.has(String(id))) item.classList.add('is-read');
 
       const labelSpan = document.createElement('span');
       const num = chapter.number ?? chapter.chapter;
@@ -410,12 +394,7 @@ function buildChapterDrawer({ chapters, currentChapterId }) {
         : (chapter.title || `Chapter ${index + 1}`);
       item.appendChild(labelSpan);
 
-      if (chapter.date) {
-        const dateSpan = document.createElement('span');
-        dateSpan.className = 'reader-drawer-date';
-        dateSpan.textContent = chapter.date;
-        item.appendChild(dateSpan);
-      }
+      // Tanggal dihapus atas permintaan user — cukup nomor chapter
 
       if (isCurrent || !id) {
         item.disabled = true;
@@ -494,11 +473,11 @@ function buildSettingsPanel({ imageList }) {
   return { panel, closeBtn, speedInput };
 }
 
-function setupChromeToggle({ topbar, bottombar, sideControls, tapTarget }) {
+function setupChromeToggle({ topbar, bottombar, tapTarget }) {
   let visible = true;
 
   function applyVisibility() {
-    [topbar, bottombar, sideControls].forEach((node) => {
+    [topbar, bottombar].forEach((node) => {
       if (!node) return;
       node.classList.toggle('is-hidden', !visible);
     });
@@ -741,6 +720,9 @@ async function loadChapter() {
         lastRead: new Date().toISOString()
       });
 
+      // Catat untuk penanda "sudah dibaca" di drawer daftar chapter
+      markChapterRead(mangaSlug, chapterId);
+
     } else {
       const empty = document.createElement('p');
       empty.className = 'error';
@@ -811,10 +793,11 @@ async function loadChapter() {
     }
     container.appendChild(goNextBtn);
 
-    const sideControls = buildSideControls();
-    container.appendChild(sideControls);
-
-    const { drawer, closeBtn: drawerClose } = buildChapterDrawer({ chapters, currentChapterId: chapterId });
+    const { drawer, closeBtn: drawerClose } = buildChapterDrawer({
+      chapters,
+      currentChapterId: chapterId,
+      readSet: new Set(getReadChapters(mangaSlug).map(String)),
+    });
     const { panel: settingsPanel, closeBtn: settingsClose, speedInput } = buildSettingsPanel({ imageList });
 
     const backdrop = document.createElement('div');
@@ -865,7 +848,6 @@ async function loadChapter() {
     chromeApi = setupChromeToggle({
       topbar: topBar,
       bottombar: bottomBar,
-      sideControls,
       tapTarget: imageList,
     });
 

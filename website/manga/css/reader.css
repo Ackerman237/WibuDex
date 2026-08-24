@@ -99,23 +99,23 @@ main.container.reader-shell {
 }
 
 /* ---------------------------------------------------------------------- */
-/* LOAD STATUS (progress unduh halaman)                                    */
+/* LOAD STATUS (progress unduh halaman) — mini pill satu baris             */
 /* ---------------------------------------------------------------------- */
 .reader-load-status {
   position: fixed;
-  top: calc(var(--site-header-h, 0px) + var(--space-3));
+  top: var(--space-2);
   left: 50%;
   translate: -50% 0;
   z-index: 35;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  padding: 3px 10px;
   border-radius: var(--radius-full);
   background: var(--nav-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-subtle);
   box-shadow: var(--elevation-1);
   transition: opacity var(--duration-slow) var(--ease-standard),
               visibility var(--duration-slow) var(--ease-standard);
@@ -128,7 +128,7 @@ main.container.reader-shell {
 }
 
 .reader-load-status__text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -139,8 +139,8 @@ main.container.reader-shell {
 }
 
 .reader-load-status__track {
-  width: 180px;
-  height: 4px;
+  width: 90px;
+  height: 3px;
   border-radius: var(--radius-full);
   background: var(--bg-surface-raised);
   overflow: hidden;
@@ -162,27 +162,26 @@ main.container.reader-shell {
 /* ---------------------------------------------------------------------- */
 .reader-progress {
   position: fixed;
-  right: var(--space-4);
-  bottom: calc(76px + env(safe-area-inset-bottom));
+  right: var(--space-2);
+  bottom: calc(66px + env(safe-area-inset-bottom));
   z-index: 30;
-  padding: var(--space-1) var(--space-3);
+  padding: 2px var(--space-2);
   border-radius: var(--radius-full);
   background: var(--nav-bg);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   opacity: 0;
-  translate: 0 6px;
+  translate: 0 4px;
   pointer-events: none;
   transition: opacity var(--duration-base) var(--ease-standard),
               translate var(--duration-base) var(--ease-standard);
 }
 
 .reader-progress.show {
-  opacity: 1;
+  opacity: 0.75;
   translate: 0 0;
 }
 
@@ -237,11 +236,15 @@ main.container.reader-shell {
   flex-shrink: 0;
 }
 
+/* Bottombar — posisi terpusat TANPA trik translate-X, sehingga animasi
+   murni vertikal: muncul naik dari bawah, sembunyi turun ke bawah
+   (permintaan user 2026-08-24). Mount animation slide-up sekali. */
 .reader-bottombar {
   position: fixed;
-  left: 50%;
+  inset-inline: 0;
   bottom: calc(env(safe-area-inset-bottom) + var(--space-3));
-  translate: -50% 0;
+  margin-inline: auto;
+  width: fit-content;
   z-index: 40;
   display: flex;
   gap: var(--space-2);
@@ -254,6 +257,14 @@ main.container.reader-shell {
   box-shadow: var(--elevation-2);
   transition: opacity var(--duration-slow) var(--ease-standard),
               transform var(--duration-slow) var(--ease-standard);
+  animation: reader-bar-rise var(--duration-slow) var(--ease-standard);
+}
+
+@keyframes reader-bar-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
 }
 
 .reader-bb-btn,
@@ -288,38 +299,16 @@ main.container.reader-shell {
   background: var(--accent-primary-hover);
 }
 
-.reader-side-controls {
-  position: fixed;
-  right: var(--space-3);
-  top: 50%;
-  translate: 0 -50%;
-  z-index: 30;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  transition: opacity var(--duration-slow) var(--ease-standard);
-}
-
-.reader-side-controls .reader-side-btn {
-  background: var(--nav-bg);
-  border: 1px solid var(--border-subtle);
-  backdrop-filter: blur(20px);
-}
-
-@media (max-width: 700px) {
-  .reader-side-controls { display: none; } /* zona jangkauan sudah cukup */
-}
-
-/* Auto-hide chrome (.is-hidden oleh setupChromeToggle) */
+/* Auto-hide chrome (.is-hidden oleh setupChromeToggle) — bottombar turun
+   tertelan ke bawah (pure-Y, tanpa komponen horizontal) */
 .reader-topbar.is-hidden,
-.reader-bottombar.is-hidden,
-.reader-side-controls.is-hidden {
+.reader-bottombar.is-hidden {
   opacity: 0;
   pointer-events: none;
 }
 
 .reader-topbar.is-hidden { transform: translateY(-8px); }
-.reader-bottombar.is-hidden { transform: translate(-50%, 8px); }
+.reader-bottombar.is-hidden { transform: translateY(24px); }
 
 /* ---------------------------------------------------------------------- */
 /* DRAWER DAFTAR CHAPTER + PANEL PENGATURAN                                */
@@ -331,7 +320,7 @@ main.container.reader-shell {
   right: 0;
   bottom: 0;
   z-index: 50;
-  width: min(340px, 88vw);
+  width: min(320px, 88vw);
   display: flex;
   flex-direction: column;
   background: var(--bg-surface);
@@ -341,9 +330,36 @@ main.container.reader-shell {
   transition: transform var(--duration-slow) var(--ease-standard);
 }
 
+/* Mobile: bottom sheet — muncul dari bawah, tidak menutupi seluruh layar
+   (permintaan user 2026-08-24) */
+@media (max-width: 700px) {
+  .reader-drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 60vh;
+    height: 60vh;
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(105%);
+  }
+
+  .reader-drawer.is-open {
+    transform: translateY(0);
+  }
+}
+
 .reader-drawer.is-open,
 .reader-settings-panel.is-open {
   transform: translateX(0);
+}
+
+@media (max-width: 700px) {
+  .reader-drawer.is-open {
+    transform: translateY(0);
+  }
 }
 
 .reader-drawer-backdrop {
@@ -420,16 +436,22 @@ main.container.reader-shell {
   color: var(--text-primary);
 }
 
+/* Chapter pernah dibaca — pudar + centang hijau kecil */
+.reader-drawer-item.is-read {
+  color: var(--text-disabled);
+}
+
+.reader-drawer-item.is-read::after {
+  content: '✓';
+  margin-left: auto;
+  font-weight: 800;
+  color: var(--success);
+}
+
 .reader-drawer-item.is-current {
   background: var(--accent-primary-12);
   color: var(--accent-primary);
   cursor: default;
-}
-
-.reader-drawer-date {
-  font-size: 11px;
-  color: var(--text-disabled);
-  font-variant-numeric: tabular-nums;
 }
 
 .reader-settings-body {

@@ -120,19 +120,31 @@ try {
   const progressEl = await page.evaluate(() => Boolean(document.querySelector('.reader-progress')));
   ok('Elemen progress halaman ada', progressEl);
 
-  // 4) Drawer buka/tutup
+  // 4) Drawer buka/tutup — mobile: bottom sheet (translateY), desktop: kanan
   await page.click('.reader-bottombar .reader-bb-btn:nth-child(4)');
-  await new Promise((r) => setTimeout(r, 400));
+  await new Promise((r) => setTimeout(r, 500));
   const drawerOpen = await page.evaluate(() => ({
     open: document.querySelector('.reader-drawer')?.classList.contains('is-open'),
     backdrop: document.querySelector('.reader-drawer-backdrop')?.classList.contains('is-open'),
     items: document.querySelectorAll('.reader-drawer-item').length,
     current: document.querySelectorAll('.reader-drawer-item.is-current').length,
+    dates: document.querySelectorAll('.reader-drawer-date').length,
+    readMarked: document.querySelectorAll('.reader-drawer-item.is-read').length,
   }));
   ok('Drawer daftar chapter terbuka', drawerOpen.open && drawerOpen.backdrop);
   ok('Item chapter terisi + current ditandai',
      drawerOpen.items > 0 && drawerOpen.current === 1,
      `${drawerOpen.items} item, current=${drawerOpen.current}`);
+  ok('Drawer tanpa elemen tanggal', drawerOpen.dates === 0);
+  // Chapter yang dibuka barusan harus tercatat "pernah dibaca"
+  // (storage berkunci SLUG: readChapters:<slug>, bukan chapter id!)
+  const markedStored = await page.evaluate((slug) => {
+    const arr = JSON.parse(localStorage.getItem('readChapters:' + slug) || '[]');
+    return arr.map(String);
+  }, chosen.slug);
+  console.log(`   [diag] readChapters[${chosen.slug}]: ${JSON.stringify(markedStored)}`);
+  ok('Chapter aktif tercatat sudah-dibaca (localStorage)',
+     markedStored.includes(String(chosen.chapterId)));
   await page.click('.reader-drawer-close');
   await new Promise((r) => setTimeout(r, 400));
   const drawerClosed = await page.evaluate(() =>

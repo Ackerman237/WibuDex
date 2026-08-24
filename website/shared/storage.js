@@ -79,6 +79,39 @@ function saveReadingPosition(data) {
 }
 
 /**
+ * Daftar chapter yang pernah dibuka untuk satu manga (per-slug).
+ * Dipakai reader drawer untuk menandai chapter "sudah dibaca".
+ * @param {string} slug
+ * @returns {string[]}
+ */
+function getReadChapters(slug) {
+  if (!slug) return [];
+  try {
+    return JSON.parse(localStorage.getItem('readChapters:' + slug)) || [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Tandai sebuah chapter sebagai pernah dibaca (unik, cap 300 terbaru agar
+ * localStorage tidak membengkak). Dipanggil saat chapter dibuka.
+ * @param {string} slug
+ * @param {string|number} chapterId
+ */
+function markChapterRead(slug, chapterId) {
+  if (!slug || !chapterId) return;
+  const idStr = String(chapterId);
+  const list = getReadChapters(slug);
+  if (list.some((id) => String(id) === idStr)) return;
+  list.push(idStr);
+  localStorage.setItem(
+    'readChapters:' + slug,
+    JSON.stringify(list.slice(-300))
+  );
+}
+
+/**
  * Ambil nomor halaman yang tersimpan untuk satu chapter (logic murni).
  * @param {string} slug - Slug manga
  * @param {string} chapterId - ID chapter
