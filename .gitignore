@@ -78,10 +78,12 @@ server.log
 server.err
 server-test.err
 
-# Agent/AI tool configs (internal, jangan push ke GitHub)
+# Agent/AI tool configs (internal)
+# .opencode/skills sengaja DI-VERSIONING — skill adalah aset knowledge project.
+# Sisanya (node_modules, dll) tetap diabaikan; lihat juga .opencode/.gitignore.
 .agents/
-.opencode/
-.opencode/.gitignore
+.opencode/*
+!.opencode/skills/
 
 # AI tool configs (contains API keys)
 opencode.json
