@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wibudex — Baca Manga &amp; Manhwa</title>
+  <meta name="description" content="Baca manga, manhwa, dan manhua — katalog update terbaru, populer, dan riwayat baca.">
+
+  <!-- Font: Plus Jakarta Sans (UI/display) + Inter (body) — sesuai style-guide terkunci -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+
+  <!-- Design tokens & komponen inti (WAJIB sebelum css halaman) -->
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/manga/css/home.css">
+
+  <!-- Favicon & tema browser mobile -->
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+  <!-- ================= NAV (glassmorphism) ================= -->
+  <header class="site-nav safe-top">
+    <div class="site-nav__inner container">
+      <a class="site-nav__brand ui-text" href="/manga/html/index.html">Wibu<span>dex</span></a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Navigasi utama">
+        <a href="/manga/html/index.html" class="is-active" aria-current="page">Home</a>
+        <a href="/manga/html/allManga.html">Jelajah</a>
+        <a href="/video/html/">Video</a>
+        <a href="/manga/html/library.html">Library</a>
+        <a href="/manga/html/history.html">Riwayat</a>
+      </nav>
+
+      <form id="searchForm" class="nav-search" role="search">
+        <svg class="ic nav-search__icon" aria-hidden="true"><use href="/manga/icons.svg#i-search"></use></svg>
+        <input type="search" id="searchInput" placeholder="Cari judul…" autocomplete="off" aria-label="Cari manga">
+      </form>
+
+      <button class="nav-hamburger" id="navHamburger" type="button"
+              aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= HERO FEATURED ================= -->
+    <section class="hero" id="heroBanner" aria-roledescription="carousel" aria-label="Manga unggulan">
+      <div class="hero__bg" id="heroBg" role="img" aria-label="Cover manga unggulan"></div>
+
+      <div class="hero__content container">
+        <span class="hero__type-badge text-label" id="heroTypeBadge"></span>
+        <h1 class="hero__title" id="heroTitle">Memuat featured…</h1>
+        <p class="hero__rating numeric">
+          <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-star"></use></svg>
+          <span id="heroRatingText">-</span>
+        </p>
+        <div class="hero__actions">
+          <a class="btn-primary" id="heroReadBtn" href="#">
+            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-book-open"></use></svg>
+            Baca Sekarang
+          </a>
+          <a class="btn-ghost" id="heroInfoBtn" href="#">
+            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-info"></use></svg>
+            Info
+          </a>
+        </div>
+      </div>
+
+      <button class="hero-arrow hero-arrow--prev btn-icon" id="heroPrevBtn" type="button" aria-label="Featured sebelumnya">
+        <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-left"></use></svg>
+      </button>
+      <button class="hero-arrow hero-arrow--next btn-icon" id="heroNextBtn" type="button" aria-label="Featured berikutnya">
+        <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-right"></use></svg>
+      </button>
+
+      <div class="hero__dots" id="heroDots" role="tablist" aria-label="Pilih featured"></div>
+    </section>
+
+    <!-- ================= LANJUT BACA (riwayat) ================= -->
+    <section class="rail-section container" id="historyWrapper">
+      <h2 class="section-title">Lanjut Baca</h2>
+      <div class="rail" id="historyContainer"><!-- diisi js/index.js --></div>
+    </section>
+
+    <!-- ================= POPULER ================= -->
+    <section class="grid-section container">
+      <h2 class="section-title">
+        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-flame"></use></svg>
+        Populer
+      </h2>
+      <div class="manga-grid" id="popularGrid"><!-- diisi js/index.js --></div>
+      <!-- Collapse kartu ditangani CSS (#popularGrid tanpa .is-expanded),
+           toggle oleh js/index.js. Tersembunyi bila kartu ≤ 1 baris penuh. -->
+      <button id="popularMoreBtn" class="btn-more" type="button" aria-expanded="false" hidden>
+        <span class="btn-more__label">Lihat Semua</span>
+        <svg class="ic btn-more__icon" aria-hidden="true"><use href="/manga/icons.svg#i-chevron-down"></use></svg>
+      </button>
+    </section>
+
+    <!-- ================= RILIS TERBARU / HASIL CARI ================= -->
+    <section class="grid-section container">
+      <h2 class="section-title" id="sectionTitle">Update Terbaru</h2>
+      <div class="manga-grid" id="mangaGrid"><!-- diisi js/index.js --></div>
+    </section>
+  </main>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up"></use></svg>
+  </button>
+
+  <!-- Urutan penting: utils → ui → api → storage → nav → bottom-nav → screen -->
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/shared/ui.js" defer></script>
+  <script src="/shared/api.js" defer></script>
+  <script src="/shared/storage.js" defer></script>
+  <script src="/shared/nav.js" defer></script>
+  <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/manga/js/index.js" defer></script>
+</body>
+</html>

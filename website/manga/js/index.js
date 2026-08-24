@@ -299,6 +299,42 @@ function setHeroLoading() {
   if (bg) { bg.style.backgroundImage = HERO_PLACEHOLDER_BG; bg.style.opacity = '1'; }
 }
 
+/**
+ * Toggle "Lihat Semua" untuk grid populer.
+ * Collapse kartu ditangani CSS (#popularGrid tanpa .is-expanded menampilkan
+ * 5 kartu di desktop / 6 di layar sempit); JS hanya mengubah class + label.
+ * @param {number} totalShown - Jumlah kartu yang benar-benar dirender
+ */
+function setupPopularMore(totalShown) {
+  const btn = document.getElementById('popularMoreBtn');
+  const grid = document.getElementById('popularGrid');
+  if (!btn || !grid) return;
+
+  // Reset: setelah fetch retry, grid dibangun ulang — mulai dari collapsed lagi
+  grid.classList.remove('is-expanded');
+
+  const labelEl = btn.querySelector('.btn-more__label');
+  if (!labelEl) return;
+
+  // ≤ jumlah tampilan collapsed (maks 6 di layar sempit)? tombol tak perlu ada
+  if (!totalShown || totalShown <= 6) {
+    btn.hidden = true;
+    return;
+  }
+
+  btn.hidden = false;
+  btn.setAttribute('aria-expanded', 'false');
+  labelEl.textContent = 'Lihat Semua';
+
+  // onclick (bukan addEventListener): aman dipanggil ulang saat fetch retry,
+  // handler lama otomatis tergantikan tanpa numpuk
+  btn.onclick = () => {
+    const expanded = grid.classList.toggle('is-expanded');
+    btn.setAttribute('aria-expanded', String(expanded));
+    labelEl.textContent = expanded ? 'Tampilkan Lebih Sedikit' : 'Lihat Semua';
+  };
+}
+
 async function loadHeroAndPopular() {
   const grid = document.getElementById('popularGrid');
   if (!grid) return;
@@ -324,8 +360,13 @@ async function loadHeroAndPopular() {
     mangaList.slice(pool.length).forEach(manga => {
       grid.appendChild(renderMangaCard(manga));
     });
+
+    setupPopularMore(mangaList.length - pool.length);
   } catch (error) {
     console.error('Hero/Popular Fetch Error:', error);
+    // Grid gagal dimuat → tombol see-more tidak relevan, sembunyikan
+    const moreBtn = document.getElementById('popularMoreBtn');
+    if (moreBtn) moreBtn.hidden = true;
     showHeroUnavailable(formatFetchError(error, 'Gagal memuat manga populer.'));
     showError(grid, formatFetchError(error, 'Gagal memuat manga populer.'), () => loadHeroAndPopular());
   }

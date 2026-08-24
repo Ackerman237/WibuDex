@@ -5,6 +5,40 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (1) — Halaman home manga + fondasi CSS dari tokens terkunci
+
+Langkah 1 roadmap UI manga (`docs/05-roadmap/rencana-ui-manga.md`): HTML/CSS
+dibangun dari nol mengikuti kontrak DOM `js/index.js` yang sudah ada.
+
+### Baru
+- `website/manga/html/index.html` — kontrak DOM lengkap: hero carousel
+  (`heroBanner`/`heroBg`/CTA/dots), rail "Lanjut Baca" (`historyWrapper`),
+  grid Populer + Update Terbaru, search nav, back-to-top. Script dimuat
+  berurutan: utils → ui → api → storage → nav → bottom-nav → screen.
+- `website/manga/css/home.css` — fondasi reusable semua halaman manga:
+  nav glassmorphism (blur 20px/85%), hero scrim gradasi ke Espresso,
+  `.manga-card` sesuai output `renderMangaCard` (rasio 3/4.2, stempel
+  bendera jp/kr/cn via `data-flag`, badge NEW stiker SFX miring),
+  state helpers, pagination, back-to-top. Semua nilai dari
+  `wibudex-tokens.css` — nol hex hardcode.
+- `icons.svg`: +3 simbol (`i-home`, `i-compass`, `i-video`) — selama ini
+  dirujuk `bottom-nav.js` tapi tidak ada di sprite (verifier tidak menangkap
+  karena ID dibangun variabel template literal).
+
+### Penyempurnaan (masih dalam commit yang sama — belum ada rilis intermediate)
+- Nav mobile satu baris: logo kiri → searchbar tengah (`flex:1`) →
+  hamburger kanan; dropdown `#navLinks` tetap full-width.
+- Grid populer collapsed: desktop tampil 5 kartu (1 baris penuh),
+  layar sempit 6 (3×2 / 2×3) — baris rapi tanpa kartu yatim. Toggle
+  `#popularMoreBtn` ("Lihat Semua" ↔ "Tampilkan Lebih Sedikit", chevron
+  berputar) oleh `setupPopularMore()` di `index.js`; pakai `onclick`
+  assignment agar aman dari tumpukan handler saat fetch retry.
+
+### Verifikasi
+npm test 183/183 · verify-icons lolos · kontrak DOM 19/19 ID · smoke HTTP 200.
+
+---
+
 ## 2026-08-23 (4) — Player anti-iklan: player-frame produksi + stream langsung (Fase A/B/C)
 
 Masalah: iframe embed penyedia melempar user ke web lain saat dipencet
