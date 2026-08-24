@@ -38,15 +38,6 @@ function renderVideoCard(video) {
   return card;
 }
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 async function loadVideos(reset = false) {
   const grid = document.getElementById('videoGrid');
   const sectionTitle = document.getElementById('sectionTitle');
@@ -199,14 +190,6 @@ async function setupRandomButton() {
       btn.textContent = original;
     }
   });
-}
-
-function setupBackToTop(btn, offset) {
-  if (!btn) return;
-  const sync = () => btn.classList.toggle('show', window.scrollY > (offset || 400));
-  window.addEventListener('scroll', sync, { passive: true });
-  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  sync();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

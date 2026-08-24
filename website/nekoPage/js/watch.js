@@ -1,9 +1,5 @@
 // nekoPage/js/watch.js — Neko Video watch page
 
-function escapeHtml(s) {
-  return String(s || '').replace(/[&"<>']/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;', "'": '&#39;' }[m]));
-}
-
 // Allowlist host player — fallback hardcoded; nilai resmi diambil dari
 // /api/neko/player-mode (field allowedHosts) saat halaman dimuat.
 let playerAllowedHosts = ['playmogo.com', 'streampoi.com', 'yandex.ru'];
@@ -127,13 +123,10 @@ function hideLoading() {
 // Tombol toggle mode: DI LUAR #playerBox (tepat di bawah kotak video),
 // dibuat sekali lalu hanya teksnya yang diperbarui.
 function ensureModeBtn(playerBox, playerUrl) {
-  let host = document.querySelector('.pf-mode-toggle');
-  if (!host) {
-    host = document.createElement('div');
-    host.className = 'pf-mode-toggle';
-    playerBox.after(host);
-  }
-  host.innerHTML = '<button type="button" id="pfModeBtn" class="server-btn pf-mode-btn"></button>';
+  const host = document.getElementById('pfModeToggleHost');
+  if (!host) return;
+  
+  host.innerHTML = '<button type="button" id="pfModeBtn" class="pf-mode-btn"></button>';
   const btn = document.getElementById('pfModeBtn');
   btn.textContent = playerMode === 'direct'
     ? '🧹 Kembali ke mode bersih (anti iklan)'
@@ -236,38 +229,147 @@ async function mountPlayer(playerBox, playerUrl, opts = {}) {
   mountFilteredFrame(playerBox, playerUrl);
 }
 
-// ⚠️ Fungsi ini sempat lenyap saat restrukturisasi (definisinya tertimpa blok
-// helper baru) — halaman mati total tanpa jejak. Test ui-check kini menjaga.
+/* ----- SYNOPSIS COLLAPSE ----- */
 
-// ⚠️ Juga sempat hilang tertimpa restrukturisasi — direstorasi utuh.
-function renderRelated(related) {
-  const section = document.getElementById('relatedSection');
-  const grid = document.getElementById('relatedGrid');
-  if (!section || !grid) return;
+function setupSynopsisToggle() {
+  const synopsisEl = document.getElementById('videoSynopsis');
+  const toggleBtn = document.getElementById('synopsisToggle');
+  const panel = synopsisEl?.closest('.synopsis-panel');
 
-  if (!Array.isArray(related) || related.length === 0) return;
+  if (!synopsisEl || !toggleBtn || !panel) return;
 
-  grid.innerHTML = '';
-  related.forEach((item) => {
-    if (!item?.slug) return;
-    const card = document.createElement('a');
-    card.className = 'video-card';
-    card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
-
-    const thumbUrl = item.thumb || 'https://placehold.co/480x270?text=No+Thumb';
-    const title = escapeHtml(item.title || 'Tanpa Judul');
-
-    card.innerHTML = `
-      <img class="video-thumb" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-      <div class="video-info">
-        <h3 class="video-title">${title}</h3>
-      </div>
-    `;
-    grid.appendChild(card);
+  // Deteksi: konten lebih tinggi dari clamp 4 baris? (line-height 1.6 × 15px × 4)
+  requestAnimationFrame(() => {
+    const maxHeight = 15 * 1.6 * 4;
+    if (synopsisEl.scrollHeight > maxHeight) {
+      panel.classList.add('has-more');
+    }
   });
 
-  if (grid.children.length > 0) {
-    section.style.display = 'block';
+  toggleBtn.addEventListener('click', () => {
+    const isExpanded = panel.classList.toggle('is-expanded');
+    toggleBtn.textContent = isExpanded ? 'Sembunyikan' : 'Baca selengkapnya';
+  });
+}
+/* ----- SIDEBAR & MOBILE RENDER FUNCTIONS ----- */
+
+function renderEpisodeSidebar(episodes, currentSlug) {
+  if (!Array.isArray(episodes) || episodes.length === 0) return;
+
+  // Desktop sidebar
+  const container = document.getElementById('episodeList');
+  const sidebarSection = document.getElementById('sidebarEpisodes');
+  if (container) {
+    container.innerHTML = '';
+    episodes.forEach((ep) => {
+      if (!ep?.slug) return;
+
+      const card = document.createElement('a');
+      card.className = 'episode-card';
+      if (ep.slug === currentSlug) card.classList.add('is-active');
+      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
+
+      const thumbUrl = ep.thumb || 'https://placehold.co/224x126?text=Episode';
+      const title = escapeHtml(ep.title || 'Episode');
+
+      card.innerHTML = `
+        <img class="episode-thumb" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+        <div class="episode-info">
+          <div class="episode-number">Ep. ${escapeHtml(ep.number || '')}</div>
+          <div class="episode-title">${title}</div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+    if (sidebarSection) sidebarSection.style.display = 'block';
+  }
+
+  // Mobile horizontal scroller
+  const mobileList = document.getElementById('episodeMobileList');
+  const mobileSection = document.getElementById('episodesMobile');
+  if (mobileList) {
+    mobileList.innerHTML = '';
+    episodes.forEach((ep) => {
+      if (!ep?.slug) return;
+
+      const card = document.createElement('a');
+      card.className = 'episode-card-mobile';
+      if (ep.slug === currentSlug) card.classList.add('is-active');
+      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(ep.slug)}`;
+
+      const thumbUrl = ep.thumb || 'https://placehold.co/280x158?text=Episode';
+      const title = escapeHtml(ep.title || 'Episode');
+
+      card.innerHTML = `
+        <img class="episode-thumb-mobile" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+        <div class="episode-number-mobile">Ep. ${escapeHtml(ep.number || '')}</div>
+        <div class="episode-title-mobile">${title}</div>
+      `;
+      mobileList.appendChild(card);
+    });
+    if (mobileSection && mobileList.children.length > 0) {
+      mobileSection.style.display = 'block';
+    }
+  }
+}
+
+function renderRelatedSidebar(related) {
+  const sidebarSection = document.getElementById('sidebarRelated');
+  const mobileSection = document.getElementById('relatedMobile');
+  const sidebarContainer = document.getElementById('relatedList');
+  const mobileContainer = document.getElementById('relatedGrid');
+
+  // Kosong → sembunyikan kedua section agar tidak ada judul menggantung
+  if (!Array.isArray(related) || related.length === 0) {
+    if (sidebarSection) sidebarSection.style.display = 'none';
+    if (mobileSection) mobileSection.style.display = 'none';
+    return;
+  }
+  
+  // Desktop sidebar
+  if (sidebarContainer) {
+    sidebarContainer.innerHTML = '';
+    related.forEach((item) => {
+      if (!item?.slug) return;
+      
+      const card = document.createElement('a');
+      card.className = 'related-card';
+      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
+      
+      const thumbUrl = item.thumb || 'https://placehold.co/256x144?text=Video';
+      const title = escapeHtml(item.title || 'Video Terkait');
+      const type = item.type ? escapeHtml(item.type) : '';
+      
+      card.innerHTML = `
+        <img class="related-thumb" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+        <div class="related-info">
+          <div class="related-name">${title}</div>
+          ${type ? `<div class="related-type">${type}</div>` : ''}
+        </div>
+      `;
+      sidebarContainer.appendChild(card);
+    });
+  }
+  
+  // Mobile horizontal scroll
+  if (mobileContainer) {
+    mobileContainer.innerHTML = '';
+    related.forEach((item) => {
+      if (!item?.slug) return;
+      
+      const card = document.createElement('a');
+      card.className = 'related-card-mobile';
+      card.href = `/nekoPage/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
+      
+      const thumbUrl = item.thumb || 'https://placehold.co/256x144?text=Video';
+      const title = escapeHtml(item.title || 'Video Terkait');
+      
+      card.innerHTML = `
+        <img class="related-thumb-mobile" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+        <div class="related-name-mobile">${title}</div>
+      `;
+      mobileContainer.appendChild(card);
+    });
   }
 }
 async function loadDetail() {
@@ -306,7 +408,34 @@ async function loadDetail() {
     document.getElementById('videoTitle').innerText = detail.title || 'Tanpa Judul';
     document.getElementById('videoSynopsis').innerText = detail.synopsis || 'Tidak ada deskripsi/sinopsis.';
 
-    renderRelated(detail.related || []);
+    // Render sidebar components
+    renderEpisodeSidebar(detail.episodes || [], slug);
+    renderRelatedSidebar(detail.related || []);
+    
+    // Setup synopsis toggle
+    setupSynopsisToggle();
+
+    // Update content type badge
+    const contentTypeBadge = document.getElementById('contentTypeBadge');
+    if (contentTypeBadge && detail.type) {
+      contentTypeBadge.textContent = detail.type.toUpperCase();
+    }
+
+    // Update watch meta
+    const watchMeta = document.getElementById('watchMeta');
+    if (watchMeta) {
+      let metaHtml = '';
+      if (detail.date) {
+        metaHtml += `<span class="watch-meta-item">📅 ${escapeHtml(detail.date)}</span>`;
+      }
+      if (detail.duration) {
+        metaHtml += `<span class="watch-meta-item">⏱️ ${escapeHtml(detail.duration)}</span>`;
+      }
+      if (detail.studio) {
+        metaHtml += `<span class="watch-meta-item">🎬 ${escapeHtml(detail.studio)}</span>`;
+      }
+      watchMeta.innerHTML = metaHtml;
+    }
 
     if (detail.players && detail.players.length > 0) {
       serverSelectorContainer.innerHTML = '';

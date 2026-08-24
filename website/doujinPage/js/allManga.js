@@ -1,4 +1,4 @@
-// allManga.js — Paginated manga list with search, sort, and genre filter
+// allManga.js — Paginated manga list with Floating Pill Filter Bar & Bento Grid
 
 const currentLimit = 50;
 
@@ -12,6 +12,67 @@ let currentType = urlParams.get('type') || '';
 
 if (currentPage < 1) currentPage = 1;
 
+// --- Filter State (Genre from select, Status, Tipe) ---
+const genreSelect = document.getElementById('genreSelect');
+const statusSelect = document.getElementById('statusSelect');
+const typeSelect = document.getElementById('typeSelect');
+const sortSelect = document.getElementById('sortSelect');
+
+// Show original filter selects so users can filter (replaces hidden + pill bar logic for reliability)
+function showFilters() {
+  if (genreSelect) genreSelect.style.display = '';
+  if (statusSelect) statusSelect.style.display = '';
+  if (typeSelect) typeSelect.style.display = '';
+  if (sortSelect) sortSelect.style.display = '';
+}
+
+// Hide filter selects (alternative: pill bar mode)
+function hideFilters() {
+  if (genreSelect) genreSelect.style.display = 'none';
+  if (statusSelect) statusSelect.style.display = 'none';
+  if (typeSelect) typeSelect.style.display = 'none';
+}
+
+// Initialize filter values from URL params
+function initFiltersFromURL() {
+  if (genreSelect) genreSelect.value = currentGenre || '';
+  if (statusSelect) statusSelect.value = currentStatus || '';
+  if (typeSelect) typeSelect.value = currentType || '';
+  if (sortSelect) sortSelect.value = (urlParams.get('sort') || 'newest');
+}
+
+// Event listeners for filter changes
+function setupFilterListeners() {
+  if (genreSelect) {
+    genreSelect.addEventListener('change', () => {
+      currentGenre = genreSelect.value;
+      goToPage(1);
+    });
+  }
+  if (statusSelect) {
+    statusSelect.addEventListener('change', () => {
+      currentStatus = statusSelect.value;
+      goToPage(1);
+    });
+  }
+  if (typeSelect) {
+    typeSelect.addEventListener('change', () => {
+      currentType = typeSelect.value;
+      goToPage(1);
+    });
+  }
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      currentSort = sortSelect.value;
+      goToPage(1);
+    });
+  }
+}
+
+
+
+// --- Load Genres from API & Initialize ---
+
 async function loadGenres() {
   const select = document.getElementById('genreSelect');
   if (!select) return;
@@ -20,6 +81,9 @@ async function loadGenres() {
     const result = await fetchJsonWithTimeout('/api/manga/categories');
     const genres = result?.data || [];
 
+    // Keep select in sync: reset and add default "Semua Genre" first
+    select.innerHTML = '<option value="">Semua Genre</option>';
+    
     genres.forEach((g) => {
       const option = document.createElement('option');
       option.value = g.slug || g.name;
@@ -28,7 +92,10 @@ async function loadGenres() {
       select.appendChild(option);
     });
   } catch {
-    // genre dropdown tetap tampil dengan "Semua Genre" saja
+    // Fallback jika API gagal: pastikan minimal ada opsi default
+    if (select.children.length === 0) {
+      select.innerHTML = '<option value="">Semua Genre</option>';
+    }
   }
 }
 
@@ -115,13 +182,23 @@ function buildListParams(page) {
 
 function goToPage(page) {
   if (page < 1) return;
-  window.location.href = `/doujinPage/html/allManga.html?${buildListParams(page).toString()}`;
+  currentPage = page;
+  currentGenre = genreSelect ? genreSelect.value : '';
+  currentStatus = statusSelect ? statusSelect.value : '';
+  currentType = typeSelect ? typeSelect.value : '';
+  currentSort = sortSelect ? sortSelect.value : 'newest';
+  
+  const params = buildListParams(page);
+  window.location.href = `/doujinPage/html/allManga.html?${params.toString()}`;
 }
 
 function renderPagination(pagination) {
   renderPaginationControls({
     ...pagination,
     onPageChange: (newPage) => goToPage(newPage),
+    pageNumbersEl: document.getElementById('pageNumbers'),
+    prevBtnEl: document.getElementById('prevBtn'),
+    nextBtnEl: document.getElementById('nextBtn'),
   });
 }
 
@@ -132,7 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextBtn = document.getElementById('nextBtn');
   const backToTopBtn = document.getElementById('backToTop');
   const sortSelect = document.getElementById('sortSelect');
-  const genreSelect = document.getElementById('genreSelect');
+
+  // Initialize filter selects (show them so users can filter)
+  showFilters();
+  initFiltersFromURL();
 
   if (searchInput && currentQuery) searchInput.value = currentQuery;
   if (sortSelect) sortSelect.value = currentSort;
@@ -159,20 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (sortSelect) {
-    sortSelect.addEventListener('change', () => {
-      currentSort = sortSelect.value;
-      goToPage(1);
-    });
-  }
+  setupFilterListeners();
 
-  if (genreSelect) {
-    genreSelect.addEventListener('change', () => {
-      currentGenre = genreSelect.value;
-      goToPage(1);
-    });
-  }
-
+  // Status and type selects
   const statusSelect = document.getElementById('statusSelect');
   const typeSelect = document.getElementById('typeSelect');
 
@@ -215,3 +284,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// Helper: icon SVG placeholder (digunakan di pagination btn)
+function ic(name) {
+  const icons = {
+    'arrow-left': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>',
+  };
+  return icons[name] || '';
+}
+
+// Fetch helper with timeout
+async function fetchJsonWithTimeout(url, timeout = 10000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    throw error;
+  } finally {
+    clearTimeout(id);
+  }
+}

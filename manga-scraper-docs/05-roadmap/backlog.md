@@ -24,6 +24,6 @@ _Core P0/P1 migration items completed 2026-08-21 (SSRF protection, proxy size/ty
 - [ ] Reduce Neko scraper fragility to upstream HTML structure changes
 
 ## Not scheduled yet (parking lot)
-- Nothing currently — add ideas here as they come up rather than losing
-  them in chat history.
+- [ ] **Kandidat Skill QA**: Install & adaptasi skill `redesign-existing-projects` (`Leonxlnx/taste-skill`) sebagai alat bantu QA/polish (audit spacing, hirarki, motion quality). Posisi: alat bantu QA, BUKAN pengganti `WIBUDEX-MASTER-SPEC.md`. Dievaluasi setelah Fase 1–2 selesai.
+
 

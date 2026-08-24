@@ -1,290 +1,709 @@
-/* =========================================================
-   Neko Video — WATCH PAGE (upgraded)
-   Header standar dari base.css dipakai di watch.html
-   (nav-header lama sudah diganti). Player card dengan shadow,
-   server selector jadi pill, loading pakai spinner, panel
-   sinopsis rapi.
-   Load setelah base.css. Khusus dipakai di watch.html.
-   ========================================================= */
+/* ==========================================================================
+   NEKO VIDEO — WATCH PAGE · "Premium Watch Experience"
+   Referensi: Wibudex Master Spec + 21dev.ui editorial style + YouTube/Crunchyroll
+   Arsitektur: desktop 2-kolom (player + sticky sidebar), mobile stack immersive
+   Token: wibudex-tokens.css — dark-first, single-accent (#D97706)
+   Version: 5.0
+   ========================================================================== */
 
-/* ---------- layout shell ---------- */
+/* --------------------------------------------------------------------------
+   1. LAYOUT SHELL — Cinema-first grid
+   -------------------------------------------------------------------------- */
 
-.player-container {
-  max-width: 960px;
-  margin: 28px auto 60px;
-  padding: 0 16px;
+.watch-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-5);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-8);
 }
 
-/* ---------- title + streaming badge ---------- */
-
-.watch-head {
+.watch-main {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0; /* cegah overflow konten lebar (iframe/long title) */
 }
 
-.video-title-main {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: 0.01em;
+.watch-sidebar {
+  position: sticky;
+  top: 84px; /* di bawah header sticky */
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-height: calc(100vh - 108px);
+  padding-right: var(--space-1);
+  overflow-y: auto;
+
+  /* Custom scrollbar premium: tipis, subtle, hanya terlihat saat perlu */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+.watch-sidebar::-webkit-scrollbar { width: 4px; }
+.watch-sidebar::-webkit-scrollbar-track { background: transparent; }
+.watch-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: var(--radius-full);
+}
+.watch-sidebar:hover::-webkit-scrollbar-thumb { background: var(--text-disabled); }
+
+/* --------------------------------------------------------------------------
+   2. PLAYER CARD — Content-first, video adalah bintangnya
+   -------------------------------------------------------------------------- */
+
+.player-card {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--elevation-2);
+}
+
+.video-wrapper {
+  position: relative;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 */
+  background:
+    radial-gradient(ellipse at center, var(--bg-surface-raised) 0%, #000 130%);
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.video-wrapper iframe,
+.video-wrapper video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+/* --------------------------------------------------------------------------
+   3. LOADING / ERROR STATES
+   -------------------------------------------------------------------------- */
+
+.player-loading-text,
+.pf-loading,
+.player-error-text {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  padding: 0 var(--space-4);
+}
+
+.pf-loading { background: rgba(13, 12, 12, 0.92); }
+
+.player-loading-text::before,
+.pf-loading::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--bg-surface-raised);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.player-error-text { color: var(--error); font-weight: 500; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.85); }
+}
+
+/* --------------------------------------------------------------------------
+   4. SERVER SELECTOR — Pill group dengan active glow
+   -------------------------------------------------------------------------- */
+
+.server-selector {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: calc(-1 * var(--space-2)); /* rapatkan ke player */
+}
+
+.server-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background var(--duration-fast) var(--ease-standard),
+              color      var(--duration-fast) var(--ease-standard),
+              box-shadow var(--duration-base) var(--ease-standard);
+}
+
+.server-btn:hover {
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+}
+
+.server-btn.active {
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  border-color: transparent;
+  /* Glow amber halus — server aktif langsung menarik mata */
+  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.35);
+}
+
+/* Elemen yang di-inject JS langsung ke #playerBox (.video-wrapper):
+   wrapper punya height:0 + overflow:hidden → anak statis akan TERPOTONG.
+   Semua konten fallback wajib position:absolute agar terlihat. */
+
+/* Fallback daftar episode (halaman seri tanpa player) */
+.video-wrapper .episode-list {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+  gap: var(--space-2);
+}
+.video-wrapper .episode-list .server-btn {
+  width: 100%;
+  justify-content: flex-start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tombol "video acak lain" di bawah pesan error.
+   Centering pakai margin auto (bukan transform) agar tidak bentrok
+   dengan pressed-state scale(0.97) dari token baseline. */
+.video-wrapper > .random-retry-btn {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
+  z-index: 3;
+}
+
+/* Label "pilih episode" di dalam fallback list: jadikan static,
+   bukan absolute overlay (default .player-error-text) yang menghalangi klik */
+.video-wrapper .episode-list .player-error-text {
+  position: static;
+  color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   5. MODE TOGGLE
+   -------------------------------------------------------------------------- */
+
+.pf-mode-toggle-host {
+  display: flex;
+  justify-content: center;
+}
+
+.pf-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-disabled);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+.pf-mode-btn:hover { color: var(--accent-primary); }
+
+/* --------------------------------------------------------------------------
+   6. WATCH INFO — Editorial hierarchy (21dev.ui style)
+   -------------------------------------------------------------------------- */
+
+.watch-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-1);
+}
+
+/* Badges: tinted, tidak berisik */
+.watch-badges {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.live-badge,
+.content-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
 }
 
 .live-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  background: rgba(193, 68, 58, 0.12);
-  border: 1px solid rgba(193, 68, 58, 0.35);
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  padding: 5px 12px;
-  border-radius: 999px;
+  background: var(--accent-primary-12);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  color: var(--accent-primary);
 }
 
 .live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--accent-primary);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-/* ---------- player card ---------- */
-
-.player-card {
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 14px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+.content-badge {
+  background: rgba(158, 150, 144, 0.12);
+  border: 1px solid rgba(158, 150, 144, 0.22);
+  color: var(--text-secondary);
 }
 
-.video-wrapper {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  background: radial-gradient(circle at center, var(--card) 0%, var(--bg) 120%);
-  border-radius: 6px;
+.watch-title {
+  font-family: var(--font-ui);
+  font-size: 24px;
+  font-weight: 800;               /* editorial heavy */
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Metadata: micro-caps ala majalah desain */
+.watch-meta {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.watch-meta-item { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+/* Synopsis: clamp 4 baris + fade-out hint sebelum expand */
+.synopsis-panel { position: relative; }
+
+.synopsis-text {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.synopsis-panel.has-more:not(.is-expanded) .synopsis-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.video-wrapper iframe {
+
+/* Fade-out hint: konten berlanjut di balik gradasi */
+.synopsis-panel.has-more:not(.is-expanded)::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
+  right: 0;
+  bottom: 30px; /* di atas tombol toggle */
+  left: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--bg-surface) 90%);
+  pointer-events: none;
 }
 
-.player-loading-text,
-.player-error-text {
-  position: absolute;
-  inset: 0;
-  margin: 0;
+.synopsis-toggle {
+  display: none;
+  margin-top: var(--space-1);
+  padding: var(--space-1) 0;
+  border: none;
+  background: none;
+  color: var(--accent-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.synopsis-toggle:hover { color: var(--accent-primary-hover); }
+
+.synopsis-panel.has-more .synopsis-toggle { display: inline-block; }
+
+.btn-external {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  min-height: 44px;                 /* tap target */
+  padding: 0 var(--space-4);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  touch-action: manipulation;
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              color      var(--duration-fast) var(--ease-standard);
+}
+
+.btn-external:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* --------------------------------------------------------------------------
+   7. SIDEBAR — Episode list & related videos
+   -------------------------------------------------------------------------- */
+
+.sidebar-title,
+.related-title,
+.section-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* --- Episode cards (desktop sidebar) --- */
+
+.episode-list {
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+  padding-right: var(--space-1);
+}
+
+.episode-card {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: var(--space-3);
   align-items: center;
-  justify-content: center;
-  gap: 14px;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  letter-spacing: 0.03em;
-  text-align: center;
-  padding: 0 20px;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+  min-height: 44px;                 /* tap target */
+  touch-action: manipulation;
+  transition: background var(--duration-fast) var(--ease-standard);
 }
 
-.player-loading-text::before {
-  content: '';
-  width: 30px;
-  height: 30px;
-  border: 3px solid var(--border);
-  border-top-color: var(--ink);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.episode-card:hover { background: var(--bg-surface-raised); }
+
+.episode-card.is-active {
+  background: var(--accent-primary-12);
+  box-shadow: inset 2px 0 0 var(--accent-primary);
 }
 
-/* ---------- video ---------- */
+.episode-thumb {
+  width: 112px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  display: block;
+}
 
-.video-info { padding: 12px; }
-.video-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
+.episode-card.is-active .episode-thumb {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+
+.episode-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.episode-number {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+.episode-title {
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.4;
+  color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.video-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
 
-.player-error-text {
-  color: #d9756c;
-}
+.episode-card.is-active .episode-title { color: var(--text-primary); }
 
-/* ---------- server selector ---------- */
+/* --- Related cards (desktop sidebar) --- */
 
-.server-selector {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-
-.server-btn {
-  padding: 8px 18px;
-  background: var(--bg-alt);
-  color: var(--text-muted);
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  cursor: pointer;
-  font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  transition: all 0.18s ease;
-}
-.server-btn:hover {
-  border-color: var(--ink);
-  color: var(--text);
-}
-.server-btn.active {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--text);
-  box-shadow: 0 4px 14px rgba(193, 68, 58, 0.35);
-}
-
-/* ---------- fallback link ---------- */
-
-.external-fallback {
-  margin-top: 14px;
-  text-align: center;
-}
-
-.external-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  text-decoration: none;
-  border-radius: var(--radius);
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.18s ease;
-}
-.external-btn:hover {
-  background: var(--card-hover);
-  border-color: var(--ink);
-  color: var(--text);
-}
-
-/* ---------- synopsis panel ---------- */
-
-.video-details {
-  margin-top: 22px;
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 22px;
-}
-
-.panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 0 0 14px;
-}
-.panel-title .icon { color: var(--ink); }
-
-.synopsis-text {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.7;
-  margin: 0;
-}
-
-/* ---------- responsive ---------- */
-
-@media (max-width: 600px) {
-  .player-container { margin: 18px auto 40px; padding: 0 12px; }
-  .video-title-main { font-size: 1.2rem; }
-  .player-card { padding: 10px; }
-  .video-details { padding: 16px; }
-}
-
-/* ---------- related videos ---------- */
-.related-section {
-  margin-top: 20px;
-}
-.related-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
-  margin-top: 12px;
-}
-.related-grid .video-card {
-  cursor: pointer;
-}
-
-/* ---------- recovery: daftar episode & acak ulang ---------- */
-.episode-list {
+.related-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 60vh;
-  overflow-y: auto;
-  text-align: left;
-}
-.episode-list .server-btn {
-  display: block;
-  width: 100%;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.random-retry-btn {
-  margin-top: 12px;
+  gap: var(--space-1);
 }
 
-/* ── Player-frame (mode bersih): overlay loading + toggle mode ── */
-/* Overlay = anak langsung #playerBox (.video-wrapper, 16:9 penuh) → teks
-   benar-benar di tengah. Dulu dibungkus .pf-wrap yang tingginya collapse. */
-.pf-loading {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  margin: 0;
-  display: flex;
+.related-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-3);
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 12px;
-  background: #000;
-  color: #e8e2d9;
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+  min-height: 44px;
+  touch-action: manipulation;
+  transition: background var(--duration-fast) var(--ease-standard);
 }
-.pf-mode-toggle {
-  margin-top: 8px;
+
+.related-card:hover { background: var(--bg-surface-raised); }
+
+.related-thumb {
+  width: 72px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  display: block;
 }
-.pf-mode-btn {
-  font-size: 0.8rem;
-  opacity: 0.85;
+
+.related-info { min-width: 0; }
+
+.related-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.related-type {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   8 & 9. MOBILE SCROLLERS — Episode & Related horizontal (scroll-snap)
+   Sembunyikan di desktop; tampil via media query ≤768px.
+   -------------------------------------------------------------------------- */
+
+.episodes-mobile,
+.related-mobile { display: none; }
+
+.episode-scroller {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-left: var(--space-4);
+  padding: 0 var(--space-4) var(--space-2);
+  scrollbar-width: none;
+}
+.episode-scroller::-webkit-scrollbar { display: none; }
+
+.episode-card-mobile {
+  flex: 0 0 140px;
+  scroll-snap-align: start;
+  text-decoration: none;
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.episode-thumb-mobile {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  display: block;
+}
+
+.episode-card-mobile.is-active .episode-thumb-mobile {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+
+.episode-number-mobile {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  margin-top: var(--space-2);
+}
+
+.episode-title-mobile {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.related-grid {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-left: var(--space-4);
+  padding: 0 var(--space-4) var(--space-2);
+  scrollbar-width: none;
+}
+.related-grid::-webkit-scrollbar { display: none; }
+
+.related-card-mobile {
+  flex: 0 0 160px;
+  scroll-snap-align: start;
+  text-decoration: none;
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.related-thumb-mobile {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  display: block;
+}
+
+.related-name-mobile {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin-top: var(--space-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   10. RESPONSIVE ≤768px — Stack, immersive player, thumb-reachable
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .watch-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: 0 0 calc(76px + env(safe-area-inset-bottom)); /* ruang bottom-nav */
+  }
+
+  .watch-main {
+    padding: 0 var(--space-4);
+    gap: var(--space-4);
+  }
+
+  /* Player edge-to-edge — full bleed seperti YouTube mobile */
+  .player-card {
+    margin: 0 calc(-1 * var(--space-4));
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .video-wrapper { border-radius: 0; }
+
+  .watch-sidebar { display: none; }          /* konten dipindah ke scroller */
+  .episodes-mobile,
+  .related-mobile { display: block; margin: 0 calc(-1 * var(--space-4)); }
+
+  .episodes-mobile .section-label,
+  .related-mobile .related-title { padding: 0 var(--space-4); }
+
+  .watch-info { padding: var(--space-4); }
+
+  .watch-title { font-size: 20px; }
+
+  .server-selector { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .server-selector::-webkit-scrollbar { display: none; }
+  .server-btn { flex: 0 0 auto; min-height: 44px; } /* thumb-reachable */
+}
+
+/* Bottom nav styling sudah ditangani wibudex-tokens.css (glassmorphism).
+   File ini TIDAK mendefinisikan ulang .bottom-nav — hindari duplikasi. */
+
+/* --------------------------------------------------------------------------
+   11. ACCESSIBILITY — Focus visible untuk keyboard nav
+   -------------------------------------------------------------------------- */
+
+.episode-card:focus-visible,
+.related-card:focus-visible,
+.server-btn:focus-visible,
+.pf-mode-btn:focus-visible,
+.synopsis-toggle:focus-visible,
+.btn-external:focus-visible,
+.episode-card-mobile:focus-visible,
+.related-card-mobile:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }

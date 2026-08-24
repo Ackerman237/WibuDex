@@ -78,23 +78,24 @@ function saveReadingPosition(data) {
   );
 }
 
-function restoreReadingPosition(imageList, slug, chapterId, targetPageOverride = null) {
-  // Fungsi ini HANYA mengembalikan nomor halaman tersimpan (tidak scroll).
-  // Scroll dilakukan caller via scrollToReadingPosition() SETELAH setupLazyImages()
-  // terdaftar — lihat reader.js langkah 5.
-  let targetPage = targetPageOverride;
-  if (!targetPage) {
+/**
+ * Ambil nomor halaman yang tersimpan untuk satu chapter (logic murni).
+ * @param {string} slug - Slug manga
+ * @param {string} chapterId - ID chapter
+ * @param {number|null} [targetPageOverride] - Override target page bila sudah diketahui
+ * @returns {number|null} Nomor halaman (1-based) atau null bila tidak ada/tidak cocok
+ */
+function getSavedPage(slug, chapterId, targetPageOverride = null) {
+  if (targetPageOverride && Number.isFinite(targetPageOverride)) {
+    return targetPageOverride;
+  }
+  try {
     const saved = JSON.parse(localStorage.getItem('readingPosition'));
     if (!saved || saved.slug !== slug || saved.chapterId !== chapterId) return null;
-    targetPage = saved.page;
+    return Number.isFinite(saved.page) && saved.page >= 1 ? saved.page : null;
+  } catch {
+    return null;
   }
-
-  const pages = Array.from(imageList.querySelectorAll('img'));
-  if (targetPage < 1 || targetPage > pages.length) return null;
-
-  // Kembalikan targetPage agar caller tahu posisi tersimpan, tapi JANGAN scroll.
-  // Baca dari atas (halaman 1) agar lazy loading berjalan normal.
-  return targetPage;
 }
 
 // ─── Server-side reading position ─────────────────────────────────────────────

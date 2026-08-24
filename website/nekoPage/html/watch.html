@@ -2,19 +2,20 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Watch Video - Neko</title>
+  <link rel="stylesheet" href="/website/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/nekoPage/css/base.css">
-  <link rel="stylesheet" href="/nekoPage/css/watch.css?v=3">
-  <link rel="stylesheet" href="/nekoPage/css/index.css">
+  <link rel="stylesheet" href="/nekoPage/css/watch.css?v=5">
 
   <!-- Favicon & tema browser mobile -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
-  <meta name="theme-color" content="#15120f">
+  <meta name="theme-color" content="#0D0C0C">
   <link rel="manifest" href="/manifest.json">
   <!-- Service Worker (offline cache) -->
   <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js"></script>
 </head>
 <body>
 
@@ -41,42 +42,75 @@
     </div>
   </header>
 
-  <main class="player-container">
+  <main class="watch-layout">
 
-    <div class="watch-head">
-      <h2 id="videoTitle" class="video-title-main">Memuat Judul...</h2>
-      <span class="live-badge"><span class="live-dot"></span>STREAMING</span>
-    </div>
-
-    <div class="player-card">
-      <div class="video-wrapper" id="playerBox">
-        <p class="player-loading-text">Memuat Player Video...</p>
+    <!-- Kolom kiri: player + info -->
+    <div class="watch-main">
+      <div class="player-card">
+        <div class="video-wrapper" id="playerBox">
+          <p class="player-loading-text">Memuat Player Video...</p>
+        </div>
       </div>
 
       <!-- Tombol Pilihan Server -->
       <div id="serverSelectorContainer" class="server-selector"></div>
 
-      <!-- Tombol Cadangan jika terkena blokir -->
-      <div class="external-fallback" id="externalFallbackContainer" style="display: none;">
-        <a id="externalPlayerBtn" href="#" target="_blank" class="external-btn">
-          🔗 Buka Player di Tab Baru (Jika Layar Hitam / Terblokir)
-        </a>
+      <!-- Mode toggle mount point -->
+      <div class="pf-mode-toggle-host" id="pfModeToggleHost"></div>
+
+      <div class="watch-info">
+        <div class="watch-badges">
+          <span class="live-badge"><span class="live-dot"></span>STREAMING</span>
+          <span class="content-badge" id="contentTypeBadge"></span>
+        </div>
+        <h1 id="videoTitle" class="watch-title">Memuat Judul...</h1>
+        <div class="watch-meta" id="watchMeta"></div>
+
+        <div class="synopsis-panel">
+          <p id="videoSynopsis" class="synopsis-text"></p>
+          <button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>
+        </div>
+
+        <div class="external-fallback" id="externalFallbackContainer" style="display:none">
+          <a id="externalPlayerBtn" href="#" target="_blank" class="btn-external">
+            🔗 Buka Player di Tab Baru (Jika Layar Hitam / Terblokir)
+          </a>
+        </div>
       </div>
+
+      <!-- Episode: hanya mobile (desktop pakai sidebar). Diisi oleh watch.js -->
+      <section class="episodes-mobile" id="episodesMobile" style="display:none">
+        <h3 class="section-label">Episode</h3>
+        <div class="episode-scroller" id="episodeMobileList"></div>
+      </section>
+
+      <!-- Related: hanya mobile (di desktop masuk sidebar) -->
+      <section class="related-mobile" id="relatedMobile">
+        <h3 class="related-title">Video Terkait</h3>
+        <div id="relatedGrid" class="related-grid"></div>
+      </section>
     </div>
 
-    <section class="video-details">
-      <h3 class="panel-title"><span class="icon">☰</span> Sinopsis</h3>
-      <p id="videoSynopsis" class="synopsis-text"></p>
-    </section>
+    <!-- Kolom kanan: sidebar -->
+    <aside class="watch-sidebar">
+      <div class="sidebar-episodes" id="sidebarEpisodes">
+        <h2 class="sidebar-title">Episode</h2>
+        <div class="episode-list" id="episodeList"></div>
+      </div>
 
-    <section class="video-details related-section" id="relatedSection" style="display:none;">
-      <h3 class="panel-title"><span class="icon">✨</span> Video Terkait</h3>
-      <div id="relatedGrid" class="related-grid"></div>
-    </section>
+      <div class="sidebar-related" id="sidebarRelated">
+        <h2 class="sidebar-title">Video Terkait</h2>
+        <div class="related-list" id="relatedList"></div>
+      </div>
+    </aside>
 
   </main>
 
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" id="bottomNav" style="display:none"></nav>
+
   <script src="/nekoPage/js/nav.js" defer></script>
-  <script src="/nekoPage/js/watch.js?v=7" defer></script>
+  <script src="/nekoPage/js/watch.js?v=9" defer></script>
+  <script src="/website/doujinPage/shared/bottom-nav.js" defer></script>
 </body>
 </html>

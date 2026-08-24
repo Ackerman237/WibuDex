@@ -3,10 +3,6 @@
 let currentType = 'hentai';
 let currentPage = 1;
 
-function escapeHtml(s) {
-  return String(s || '').replace(/[&"<>']/g, (m) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;', "'": '&#39;' }[m]));
-}
-
 function renderSeriesCard(item) {
   const card = document.createElement('div');
   card.className = 'video-card';
@@ -94,14 +90,6 @@ function selectType(type, { reload = true } = {}) {
   params.set('type', currentType);
   window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
   if (reload) loadSeries(true);
-}
-
-function setupBackToTop(btn, offset) {
-  if (!btn) return;
-  const sync = () => btn.classList.toggle('show', window.scrollY > (offset || 400));
-  window.addEventListener('scroll', sync, { passive: true });
-  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  sync();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

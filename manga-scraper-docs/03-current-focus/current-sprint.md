@@ -1,8 +1,26 @@
 # Current Focus
 
-_Last updated: 2026-08-21_
+_Last updated: 2026-08-23_
 
 ## Active Track
+
+### Track WIBUDEX v1 — Design system unification & Fixes
+Status: **COMPLETE ✅**
+
+Rencana lengkap: `docs/Identitas/WIBUDEX-MASTER-SPEC.md`
+2026-08-23.
+
+Shipped (Fase 0 & Fixes A-C + Palet Amber):
+- [x] Palet Warna **Claude Amber**: Espresso `#0D0C0C`, Warm Charcoal `#181615`, Cognac Amber `#D97706`, Warm Ivory `#F3EFEA`
+- [x] `website/css/wibudex-tokens.css` — token asli + blok alias legacy frozen
+- [x] `base.css` doujin: `:root` lama dihapus, dot-grid & merah hanko dibersihkan
+- [x] Head-patch di 8 halaman doujin: font Plus Jakarta Sans, anti-flash theme script, `&amp;` URL fix, theme-color `#0D0C0C`
+- [x] Fix baseline tokens: `min-width/height: 44px` dipindah ke kelas komponen, dot carousel & hamburger kembali normal
+- [x] Fix data: `stripHtml` sinopsis + `repairMojibake` alt-titles/title di `normalizer.js` (+ unit test)
+- [x] Fix detail UX: tab toggle `Detail Info` ↔ `More Series` (lazy load & scroll), tab dipindah ke bawah list chapter khusus mobile
+- [x] Fix desktop grid: 1 baris + tombol "See More" expand/collapse + kartu seragam
+- [x] Redesign Home (`index.html` & `index.css`): Asymmetric Bento Hero + History Widget + Spotlight Hover Cards
+- [x] `sw.js` CACHE_VERSION v8
 
 ### Track A — ALL MANGA page (frontend, doujin module)
 Status: **COMPLETE ✅** — semua P4 item selesai dan di-commit.

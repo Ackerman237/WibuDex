@@ -13,7 +13,7 @@
 
 // v5: offline fallback — navigasi saat offline tanpa cache menyajikan
 // /offline.html (precache) alih-alih error mentah browser.
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v8';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

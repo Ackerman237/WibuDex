@@ -6,6 +6,11 @@ let chapterSearchQuery = '';
 let currentManga = null;
 let globalTitleText = 'Tanpa Judul';
 
+let currentMangaSlug = '';
+let currentGenresArr = [];
+let recommendationsLoaded = false;
+let recommendationsExpanded = false;
+
 function renderChapterList() {
   const list = el("chapterList");
   const countEl = el("chapterCount");
@@ -257,7 +262,11 @@ async function renderDetail() {
     if (el("detailLoading")) el("detailLoading").style.display = "none";
     if (el("detailLayout")) el("detailLayout").style.display = "grid";
 
-    loadRecommendations(mangaSlug, genresArr);
+    currentMangaSlug = mangaSlug;
+    currentGenresArr = genresArr;
+    recommendationsLoaded = false;
+    recommendationsExpanded = false;
+    showInfoTab();
 
   } catch (err) {
     console.error(err);
@@ -289,12 +298,54 @@ async function renderDetail() {
   }
 }
 
+function showInfoTab() {
+  const tabInfo = el("tabInfo");
+  const tabMore = el("tabMoreSeries");
+  const infoPanel = el("infoPanel");
+  const synopsisPanel = el("synopsisPanel");
+  const recommendSection = el("recommendSection");
+
+  if (tabInfo) tabInfo.classList.add("active");
+  if (tabMore) tabMore.classList.remove("active");
+
+  if (infoPanel) infoPanel.style.display = "";
+  if (synopsisPanel) {
+    const p = el("synopsisText");
+    const hasText = p && p.textContent && p.textContent.trim() !== "—";
+    synopsisPanel.style.display = hasText ? "" : "none";
+  }
+  if (recommendSection) recommendSection.style.display = "none";
+}
+
+async function showMoreSeriesTab() {
+  const tabInfo = el("tabInfo");
+  const tabMore = el("tabMoreSeries");
+  const infoPanel = el("infoPanel");
+  const synopsisPanel = el("synopsisPanel");
+  const recommendSection = el("recommendSection");
+
+  if (tabMore) tabMore.classList.add("active");
+  if (tabInfo) tabInfo.classList.remove("active");
+
+  if (infoPanel) infoPanel.style.display = "none";
+  if (synopsisPanel) synopsisPanel.style.display = "none";
+
+  if (!recommendationsLoaded && currentMangaSlug) {
+    await loadRecommendations(currentMangaSlug, currentGenresArr);
+  }
+
+  if (recommendSection) {
+    recommendSection.style.display = "block";
+    updateRecommendCollapse();
+    recommendSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 async function loadRecommendations(currentSlug, genresArr) {
   const section = el("recommendSection");
   const grid = el("recommendGrid");
   if (!section || !grid) return;
 
-  // Pakai genre pertama sebagai dasar kemiripan; tanpa genre = tidak ada rekomendasi
   const firstGenre = Array.isArray(genresArr) && genresArr.length > 0 ? String(genresArr[0]).trim() : "";
   if (!firstGenre) return;
 
@@ -303,15 +354,61 @@ async function loadRecommendations(currentSlug, genresArr) {
     const result = await fetchJsonWithTimeout(endpoint);
     const mangaList = (Array.isArray(result) ? result : (result.data || result.results || []))
       .filter((m) => m && m.slug !== currentSlug)
-      .slice(0, 6);
+      .slice(0, 10);
 
     if (mangaList.length === 0) return;
 
     grid.innerHTML = "";
     mangaList.forEach((m) => grid.appendChild(renderMangaCard(m)));
-    section.style.display = "block";
+    recommendationsLoaded = true;
+    recommendationsExpanded = false;
   } catch {
-    // Rekomendasi bersifat best-effort — kegagalan tidak perlu ditampilkan ke user
+    // Rekomendasi bersifat best-effort
+  }
+}
+
+function updateRecommendCollapse() {
+  const grid = el("recommendGrid");
+  const wrap = el("recommendMoreWrap");
+  const text = el("recommendMoreText");
+  const btn = el("recommendMoreBtn");
+  if (!grid || !wrap) return;
+
+  const cards = Array.from(grid.children);
+  if (cards.length === 0) return;
+
+  // HP/Tablet ≤700px: carousel horizontal murni
+  if (window.innerWidth <= 700) {
+    cards.forEach((c) => (c.style.display = ""));
+    wrap.style.display = "none";
+    return;
+  }
+
+  // Desktop: hitung kapasitas kolom 1 baris
+  const firstCard = cards[0];
+  const cardW = (firstCard ? firstCard.offsetWidth : 160) || 160;
+  const gap = 16;
+  const gridW = grid.clientWidth || 1160;
+  const cols = Math.max(1, Math.floor((gridW + gap) / (cardW + gap)));
+
+  if (cards.length <= cols) {
+    cards.forEach((c) => (c.style.display = ""));
+    wrap.style.display = "none";
+    return;
+  }
+
+  // Jika item lebih dari 1 baris
+  wrap.style.display = "flex";
+  if (recommendationsExpanded) {
+    cards.forEach((c) => (c.style.display = ""));
+    if (btn) btn.classList.add("is-expanded");
+    if (text) text.textContent = "Show Less";
+  } else {
+    cards.forEach((c, idx) => {
+      c.style.display = idx < cols ? "" : "none";
+    });
+    if (btn) btn.classList.remove("is-expanded");
+    if (text) text.textContent = "See More";
   }
 }
 
@@ -371,6 +468,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p || !toggleBtn) return;
     const expanded = p.classList.toggle("expanded");
     toggleBtn.innerHTML = expanded ? `SHOW LESS ${ic('chevron-up')}` : `SHOW MORE ${ic('chevron-down')}`;
+  });
+
+  el("tabInfo")?.addEventListener("click", showInfoTab);
+  el("tabMoreSeries")?.addEventListener("click", showMoreSeriesTab);
+  el("recommendMoreBtn")?.addEventListener("click", () => {
+    recommendationsExpanded = !recommendationsExpanded;
+    updateRecommendCollapse();
+  });
+
+  window.addEventListener("resize", () => {
+    if (recommendationsLoaded && el("recommendSection")?.style.display !== "none") {
+      updateRecommendCollapse();
+    }
   });
 
   setupBackToTop(el("backToTop"), 400);

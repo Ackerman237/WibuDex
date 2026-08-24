@@ -1,6 +1,39 @@
 // normalizer.test.js — Unit test offline normalisasi output API doujin.
 import { describe, it, expect } from 'vitest';
-import { mapListItem, mapDetail } from '../lib/scraper/normalizer.js';
+import { mapListItem, mapDetail, repairMojibake } from '../lib/scraper/normalizer.js';
+
+describe('repairMojibake', () => {
+  // Fixture DIBANGUN PROGRAMATIK: byte UTF-8 dari teks Jepang asli dipetakan
+  // satu-per-satu jadi karakter Latin-1 — mensimulasikan mojibake nyata
+  // tanpa risiko salah ketik karakter kontrol.
+  const toLatin1Mojibake = (s) =>
+    [...Buffer.from(s, 'utf-8')].map((b) => String.fromCharCode(b)).join('');
+
+  const mojibake = toLatin1Mojibake('アフリカ');
+
+  it('memperbaiki teks UTF-8 yang ter-decode sebagai Latin-1', () => {
+    expect(repairMojibake(mojibake)).toBe('アフリカ');
+  });
+
+  it('memperbaiki string campuran mojibake + sufiks ASCII', () => {
+    // Byte ASCII lolos utuh di dekoder UTF-8, jadi sufiks tetap aman
+    expect(repairMojibake(mojibake + ' (Official)')).toBe('アフリカ (Official)');
+  });
+
+  it('membiarkan string bersih apa adanya', () => {
+    expect(repairMojibake('Manga Biasa')).toBe('Manga Biasa');
+  });
+
+  it('tidak menyentuh string ber-charakter non-Latin asli', () => {
+    expect(repairMojibake('アフリカ')).toBe('アフリカ'); // charCode > 0xFF = bukan mojibake
+  });
+
+  it('toleran terhadap input non-string', () => {
+    expect(repairMojibake(null)).toBe(null);
+    expect(repairMojibake(undefined)).toBe(undefined);
+    expect(repairMojibake(42)).toBe(42);
+  });
+});
 
 describe('mapListItem', () => {
   it('memetakan field dasar dan resolve URL cover relatif', () => {
@@ -57,5 +90,25 @@ describe('mapDetail', () => {
     expect(mapDetail({ slug: 'a', cover: '/c1.jpg' }).thumb).toContain('/c1.jpg');
     expect(mapDetail({ slug: 'a', thumbnail: '/c2.jpg' }).thumb).toContain('/c2.jpg');
     expect(mapDetail({ slug: 'a' }).thumb).toBe('');
+  });
+
+  it('sinopsis dibersihkan dari tag HTML upstream (kasus Intern Haenyeo)', () => {
+    const detail = mapDetail({
+      slug: 'intern-haenyeo',
+      description: '<p>Seorang haenyeo muda.</p><br>Kehidupan di pulau.<br><span>Penutup.</span>',
+    });
+    // Tag dibuang, <br>/</p> jadi pemisah — tidak ada "<" yang lolos ke UI
+    expect(detail.synopsis).not.toContain('<');
+    expect(detail.synopsis).toContain('Seorang haenyeo muda.');
+    expect(detail.synopsis).toContain('Kehidupan di pulau.');
+  });
+
+  it('alt_titles mojibake diperbaiki otomatis saat normalisasi', () => {
+    const mojibake = [...Buffer.from('アフリカ', 'utf-8')]
+      .map((b) => String.fromCharCode(b))
+      .join('');
+    const detail = mapDetail({ slug: 'a', alt_titles: `${mojibake}, Alt Bersih` });
+    expect(detail.altTitles[0]).toBe('アフリカ');
+    expect(detail.altTitles[1]).toBe('Alt Bersih');
   });
 });

@@ -1,0 +1,504 @@
+/* ==========================================================================
+   WIBUDEX — DESIGN TOKENS & CORE COMPONENTS
+   Dark-first, single-accent, content-first reading/streaming app
+   Shared oleh doujinPage & nekoPage. Load SEBELUM css spesifik halaman.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------- */
+/* 1. TOKENS                                                               */
+/* ---------------------------------------------------------------------- */
+
+/* Shared tokens — identical in both themes, don't repeat per-theme */
+:root {
+  --accent-primary: #D97706; /* Cognac Amber / Warm Gold */
+  --accent-primary-hover: #F59E0B;
+  --accent-primary-12: rgba(217, 119, 6, 0.12); /* active-state pill background */
+
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+
+  /* Spacing scale — multiples of 4px only */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  /* Elevation — border + glow, never a heavy dark shadow */
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --elevation-modal: 0 12px 32px rgba(0, 0, 0, 0.6);
+
+  /* Motion — never exceed 300ms */
+  --duration-fast: 100ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Type — Optimized Editorial Hierarchy */
+  --font-ui: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+/* 2. BASE (Typography Refinement) */
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6; /* Lebih lapang untuk kesan premium */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, .section-title, .panel-title {
+  font-family: var(--font-ui);
+  letter-spacing: -0.02em; /* Tampilan modern dan tajam */
+}
+
+.text-label {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+}
+
+/* Tabular figures untuk progress & chapter */
+.numeric, .chapter-number, .rating-score {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ---------------------------------------------------------------------- */
+/* 1a. THEME TOKENS — dark (default) & light                              */
+/*                                                                          */
+/* Strategy: [data-theme] attribute on <html> is the source of truth.      */
+/* We ALSO listen to prefers-color-scheme as the *initial* value before    */
+/* JS runs / for users with no saved preference, via the :root default     */
+/* block below plus the media query override. JS then sets data-theme     */
+/* explicitly once the user picks (or on load, resolved from storage).     */
+/* ---------------------------------------------------------------------- */
+
+/* Default = dark (Claude Amber / Warm Editorial) */
+:root,
+[data-theme="dark"] {
+  --bg-base: #0D0C0C;
+  --bg-surface: #181615;
+  --bg-surface-raised: #22201D;
+  --border-subtle: #2E2A27;
+
+  --text-primary: #F3EFEA;
+  --text-secondary: #9E9690;
+  --text-disabled: #5E5854;
+
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --elevation-modal: 0 12px 32px rgba(0, 0, 0, 0.8);
+
+  --nav-bg: rgba(24, 22, 21, 0.85); /* --bg-surface at 85% for backdrop-blur nav */
+  --shimmer-a: var(--bg-surface);
+  --shimmer-b: var(--bg-surface-raised);
+
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg-base: #FAFAF8;
+  --bg-surface: #FFFFFF;
+  --bg-surface-raised: #F2F1ED;
+  --border-subtle: #E3E2DD;
+
+  --text-primary: #1A1B1E;
+  --text-secondary: #6B6C72;
+  --text-disabled: #ACADB2;
+
+  /* Light surfaces need soft ambient shadow instead of border+glow,
+     since a 1px near-white border disappears on a white background */
+  --elevation-1: 0 1px 2px rgba(20, 20, 20, 0.06), 0 0 0 1px rgba(20, 20, 20, 0.04);
+  --elevation-2: 0 4px 16px rgba(20, 20, 20, 0.10), 0 0 0 1px rgba(20, 20, 20, 0.05);
+  --elevation-modal: 0 12px 32px rgba(20, 20, 20, 0.16);
+
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --shimmer-a: var(--bg-surface-raised);
+  --shimmer-b: #E3E2DD;
+
+  color-scheme: light;
+}
+
+/* If JS hasn't run yet (no data-theme set) and the user has no saved
+   preference, fall back to OS-level preference for the very first paint. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg-base: #FAFAF8;
+    --bg-surface: #FFFFFF;
+    --bg-surface-raised: #F2F1ED;
+    --border-subtle: #E3E2DD;
+    --text-primary: #1A1B1E;
+    --text-secondary: #6B6C72;
+    --text-disabled: #ACADB2;
+    --elevation-1: 0 1px 2px rgba(20, 20, 20, 0.06), 0 0 0 1px rgba(20, 20, 20, 0.04);
+    --elevation-2: 0 4px 16px rgba(20, 20, 20, 0.10), 0 0 0 1px rgba(20, 20, 20, 0.05);
+    --elevation-modal: 0 12px 32px rgba(20, 20, 20, 0.16);
+    --nav-bg: rgba(255, 255, 255, 0.85);
+    --shimmer-a: #F2F1ED;
+    --shimmer-b: #E3E2DD;
+    color-scheme: light;
+  }
+}
+
+/* Smooth theme switch instead of an abrupt flash */
+html {
+  transition: background-color var(--duration-slow, 300ms) ease;
+}
+body, .media-card, .bottom-nav, .reader__nav-btn {
+  transition: background-color var(--duration-slow, 300ms) ease,
+              color var(--duration-slow, 300ms) ease,
+              border-color var(--duration-slow, 300ms) ease;
+}
+
+/* Respect reduced motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* 2. BASE                                                                 */
+/* ---------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background: var(--bg-base);
+}
+
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-overflow-scrolling: touch;
+}
+
+h1, h2, h3, .ui-text, button, .btn, .nav-label {
+  font-family: var(--font-ui);
+}
+
+/* Tabular numerals wherever progress/chapter numbers appear */
+.numeric,
+.progress-label,
+.chapter-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Type scale */
+.text-display { font-size: 28px; line-height: 1.2; font-weight: 700; }
+.text-h1      { font-size: 22px; line-height: 1.3; font-weight: 700; }
+.text-h2      { font-size: 18px; line-height: 1.4; font-weight: 600; }
+.text-body    { font-size: 15px; line-height: 1.5; font-weight: 400; font-family: var(--font-body); }
+.text-caption { font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--text-secondary); }
+.text-micro   { font-size: 11px; line-height: 1.3; font-weight: 500; }
+
+/* ---------------------------------------------------------------------- */
+/* 3. INTERACTIVE BASELINE (mobile comfort)                                */
+/* ---------------------------------------------------------------------- */
+button, .tappable {
+  touch-action: manipulation;
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: inherit;
+  transition: transform var(--duration-fast) var(--ease-standard),
+              filter var(--duration-fast) var(--ease-standard),
+              background var(--duration-base) var(--ease-standard);
+}
+
+/* Tap target ≥44px HANYA untuk komponen Wibudex.
+   Kontrol kecil legacy (hero-dot, hamburger, panah pagination) yang punya
+   ukuran desain sendiri TIDAK dipaksa — audit tap-target per elemen menyusul
+   di fase terpisah dengan teknik hit-area, bukan paksaan min-size global. */
+.tappable,
+.btn-primary,
+.btn-icon,
+.bottom-nav__item {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+button:active, .tappable:active {
+  transform: scale(0.97);
+  filter: brightness(0.9);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 4. MANGA / MEDIA CARD                                                   */
+/* ---------------------------------------------------------------------- */
+.media-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.media-card__cover {
+  aspect-ratio: 3 / 4.2;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media-card__overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 55%;
+  background: linear-gradient(to bottom, transparent, var(--bg-base) 85%);
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-3);
+}
+
+.media-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.media-card__badge {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+/* Skeleton loading — same aspect ratio, shimmer left-to-right */
+.media-card--skeleton {
+  aspect-ratio: 3 / 4.2;
+  background: linear-gradient(
+    100deg,
+    var(--shimmer-a) 30%,
+    var(--shimmer-b) 50%,
+    var(--shimmer-a) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* 5. PRIMARY CTA BUTTON ("Mulai Baca" / "Lanjut Baca")                    */
+/* ---------------------------------------------------------------------- */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+}
+
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 6. BOTTOM NAVIGATION                                                    */
+/* ---------------------------------------------------------------------- */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.bottom-nav__item.is-active {
+  color: var(--accent-primary);
+}
+
+.bottom-nav__pill {
+  position: absolute;
+  inset: 4px 10%;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary-12);
+  z-index: -1;
+}
+
+/* ---------------------------------------------------------------------- */
+/* 7. PROGRESS BAR (reader)                                                */
+/* ---------------------------------------------------------------------- */
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: var(--bg-surface-raised);
+  border-radius: var(--radius-full);
+  transition: height var(--duration-base) var(--ease-standard);
+}
+
+.progress-bar.is-active {
+  height: 6px;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  transition: width var(--duration-base) var(--ease-standard);
+}
+
+.progress-bar__label {
+  position: absolute;
+  right: 0;
+  top: -22px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 8. READER CHROME (auto-hide controls)                                   */
+/* ---------------------------------------------------------------------- */
+.reader {
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.reader__chrome {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity var(--duration-slow) var(--ease-standard);
+}
+
+.reader__chrome.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reader__nav-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: rgba(27, 29, 34, 0.6);
+  backdrop-filter: blur(12px);
+  color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 9. SAFE AREA UTILITIES                                                  */
+/* ---------------------------------------------------------------------- */
+.safe-top    { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 10. LEGACY ALIAS — FROZEN                                               */
+/*                                                                          */
+/* Jembatan transisi: nama variabel sistem LAMA (doujin base.css v<4)      */
+/* dipetakan ke token Wibudex. ATURAN:                                     */
+/*   - Blok ini FROZEN — tidak pernah ditambah/diubah isinya.              */
+/*   - File BARU wajib pakai token asli di atas, bukan alias.              */
+/*   - Alias dihapus dari daftar konsumen satu-per-satu saat file           */
+/*     lama dimigrasi. Hapus blok ini saat grep var(--bg)/var(--card)/    */
+/*     var(--ink)/dst = 0 di seluruh website/.                             */
+/* ---------------------------------------------------------------------- */
+:root {
+  /* surfaces */
+  --bg: var(--bg-base);
+  --bg-alt: var(--bg-surface);
+  --card: var(--bg-surface);
+  --card-hover: var(--bg-surface-raised);
+  --border: var(--border-subtle);
+  --border-soft: var(--border-subtle);
+
+  /* text */
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --text-faint: var(--text-disabled);
+
+  /* accent */
+  --primary: var(--accent-primary);
+  --primary-hover: var(--accent-primary-hover);
+  --primary-foreground: var(--bg-base);
+  --ink: var(--accent-primary);
+  --ink-soft: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  --gold: var(--warning);
+  --favorite: var(--error);
+
+  /* shape (old 4px/10px -> new sm/md scale, card = radius-md per spec) */
+  --radius: var(--radius-sm);
+  --radius-lg: var(--radius-md);
+
+  /* type (Oswald -> Plus Jakarta Sans) */
+  --font-display: var(--font-ui);
+}

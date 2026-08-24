@@ -58,6 +58,68 @@ Test: 159 → **164 lulus** (5 golden streamExtract). Lint bersih.
 
 ---
 
+## 2026-08-23 (8) — Batch C: UX detail page overhaul (tabs & recommendations)
+
+### Detail Page UX
+- **Tab Toggle Fungsional**: *Detail Info* ↔ *More Series* sebagai toggle; *More Series* memuat rekomendasi secara lazy (**autoload dihapus**, hemat bandwidth) dengan smooth scroll.
+- **Mobile Alignment**: Panel tab dipindah ke **bawah List Chapter** khusus tampilan mobile (`≤640px`) menggunakan CSS flex-order.
+- **Rekomendasi Grid (Desktop)**: Grid kini collapsed 1 baris (disesuaikan kapasitas lebar grid); tombol "See More" muncul jika ada kartu sisa, mendukung expand/collapse grid penuh. Kartu seragam (chapter-list dalam kartu disembunyikan via CSS global).
+
+---
+
+### Palet Warna Baru (`wibudex-tokens.css`)
+- **Aksen Utama**: Cognac Amber / Warm Gold (`#D97706` / hover `#F59E0B` / pill bg `rgba(217, 119, 6, 0.12)`).
+- **Surface & Background**: Espresso Dark (`#0D0C0C`), Warm Charcoal Surface (`#181615`), Warm Elevated Surface (`#22201D`), Warm Border (`#2E2A27`).
+- **Teks**: Warm Ivory (`#F3EFEA`), Warm Muted (`#9E9690`).
+- **Spotlight Hover**: Card hover glow & border di-tone ke amber hangat `rgba(217, 119, 6, 0.18)`.
+- **HTML Meta**: `theme-color` di 8 halaman HTML di-update ke `#0D0C0C`.
+- `sw.js` CACHE_VERSION v7 -> v8.
+
+---
+
+### Perbaikan Data (Batch B)
+- `normalizer.js`: `stripHtml` diterapkan pada `synopsis` di `mapDetail()` (tag `<br>`, `<p>`, `<span>` di *Intern Haenyeo* dll. kini dibersihkan di server).
+- `security.stripHtml`: diperbaiki agar tag pemisah paragraf/baris (`<br>`, `</p>`, `</div>`, `<li>`, `<h1-6>`) diganti dengan `\n` sebelum tag dibuang, mencegah kata-kata menempel.
+- `repairMojibake`: fungsi heuristik baru di `normalizer.js` untuk memulihkan string UTF-8 yang ter-decode sebagai Latin-1 (`ãƒ¢...` -> teks CJK asli). Diterapkan pada `title` dan `altTitles`. Dilengkapi +4 unit test vitest.
+
+### UX & Layout Detail Page (Batch C)
+- **Tab Toggle Fungsional**: `Detail Info` ↔ `More Series` kini bekerja aktif. *More Series* menyembunyikan info/sinopsis dan memuat rekomendasi secara lazy (**autoload dihapus**, hemat request upstream).
+- **Mobile Repositioning (≤640px)**: deretan tombol tab dipindah berada **di bawah List Chapter** via CSS `display: contents` + flex ordering pada `.detail-layout`.
+- **Desktop Grid Rekomendasi 1 Baris + "See More"**:
+  - Chapter-list di dalam kartu rekomendasi disembunyikan agar tinggi kartu seragam.
+  - Sembunyikan kartu berlebih jika melebih kapasitas 1 baris.
+  - Tampilkan tombol panah `See More` jika ada sisa kartu. Ditekan -> expand grid penuh dengan animasi chevron, ditekan lagi -> collapse.
+- `sw.js` CACHE_VERSION v6 -> v7.
+
+---
+
+### Token & alias
+- File baru `website/css/wibudex-tokens.css` — token asli Wibudex
+  (`--bg-base`, `--accent-primary`, spacing/radius/elevation/motion) +
+  **blok alias legacy FROZEN**: 20 variabel lama (`--bg`, `--card`,
+  `--ink`, `--primary`, dst.) dipetakan ke token baru tanpa menyentuh
+  8 file CSS halaman.
+- `base.css`: blok `:root` variabel lama DIHAPUS (sumber kebenaran pindah
+  ke tokens.css; mencegah konflik cascade), dot-grid body & aksen merah
+  hanko dihapus (identitas lama), `.error #d9756c` → `var(--error)`.
+- Radius legacy dimapping ke skala baru: `--radius`(4px)→sm(8px),
+  `--radius-lg`(10px)→md(12px) sesuai spec card = radius-md.
+
+### Pilot halaman
+- `index.html`: font Oswald → Plus Jakarta Sans (Inter tetap),
+  link tokens.css sebelum base.css, script anti-flash tema
+  (`localStorage 'wibudex-theme'`) di head, `theme-color` → `#121316`.
+
+### Infrastruktur
+- `sw.js` CACHE_VERSION v5 → v6 (invalidate cache CSS/aset runtime).
+- Verifikasi: 173/173 test hijau; JS frontend tidak membaca variabel
+  warna (hanya set backgroundImage/opacity) → nol dampak logika.
+- Catatan debt: hardcoded hex di file per-halaman (detail 12, index 8,
+  library 4, components 2, cards 2, allManga 1) belum berubah — migrasi
+  per-file menyusul; reader.css tidak disentuh (prinsip reader netral).
+
+---
+
 ## 2026-08-23 (3) — Fase 4: ESLint, golden test decryptor, test normalizer, README arsitektur
 
 ### Bug lama terkonfirmasi lewat sanity check live (`npm run demo:fast`)

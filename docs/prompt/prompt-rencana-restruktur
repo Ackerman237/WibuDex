@@ -1,0 +1,181 @@
+# Task: Restrukturisasi Nama Folder & Organisasi Project Wibudex
+
+Baca dulu `.agents/AgentBuildSuper.md` — ikuti aturannya (edit minimal per
+task, verifikasi tiap perubahan, jangan nambah scope, jangan commit/push
+kecuali diminta eksplisit).
+
+Referensi lengkap alasan tiap perubahan ada di
+`rencana-restrukturisasi-wibudex-full.md` (dokumen terpisah, sudah dibaca user).
+Jangan improvisasi di luar daftar ini — kalau nemu kasus ambigu (misal ada
+file lain yang ternyata juga hardcode path lama dan tidak disebut di sini),
+STOP dan laporkan, jangan diputuskan sendiri.
+
+Kerjakan berurutan. Setelah tiap task, jalankan `npm test` dan `npm run lint`
+sebelum lanjut ke task berikutnya — kalau ada yang gagal, stop dan laporkan.
+
+---
+
+## Task 1 — Rename `website/doujinPage/` → `website/manga/`
+
+1. Rename folder `website/doujinPage/` → `website/manga/`.
+2. Grep seluruh project (kecuali `node_modules/`, `.git/`) untuk semua
+   referensi ke `doujinPage` — termasuk di `sw.js` (cache list), `manifest.json`,
+   `server.js` (kalau ada static path), file JS mana pun yang import path
+   relatif ke folder ini, dan link `<a href>` (meski HTML-nya masih kosong,
+   cek juga file HTML lain seperti `website/offline.html` kalau-kalau
+   nyebut path ini).
+3. Update semua referensi yang ditemukan ke path baru `manga`.
+4. Cek juga isi `MODULE_MAP.md` — kalau ada referensi path lama, update.
+
+## Task 2 — Rename `website/nekoPage/` → `website/video/`
+
+Ulangi langkah yang sama seperti Task 1, tapi untuk `nekoPage` → `video`.
+Perhatikan folder ini SUDAH punya HTML (`index.html`, `series.html`,
+`watch.html`) — pastikan semua `<link>`, `<script src>`, dan `<a href>` di
+dalam ketiga file HTML itu ikut ter-update ke path baru.
+
+## Task 3 — Rename `controllers/nekoController.js` → `controllers/videoController.js`
+
+1. Rename file.
+2. Update import di `routes/api.js` (atau file routes lain kalau Task 10 di
+   bawah sudah duluan dikerjakan).
+3. Jangan ubah nama fungsi di dalam file ini kecuali fungsi tersebut secara
+   eksplisit mengandung kata "neko" di namanya DAN dipanggil dari luar file
+   (public export) — cek dulu ke `routes/api.js` sebelum rename fungsi,
+   laporkan daftar fungsi yang di-export sebelum diputuskan mana yang perlu
+   ikut di-rename.
+
+## Task 4 — Update `package.json` (name & description)
+
+1. Ganti `"name": "doujin-scraper"` → `"name": "wibudex"`.
+2. Ganti `"description"` jadi sesuatu seperti: "Wibudex — aplikasi self-hosted
+   PWA manga reader & video streaming" (boleh disesuaikan redaksinya, tapi
+   jangan lagi menyebut nama situs sumber di description).
+3. JANGAN ubah field lain selain `name`, `description`, dan `scripts` yang
+   disebutkan di Task 5 berikut. Field `dependencies`, `engines`, dst tidak
+   disentuh.
+
+## Task 5 — Update npm scripts di `package.json` yang masih pakai flag `doujin`/`neko` *(baru)*
+
+1. Ganti nama script:
+   - `"demo:doujin"` → `"demo:manga"`
+   - `"demo:neko"` → `"demo:video"`
+2. Ganti isi command-nya juga: flag `--doujin-only` → `--manga-only`,
+   `--neko-only` → `--video-only`.
+3. Buka `scripts/demo.js`, cari bagian yang parsing flag `--doujin-only` dan
+   `--neko-only`, update ke nama flag baru. Jangan ubah logic lain di file
+   ini selain penggantian nama flag.
+4. Grep project untuk memastikan tidak ada dokumentasi (misal di `docs/`,
+   `README.md`, `AGENTS.md`) yang menyebut command lama `npm run demo:doujin`
+   / `npm run demo:neko` secara langsung — kalau ketemu, laporkan (jangan
+   diedit di task ini kalau file tsb bukan bagian dari task lain, cukup catat).
+
+---
+
+## Task 6 — Tulis ulang `AGENTS.md` supaya sesuai arsitektur nyata saat ini *(baru, prioritas tinggi)*
+
+**Konteks:** `AGENTS.md` saat ini mendeskripsikan project sebagai aplikasi
+tanpa backend (data statis di `/data/comics.json`, personalisasi di
+localStorage, struktur `/assets/js/core/` vs `/assets/js/screens/`). Ini
+sudah tidak sesuai dengan kenyataan project sekarang.
+
+1. **Sebelum menulis apa pun**, baca langsung untuk konfirmasi struktur nyata:
+   `server.js`, isi `controllers/`, isi `routes/`, `lib/db.js` (atau file db
+   lain di `lib/`), dan `lib/scraper/`. Jangan mengarang detail — kalau ada
+   bagian arsitektur yang tidak jelas dari membaca kode, STOP dan laporkan,
+   jangan ditebak.
+2. Tulis ulang bagian "Batasan Teknis Penting" dan "Struktur Folder" supaya
+   mencerminkan kenyataan: ada backend Express (`server.js`), controller per
+   domain (`controllers/`), route per domain (hasil Task 10 kalau sudah
+   dikerjakan, atau `routes/api.js` kalau belum), database SQLite
+   (sebutkan file `lib/db.js` sesuai apa yang ditemukan), dan scraper
+   (`lib/scraper/`).
+3. Pertahankan bagian-bagian `AGENTS.md` yang **masih relevan dan akurat**
+   (misal aturan gaya kode, aturan visual/identitas, atau larangan lain yang
+   tidak terkait struktur folder/backend) — jangan hapus semua isi file,
+   hanya perbaiki bagian yang sudah tidak sesuai kenyataan.
+4. Setelah selesai, laporkan bagian mana saja dari `AGENTS.md` lama yang
+   dihapus/diganti, supaya user bisa cek ulang tidak ada aturan penting yang
+   ikut hilang secara tidak sengaja.
+
+> **Catatan:** rename repo GitHub dari `Scrapper-manga` ke nama yang sesuai
+> **TIDAK termasuk task ini** — itu aksi di luar file project (dilakukan lewat
+> GitHub Settings oleh user sendiri), bukan sesuatu yang bisa dieksekusi lewat
+> edit file di repo ini.
+
+---
+
+## Task 7 — Konsolidasi dokumentasi: `docs/` + `manga-scraper-docs/` → `docs/`
+
+1. Pindahkan `docs/IDEAS.md` → `manga-scraper-docs/05-roadmap/ideas.md`.
+2. Pindahkan `docs/STYLE_GUIDE.md` → `manga-scraper-docs/06-architecture/style-guide.md`.
+   (Catatan: kalau file ini sudah disinkronkan dengan `wibudex-tokens.css`
+   di task sebelumnya, pastikan isi yang sudah disinkronkan itu yang dipindah,
+   bukan versi lama.)
+3. Hapus folder `docs/` yang lama (sudah kosong setelah langkah 1-2).
+4. Rename `manga-scraper-docs/` → `docs/`.
+5. Grep seluruh project untuk referensi ke `manga-scraper-docs/` (termasuk
+   di `AGENTS.md` hasil Task 6, `.opencode/`, file markdown lain) dan update
+   ke `docs/`.
+
+## Task 8 — Pindahkan `MODULE_MAP.md` ke `docs/06-architecture/module-map.md`
+
+1. Move file dari root ke lokasi baru (path `docs/` di sini mengacu ke hasil
+   Task 7 — kerjakan Task 8 setelah Task 7 selesai).
+2. Grep referensi ke `MODULE_MAP.md` di file lain, update path-nya.
+
+## Task 9 — Pindahkan `website/manga/shared/*` → `website/shared/*`
+
+(Catatan: path `website/manga/` di sini adalah hasil Task 1 — kerjakan Task 9
+setelah Task 1 selesai.)
+
+1. Cek dulu isi `website/shared/` — folder ini kemungkinan **sudah dibuat**
+   tapi masih kosong. Kalau sudah ada, gunakan folder itu (jangan bikin
+   folder baru/duplikat).
+2. Move seluruh isi `website/manga/shared/` (`api.js`, `storage.js`, `ui.js`,
+   `nav.js`, `bottom-nav.js`) ke `website/shared/`.
+3. Grep semua file JS di `website/manga/js/*.js` yang import dari
+   `./shared/...` atau `../shared/...` — update path relatifnya ke lokasi baru.
+4. Jangan pindahkan `website/manga/icons.svg` — itu tetap spesifik ke section
+   manga kecuali disebutkan lain di task terpisah.
+
+## Task 10 — Pecah `routes/api.js` per domain
+
+1. Buat `routes/manga.routes.js`, `routes/video.routes.js`,
+   `routes/progress.routes.js`, `routes/vpn.routes.js`.
+2. Pindahkan route yang relevan dari `routes/api.js` ke masing-masing file
+   sesuai domainnya (lihat isi `routes/api.js` saat ini untuk pembagian:
+   route `/manga*` dan `/chapter`, `/image-proxy` → manga; route `/neko*`,
+   `/pf/*` → video; route `/progress*` → progress; route `/vpn-status` → vpn).
+3. Buat `routes/index.js` yang mount ke-4 router ini dengan prefix yang sama
+   seperti sekarang (jangan ubah path API yang sudah ada, hanya reorganisasi
+   filenya).
+4. Update `server.js` untuk import dari `routes/index.js` alih-alih
+   `routes/api.js`.
+5. Hapus `routes/api.js` lama setelah dipastikan semua route sudah pindah.
+
+---
+
+## Setelah semua task selesai
+
+1. Jalankan `npm test` dan `npm run lint` sekali lagi sebagai verifikasi akhir.
+2. Laporkan ringkas: file/folder apa saja yang di-rename atau dipindah,
+   hasil test terakhir, dan apakah ada referensi path lama yang mungkin
+   masih tertinggal (kalau ragu, sebutkan sebagai catatan, jangan diam-diam
+   dibiarkan).
+3. Laporkan juga khusus untuk Task 6 (AGENTS.md): daftar bagian yang
+   dihapus/diubah, supaya user bisa review ulang.
+
+## JANGAN dikerjakan di task ini (di luar scope, akan dikerjakan terpisah kalau diminta)
+
+- Rename repo GitHub (`Scrapper-manga` → nama baru) — bukan aksi file, harus
+  dilakukan manual oleh user lewat GitHub Settings.
+- Bersihkan `.data/spike/`.
+- Gabungkan `data/` dan `.data/`.
+- Rapikan script spike/probe di `scripts/dev/` (`probe-*.mjs`, `dump-embed.mjs`,
+  `m3u8-spike.mjs`, dst).
+- Tulis ulang `README.md` (isinya skema `comics.json` yang sudah mati) —
+  ini task konten terpisah, bukan task rename/struktur.
+- Perbaiki diagram struktur file di `.agents/DoujinScraperAgent.md`.
+- Keputusan `LICENSE` (MIT vs UNLICENSED) — masih menunggu keputusan user,
+  belum dieksekusi.

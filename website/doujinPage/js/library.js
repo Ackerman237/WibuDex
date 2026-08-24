@@ -12,8 +12,9 @@ function removeStorageItem(key, slug) {
   if (data[slug]) {
     delete data[slug];
     localStorage.setItem(key, JSON.stringify(data));
-    renderAllSections();
+    return true;
   }
+  return false;
 }
 
 function renderLibrarySection(storageKey, gridId, emptyId, btnId) {
@@ -80,7 +81,8 @@ function renderLibrarySection(storageKey, gridId, emptyId, btnId) {
       removeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (confirm(`Hapus "${title}" dari daftar?`)) {
-          removeStorageItem(storageKey, item.slug);
+          const removed = removeStorageItem(storageKey, item.slug);
+          if (removed) renderAllSections();
         }
       });
     }

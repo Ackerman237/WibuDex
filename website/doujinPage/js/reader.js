@@ -754,8 +754,10 @@ async function loadChapter() {
 
     container.appendChild(imageList);
 
-    // 1. Restore posisi dari localStorage (sekarang hanya membaca posisi, tidak scroll)
-    let restoredPage = restoreReadingPosition(imageList, mangaSlug, chapterId);
+    // 1. Restore posisi dari localStorage (logic murni dari storage.js, validasi batas halaman di sini)
+    const totalPagesCount = imageList.querySelectorAll('img').length;
+    const rawSavedPage = getSavedPage(mangaSlug, chapterId);
+    const restoredPage = (rawSavedPage && rawSavedPage >= 1 && rawSavedPage <= totalPagesCount) ? rawSavedPage : null;
 
     // 2. Ambil progres dari server secara background (asinkron) untuk sinkronisasi cross-device
     if (mangaSlug) {

@@ -1,31 +1,8 @@
 // shared/ui.js — UI helper functions
+// Catatan: escapeHtml & setupBackToTop dipindah ke /website/shared/utils.js (shared bersama nekoPage)
 
 function el(id) {
   return document.getElementById(id);
-}
-
-/**
- * Escape karakter HTML berbahaya sebelum interpolasi ke innerHTML.
- * Global (bukan module): tersedia untuk semua page script yang
- * meng-include ui.js. WAJIB dipakai untuk teks dari sumber eksternal
- * (judul/thumbnail hasil scrape) maupun localStorage.
- */
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function setupBackToTop(btn, threshold) {
-  threshold = threshold || 300;
-  if (!btn) return;
-  const sync = () => btn.classList.toggle('show', window.scrollY > threshold);
-  window.addEventListener('scroll', sync, { passive: true });
-  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  sync();
 }
 
 function formatFetchError(error, fallbackMessage) {
@@ -93,10 +70,31 @@ function showEmpty(container, message, btnLabel, onAction) {
   }
 }
 
-function renderPaginationControls({ page, totalPages, hasPrevious, hasNext, onPageChange }) {
-  const pageNumbers = document.getElementById('pageNumbers');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
+/**
+ * Render kontrol pagination numerik (PREV 1 2 3 ... NEXT).
+ * @param {Object} options
+ * @param {number} options.page - Halaman aktif (1-based)
+ * @param {number} options.totalPages - Total halaman
+ * @param {boolean} options.hasPrevious - Apakah tombol prev aktif
+ * @param {boolean} options.hasNext - Apakah tombol next aktif
+ * @param {Function} options.onPageChange - Callback saat halaman diklik: (pageNumber) => void
+ * @param {HTMLElement} [options.pageNumbersEl] - Elemen penampung nomor halaman (fallback: #pageNumbers)
+ * @param {HTMLButtonElement} [options.prevBtnEl] - Elemen tombol prev (fallback: #prevBtn)
+ * @param {HTMLButtonElement} [options.nextBtnEl] - Elemen tombol next (fallback: #nextBtn)
+ */
+function renderPaginationControls({
+  page,
+  totalPages,
+  hasPrevious,
+  hasNext,
+  onPageChange,
+  pageNumbersEl,
+  prevBtnEl,
+  nextBtnEl,
+}) {
+  const pageNumbers = pageNumbersEl || document.getElementById('pageNumbers');
+  const prevBtn = prevBtnEl || document.getElementById('prevBtn');
+  const nextBtn = nextBtnEl || document.getElementById('nextBtn');
 
   if (prevBtn) prevBtn.disabled = !hasPrevious;
   if (nextBtn) nextBtn.disabled = !hasNext;
