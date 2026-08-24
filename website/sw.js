@@ -11,6 +11,7 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v17: halaman reader (reader.html/css) + gate ui-check-reader.
 // v16: fix kontras READ NOW (--cover-accent-contrast) + restyle info panel.
 // v15: pertegas tema dinamis detail (cover-theme.js v2, detail.js/css/html,
 // icons.svg i-heart-filled) + instant-clear dropdown katalog + [hidden]
@@ -25,7 +26,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v16';
+const CACHE_VERSION = 'v17';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

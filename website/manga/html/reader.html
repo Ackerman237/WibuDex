@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Reader — Wibudex</title>
+  <meta name="description" content="Baca chapter manga dengan mode long-strip imersif.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/manga/css/home.css">
+  <link rel="stylesheet" href="/manga/css/reader.css">
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+  <!-- Shell minimal — SELURUH chrome (topbar, bottombar, drawer, settings,
+       side controls) dibangun programatik oleh js/reader.js.
+       Tanpa nav situs: halaman imersif (shared/nav.js juga mengecualikan
+       reader). syncSiteHeaderHeight() aman jika header tak ada. -->
+  <main class="container">
+    <div id="info"></div>
+    <div id="reader"><p class="loading">Memuat chapter…</p></div>
+  </main>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Kembali ke atas">
+    <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-up"></use></svg>
+  </button>
+
+  <!-- Urutan penting: utils → ui → api → storage → screen.
+       nav.js & bottom-nav.js SENGAJA tidak dimuat (halaman imersif). -->
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/shared/ui.js" defer></script>
+  <script src="/shared/api.js" defer></script>
+  <script src="/shared/storage.js" defer></script>
+  <script src="/manga/js/reader.js" defer></script>
+</body>
+</html>

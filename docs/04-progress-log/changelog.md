@@ -5,6 +5,31 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (12) — Halaman reader (langkah 4 roadmap)
+
+### Baru
+- `website/manga/html/reader.html` — shell minimal sesuai kontrak
+  `js/reader.js` (#reader, #info, backToTop; main.container mendapat
+  class reader-shell). **Tanpa nav situs** — halaman imersif;
+  nav.js/bottom-nav.js sengaja tak dimuat (konsisten komentar file itu).
+- `website/manga/css/reader.css` — menyusun seluruh chrome output
+  `reader.js`: topbar glass + breadcrumb seri›chapter · pages long-strip
+  dengan var --page-w · skeleton per halaman + spinner/retry · load status
+  pill dengan track progress · page indicator · bottombar 5 tombol
+  (prev/settings/auto-scroll/menu/next, play = accent solid) · side
+  controls (disembunyikan ≤700px — zona jangkauan sudah cukup) · drawer
+  daftar chapter slide-in + backdrop blur · settings panel (slider lebar
+  & kecepatan auto-scroll, `accent-color` token) · tombol lanjut chapter.
+  Auto-hide chrome via .is-hidden (translate+fade 300ms).
+
+### Gate
+`ui-check-reader.mjs` baru: **13 cek runtime lolos** — topbar terisi,
+41 halaman dibuat, initial-pages bersrc, auto-hide + tap-toggle chrome,
+drawer buka/tutup + current ditandai (70 item), slider --page-w,
+bottombar 5 tombol. sw v17.
+
+---
+
 ## 2026-08-24 (11) — Fix teks READ NOW tak terlihat + restyle info panel
 
 ### Bug (terbukti via probe computed-style)
