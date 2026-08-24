@@ -37,7 +37,7 @@ cp .env.example .env
 
 # 3. Jalankan server
 npm start
-# → http://localhost:4000
+# → http://localhost:3333
 ```
 
 ## Scripts
