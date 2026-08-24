@@ -11,6 +11,9 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v15: pertegas tema dinamis detail (cover-theme.js v2, detail.js/css/html,
+// icons.svg i-heart-filled) + instant-clear dropdown katalog + [hidden]
+// global di tokens.css.
 // v14: halaman detail (detail.html/css, cover-theme.js) + gate ui-check-detail.
 // v13: badge jumlah genre + judul seksi nama-genre (bukan slug).
 // v12: multi-genre katalog (filter-dropdown.js, catalog.js/html/css) +
@@ -21,7 +24,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v14';
+const CACHE_VERSION = 'v15';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

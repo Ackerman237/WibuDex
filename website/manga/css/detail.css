@@ -12,17 +12,36 @@
 /* ---------------------------------------------------------------------- */
 /* AMBIENCE — gradient lembut dari warna cover (signature sekunder)        */
 /* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* AMBIENCE — pertegas (38% + glow radial di belakang cover)               */
+/* ---------------------------------------------------------------------- */
 .detail-ambience {
   position: absolute;
   inset: 0 0 auto 0;
-  height: 420px;
+  height: 560px;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--cover-accent, #D97706) 16%, transparent),
-    transparent 75%
-  );
+  background:
+    radial-gradient(
+      480px 340px at max(160px, 12%) 220px,
+      color-mix(in srgb, var(--cover-accent, #D97706) 30%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cover-accent, #D97706) 38%, transparent),
+      transparent 78%
+    );
   transition: background var(--duration-slow) var(--ease-standard);
+}
+
+/* NAV ikut tema — HANYA halaman detail (cover-theme.js hanya dimuat di sini,
+   dan class .has-cover-accent hanya ditambah saat warna berhasil diterapkan).
+   Tint dibatasi 14%/35% agar teks navigasi tetap kontras. */
+.has-cover-accent .site-nav {
+  background: color-mix(in srgb, var(--cover-accent, #D97706) 14%, var(--nav-bg));
+  border-bottom-color: color-mix(
+    in srgb, var(--cover-accent, #D97706) 35%, var(--border-subtle)
+  );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -55,8 +74,8 @@
 .cover-frame {
   aspect-ratio: 3 / 4.2;
   border-radius: var(--radius-lg);
-  border: 1px solid
-    color-mix(in srgb, var(--cover-accent, #D97706) 30%, var(--border-subtle));
+  border: 2px solid
+    color-mix(in srgb, var(--cover-accent, #D97706) 55%, var(--border-subtle));
   box-shadow: var(--elevation-2);
   background-size: cover;
   background-position: center;
@@ -85,20 +104,27 @@
   display: block;
 }
 
+/* Bendera & tipe & status — dipertegas (permintaan user 2026-08-24) */
 .detail-flag {
-  height: 14px;
-  vertical-align: -2px;
-  border-radius: 2px;
+  height: 22px;
+  border-radius: var(--radius-sm);
 }
 
 .detail-meta-strip {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin-top: var(--space-3);
-  font-size: 11px;
-  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-primary);
 }
 
 .meta-dot {
@@ -117,22 +143,39 @@
   text-wrap: balance;
 }
 
-.alt-titles-block {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  min-height: 1.4em;
+/* ---------------------------------------------------------------------- */
+/* TOMBOL KEMBALI (referrer-aware — logika di detail.js)                   */
+/* ---------------------------------------------------------------------- */
+.detail-topbar {
+  padding-top: var(--space-4);
 }
 
-.alt-titles {
-  margin: 0;
-  font-size: 13px;
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
   color: var(--text-secondary);
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard),
+              background var(--duration-fast) var(--ease-standard);
+}
+
+.btn-back:hover {
+  border-color: rgba(217, 119, 6, 0.45);
+  color: var(--accent-primary);
+  background: var(--bg-surface-raised);
+}
+
+.btn-back .ic {
+  width: 16px;
+  height: 16px;
 }
 
 .link-toggle {
@@ -141,12 +184,12 @@
   gap: var(--space-1);
   min-height: 32px;
   padding: 0 var(--space-1);
-  color: var(--accent-primary);
+  color: var(--cover-accent-text, #F59E0B);
   text-transform: uppercase;
 }
 
 .link-toggle:hover {
-  color: var(--accent-primary-hover);
+  color: var(--text-primary);
 }
 
 .link-toggle .ic {
@@ -161,17 +204,37 @@
   margin-bottom: var(--space-4);
 }
 
+/* Rating berjenjang (konvensi AniList/MAL) — data-tier oleh detail.js.
+   Default = mid/gold; none = netral. */
 .rating-score-big {
   font-family: var(--font-ui);
   font-size: 28px;
   font-weight: 800;
-  color: var(--warning);
 }
 
 .rating-stars {
   font-size: 15px;
   letter-spacing: 2px;
+}
+
+.rating-score-big,
+.rating-stars {
   color: var(--warning);
+}
+
+.rating-row[data-tier='good'] .rating-score-big,
+.rating-row[data-tier='good'] .rating-stars {
+  color: var(--success);
+}
+
+.rating-row[data-tier='low'] .rating-score-big,
+.rating-row[data-tier='low'] .rating-stars {
+  color: var(--error);
+}
+
+.rating-row[data-tier='none'] .rating-score-big,
+.rating-row[data-tier='none'] .rating-stars {
+  color: var(--text-secondary);
 }
 
 .views-chip {
@@ -190,6 +253,7 @@
 .views-chip .ic {
   width: 13px;
   height: 13px;
+  color: var(--cover-accent-text, #F59E0B);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -207,7 +271,8 @@
   align-items: center;
   min-height: 28px;
   padding: 0 var(--space-3);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid
+    color-mix(in srgb, var(--cover-accent, #D97706) 25%, var(--border-subtle));
   border-radius: var(--radius-full);
   background: var(--bg-surface);
   color: var(--text-secondary);
@@ -218,8 +283,8 @@
 }
 
 .genre-tag:hover {
-  border-color: rgba(217, 119, 6, 0.45);
-  color: var(--accent-primary);
+  border-color: var(--cover-accent, #D97706);
+  color: var(--cover-accent-text, #F59E0B);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -232,6 +297,19 @@
   margin-bottom: var(--space-5);
 }
 
+/* CTA utama: bg solid accent dinamis + teks berkontras (dihitung JS) */
+#readNowBtn {
+  background: var(--cover-accent, #D97706);
+  color: var(--cover-accent-text, #0D0C0C);
+  border: none;
+}
+
+#readNowBtn:hover {
+  /* global .btn-primary:hover memakai amber statis — override agar tetap
+     dalam keluarga warna cover */
+  background: color-mix(in srgb, var(--cover-accent, #D97706) 85%, black);
+}
+
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -241,7 +319,7 @@
   padding: 0 var(--space-5);
   border-radius: var(--radius-full);
   border: 1px solid
-    color-mix(in srgb, var(--cover-accent, #D97706) 40%, transparent);
+    color-mix(in srgb, var(--cover-accent, #D97706) 65%, transparent);
   background: transparent;
   color: var(--text-primary);
   font-size: 14px;
@@ -250,11 +328,7 @@
 }
 
 .btn-secondary:hover {
-  background: var(--bg-surface-raised);
-}
-
-.btn-secondary .btn-label {
-  font-weight: 700;
+  background: color-mix(in srgb, var(--cover-accent, #D97706) 12%, transparent);
 }
 
 /* Favorit aktif → merah favorit (legacy alias --favorite = --error) */
@@ -289,11 +363,17 @@
   background: rgba(239, 68, 68, 0.08);
 }
 
-/* CTA utama ikut aksen dinamis lewat border halus (style-guide:
-   "warna border CTA" — gradient ambience + border, tidak lebih) */
-#readNowBtn {
-  border: 1px solid
-    color-mix(in srgb, var(--cover-accent, #D97706) 55%, transparent);
+/* Favorit aktif → hati SOLID merah (simbol i-heart-filled), outline hilang */
+.ic-heart-filled {
+  display: none;
+}
+
+.btn-favorite.is-active .ic-heart-outline {
+  display: none;
+}
+
+.btn-favorite.is-active .ic-heart-filled {
+  display: inline-flex;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -359,8 +439,8 @@
 }
 
 .tab.active {
-  color: var(--accent-primary);
-  border-bottom-color: var(--accent-primary);
+  color: var(--cover-accent-text, #F59E0B);
+  border-bottom-color: var(--cover-accent-text, #F59E0B);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -422,8 +502,8 @@
   height: 20px;
   padding: 0 var(--space-2);
   border-radius: var(--radius-full);
-  background: var(--accent-primary-12);
-  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--cover-accent, #D97706) 15%, transparent);
+  color: var(--cover-accent-text, #F59E0B);
   font-size: 11px;
   font-weight: 800;
 }
@@ -495,12 +575,14 @@
 .chapter-number {
   min-width: 52px;
   padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid
+    color-mix(in srgb, var(--cover-accent, #D97706) 35%, transparent);
   border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--cover-accent, #D97706) 12%, transparent);
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent-primary);
+  color: var(--cover-accent-text, #F59E0B);
 }
 
 .chapter-row-body {
@@ -537,17 +619,14 @@
   height: 12px;
 }
 
-/* Chapter terbaru — penanda SFX miring ala komik */
-.chapter-row.is-latest .chapter-number {
-  position: relative;
-  border-color: var(--accent-primary);
-}
-
-.chapter-row.is-latest::after {
-  content: 'BARU';
+/* Stempel chapter terbaru sadar-status (permintaan user 2026-08-24):
+   ongoing → BARU amber · hiatus → HIATUS merah · completed → TAMAT hijau.
+   Gaya stiker SFX identik, beda konten + token semantik. */
+.chapter-row.is-latest::after,
+.chapter-row.is-hiatus::after,
+.chapter-row.is-completed::after {
   transform: rotate(-6deg) translateY(-8px);
   padding: 0 var(--space-1);
-  background: var(--accent-primary);
   color: var(--bg-base);
   font-family: var(--font-ui);
   font-size: 9px;
@@ -556,6 +635,21 @@
   border-radius: 3px;
   align-self: flex-start;
   margin-left: calc(var(--space-2) * -1);
+}
+
+.chapter-row.is-latest::after {
+  content: 'BARU';
+  background: var(--accent-primary);
+}
+
+.chapter-row.is-hiatus::after {
+  content: 'HIATUS';
+  background: var(--error);
+}
+
+.chapter-row.is-completed::after {
+  content: 'TAMAT';
+  background: var(--success);
 }
 
 @media (max-width: 480px) {

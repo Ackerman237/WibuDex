@@ -5,6 +5,45 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (10) — Detail dipertegas: tema dinamis v2 + UX batch (permintaan user)
+
+### Tema dinamis v2 ("kelihatan hampir sama semua" → dipertegas)
+- `cover-theme.js` v2: warna DOMINAN via 12 bucket hue berbobot
+  saturasi×jumlah piksel (dulu rata-rata seluruh piksel → lumpur mirip
+  antar cover); S≤0.85 & L 0.28–0.62.
+- Dua variabel berkontras: `--cover-accent` (permukaan) +
+  `--cover-accent-text` (diiterasi otomatis sampai kontras ≥4.5 vs
+  bg-base). Cache migrasi ke JSON {accent,text}, format lama dibaca.
+- Sebar ke elemen: ambience 38%+glow radial 560px · READ NOW bg solid ·
+  bookmark border 65% · tab aktif · genre chips tinted · kotak nomor
+  chapter · badge count · link-toggle · ikon views · stempel chapter.
+- Nav ikut tema, scope detail-only via `.has-cover-accent` (script hanya
+  dimuat di detail.html): tint 14% + border 35%.
+
+### UX batch permintaan user
+- Favorit aktif = hati SOLID merah (simbol baru `i-heart-filled`, dual-ikon,
+  toggle murni CSS class).
+- Rating berjenjang: ≥8 hijau · 6–7.9 gold · <6 merah (`data-tier` oleh
+  detail.js; rating tetap gold saat tier none/netral).
+- Meta strip bawah cover dipertegas: bendera 22px, teks 14px bold
+  uppercase, pill panel berlatar surface.
+- Stempel chapter sadar-status: BARU amber · HIATUS merah · TAMAT hijau.
+- Alt title panel-only: blok bawah judul dihapus (duplikasi info), baris
+  info panel tetap — kontrak turun ke 38 ID tanpa perubahan perilaku JS.
+- Tombol Kembali di atas layout: referrer sama-origin → history.back(),
+  dibuka langsung → redirect katalog.
+- Sinopsis ter-escape (bukti: GalCli! -GALS Clinic-, payload `&lt;p&gt;`)
+  → decode aman via textarea RCDATA sebelum DOMParser + buang label prefix
+  "Sinopsis:".
+
+### Gate
+`ui-check-detail.mjs` direstrukturisasi → **20 cek runtime, semua lolos**
+(tombol back end-to-end, hati filled, tier konsisten skor, stempel TAMAT
+pada manga completed, kedua var + kontras ≥4.5 terukur, nav scope).
+npm test 194/194. sw v15.
+
+---
+
 ## 2026-08-24 (9) — Fix katalog: instant-clear + badge hantu + fix [hidden] global
 
 ### Perilaku

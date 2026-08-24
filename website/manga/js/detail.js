@@ -8,6 +8,7 @@ let globalTitleText = 'Tanpa Judul';
 
 let currentMangaSlug = '';
 let currentGenresArr = [];
+let currentStatus = ''; // 'ongoing' | 'completed' | 'hiatus' (lowercase)
 let recommendationsLoaded = false;
 let recommendationsExpanded = false;
 
@@ -47,7 +48,15 @@ function renderChapterList() {
 
       const row = document.createElement("a");
       row.href = `/manga/html/reader.html?id=${encodeURIComponent(chId)}`;
-      row.className = "chapter-row" + (idx === 0 && chapterOrder === 'desc' ? " is-latest" : "");
+      // Stempel sadar-status (permintaan user 2026-08-24):
+      //   completed → TAMAT hijau · hiatus → HIATUS merah · lainnya → BARU amber
+      let variant = '';
+      if (idx === 0 && chapterOrder === 'desc') {
+        if (currentStatus === 'completed') variant = 'is-completed';
+        else if (currentStatus === 'hiatus') variant = 'is-hiatus';
+        else variant = 'is-latest';
+      }
+      row.className = 'chapter-row' + (variant ? ` ${variant}` : '');
 
       const numberDiv = document.createElement("div");
       numberDiv.className = "chapter-number";
@@ -87,6 +96,17 @@ function starString(rating) {
   const score = parseFloat(rating) || 0;
   const full = Math.round(score / 2);
   return "★".repeat(Math.min(5, Math.max(0, full))) + "☆".repeat(Math.max(0, 5 - full));
+}
+
+/**
+ * Tier warna rating (konvensi AniList/MAL): ≥8 hijau, 6–7.9 gold, <6 merah.
+ * Diterapkan sebagai data-tier di .rating-row; CSS memetakan ke token semantik.
+ */
+function ratingTier(score) {
+  if (!score) return 'none';
+  if (score >= 8) return 'good';
+  if (score >= 6) return 'mid';
+  return 'low';
 }
 
 /**
@@ -159,6 +179,7 @@ async function renderDetail() {
     const serializationText = data.serialization || "-";
     const charactersText = data.characters || "-";
     const statusText = data.status || "Ongoing";
+    currentStatus = String(statusText).trim().toLowerCase();
     const typeText = data.type || "Manga";
     // typeFlag upstream sering kosong → turunkan dari type; jika tetap tak dikenal, sembunyikan (jangan tampil "??")
     const typeFlagText = data.typeFlag || getMangaFlag(typeText) || "";
@@ -178,7 +199,7 @@ async function renderDetail() {
     if (el("coverImg")) { el("coverImg").src = coverUrl; el("coverImg").alt = titleText; }
 
     if (el("mTitle")) el("mTitle").textContent = titleText;
-    if (el("mAltTitlesShort")) el("mAltTitlesShort").textContent = altShort;
+    // Alt title kini HANYA di panel info (duplikasi di bawah judul dihapus)
     if (el("mTypeFlag")) {
       if (typeFlagText) {
         el("mTypeFlag").src = `/icons/flags/${typeFlagText}.svg`;
@@ -224,6 +245,8 @@ async function renderDetail() {
 
     if (el("ratingScore")) el("ratingScore").textContent = numRating ? numRating.toFixed(1) : "-";
     if (el("ratingStars")) el("ratingStars").textContent = starString(numRating);
+    const ratingRow = el("ratingScore")?.closest(".rating-row");
+    if (ratingRow) ratingRow.dataset.tier = ratingTier(numRating);
     if (el("viewsValue")) {
       el("viewsValue").textContent = data.views ? Number(data.views).toLocaleString("id-ID") : "-";
     }
@@ -420,6 +443,19 @@ function setBookmarkLabel(btn, active) {
 document.addEventListener("DOMContentLoaded", () => {
   renderDetail();
 
+  // Tombol kembali: referrer sama-origin → history.back() (kondisi scroll/
+  // filter halaman asal terjaga); dibuka langsung dari luar → ke katalog.
+  const backBtn = el("backBtn");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (document.referrer && document.referrer.startsWith(location.origin)) {
+        history.back();
+      } else {
+        window.location.href = "/manga/html/catalog.html";
+      }
+    });
+  }
+
   const bookmarkBtn = el("bookmarkBtn");
   if (bookmarkBtn) {
     bookmarkBtn.addEventListener("click", () => {
@@ -454,13 +490,6 @@ document.addEventListener("DOMContentLoaded", () => {
       renderChapterList();
     });
   }
-
-  el("altTitlesToggle")?.addEventListener("click", () => {
-    const target = el("mAltTitlesShort");
-    if (target) {
-      target.style.webkitLineClamp = target.style.webkitLineClamp === "unset" ? "1" : "unset";
-    }
-  });
 
   el("synopsisToggle")?.addEventListener("click", () => {
     const p = el("synopsisText");
@@ -523,8 +552,16 @@ document.addEventListener("DOMContentLoaded", () => {
 function cleanSynopsis(raw) {
   if (!raw || typeof raw !== 'string') return '';
 
+  // Upstream kadang mengirim sinopsis TER-ESCAPE ("&lt;p&gt;" sebagai teks)
+  // — bukti: GalCli! -GALS Clinic-. Decode entitas dulu via textarea:
+  // textarea adalah RCDATA (tag tak diparse, hanya entitas di-decode),
+  // jadi aman tanpa risiko eksekusi apa pun.
+  const decoder = document.createElement('textarea');
+  decoder.innerHTML = raw;
+  const decoded = decoder.value;
+
   const parser = new DOMParser();
-  const doc = parser.parseFromString(raw, 'text/html');
+  const doc = parser.parseFromString(decoded, 'text/html');
 
   doc.querySelectorAll('script, style, img').forEach(el => el.remove());
 
@@ -538,11 +575,14 @@ function cleanSynopsis(raw) {
     parts.push(text);
   }
 
-  if (parts.length === 0) {
-    const text = doc.body.textContent.replace(/\s+/g, ' ').trim();
-    const cleaned = text.split(/download\s*batch/i)[0].trim();
-    return cleaned;
+  let text;
+  if (parts.length > 0) {
+    text = parts.join('\n\n');
+  } else {
+    text = doc.body.textContent.replace(/\s+/g, ' ').trim();
+    text = text.split(/download\s*batch/i)[0].trim();
   }
 
-  return parts.join('\n\n');
+  // Buang label "Sinopsis:" bawaan sumber (kita sudah punya heading panel)
+  return text.replace(/^\s*sinopsis\s*:\s*/i, '').trim();
 }

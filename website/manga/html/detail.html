@@ -54,6 +54,14 @@
     <p id="detailLoading" class="loading">Memuat detail manga…</p>
     <p id="detailError" class="error state-error" style="display:none"></p>
 
+    <!-- Tombol kembali ke halaman sebelumnya (referrer-aware, lihat detail.js) -->
+    <div class="detail-topbar">
+      <button id="backBtn" class="btn-back" type="button">
+        <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-left"></use></svg>
+        Kembali
+      </button>
+    </div>
+
     <div id="detailLayout" class="detail-layout" style="display:none">
       <!-- ================= KOLOM COVER ================= -->
       <section class="detail-cover-col" aria-label="Cover manga">
@@ -71,11 +79,6 @@
       <!-- ================= KOLOM INFO ================= -->
       <section class="detail-info-col">
         <h1 id="mTitle" class="detail-title">Memuat…</h1>
-
-        <div class="alt-titles-block">
-          <p id="mAltTitlesShort" class="alt-titles">-</p>
-          <button id="altTitlesToggle" class="link-toggle text-micro" type="button">lihat semua</button>
-        </div>
 
         <div class="rating-row">
           <span id="ratingScore" class="rating-score-big numeric">-</span>
@@ -95,7 +98,8 @@
           </button>
           <button id="bookmarkBtn" class="btn-secondary" type="button">BOOKMARK</button>
           <button id="favoriteBtn" class="btn-favorite" type="button" aria-pressed="false">
-            <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-heart"></use></svg>
+            <svg class="ic ic-heart-outline" aria-hidden="true"><use href="/manga/icons.svg#i-heart"></use></svg>
+            <svg class="ic ic-heart-filled" aria-hidden="true"><use href="/manga/icons.svg#i-heart-filled"></use></svg>
             <span>Favorit</span>
           </button>
         </div>
