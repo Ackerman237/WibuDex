@@ -67,6 +67,15 @@
 .schedule-section {
   margin-bottom: 30px;
 }
+#scheduleContainer {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.schedule-day { flex: 0 0 280px; }
 .schedule-day {
   margin-bottom: 22px;
 }
@@ -207,6 +216,71 @@
   overflow: hidden;
 }
 .video-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
+
+/* ---------- Kategori rows (home per-kategori) ---------- */
+.cat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.cat-all {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+.cat-all:hover {
+  background: var(--ink);
+  color: var(--text);
+}
+
+/* ---------- Pagination kategori (mirip all-manga) ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+.page-numbers {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.page-number, .page-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 13px;
+  cursor: pointer;
+}
+.page-number.active {
+  background: var(--ink);
+  color: var(--text);
+  border-color: var(--ink);
+}
+.page-number:disabled,
+.page-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
 
 /* ---------- Empty state jadwal ---------- */
 .schedule-empty {

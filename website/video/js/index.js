@@ -2,6 +2,7 @@
 
 let currentOffset = 1;
 let currentCategory = new URLSearchParams(window.location.search).get('category') || '';
+let currentPage = parseInt(new URLSearchParams(window.location.search).get('page')) || 1;
 let currentQuery = '';
 
 function renderVideoCard(video) {
@@ -26,7 +27,7 @@ async function loadVideos(reset = false) {
     // Determin endpoint berdasarkan filter yang aktif
     let endpoint;
     if (currentCategory) {
-      endpoint = `/api/video/category?category=${encodeURIComponent(currentCategory)}&page=${currentOffset}`;
+      endpoint = `/api/video/category?category=${encodeURIComponent(currentCategory)}&page=${currentPage}`;
     } else if (currentQuery) {
       endpoint = `/api/video/search?query=${encodeURIComponent(currentQuery)}&page=${currentOffset}`;
     } else {
@@ -62,12 +63,19 @@ async function loadVideos(reset = false) {
       grid.appendChild(renderVideoCard(video));
     });
 
-    currentOffset++; // naik ke halaman selanjutnya
-
-    if (loadMoreBtn) {
-      loadMoreBtn.style.display = hasNext ? 'block' : 'none';
-      loadMoreBtn.textContent = 'SEE MORE';
-      loadMoreBtn.onclick = () => loadVideos(false);
+    // Pagination: kategori pakai halaman bernomor, lainnya pakai SEE MORE
+    if (currentCategory) {
+      renderCategoryPagination(currentPage, hasNext);
+      if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+    } else {
+      currentOffset++;
+      if (loadMoreBtn) {
+        loadMoreBtn.style.display = hasNext ? 'block' : 'none';
+        loadMoreBtn.textContent = 'SEE MORE';
+        loadMoreBtn.onclick = () => loadVideos(false);
+      }
+      const pag = document.getElementById('videoPagination');
+      if (pag) pag.style.display = 'none';
     }
   } catch (err) {
     console.error('Gagal memuat video:', err);
@@ -80,6 +88,49 @@ async function loadVideos(reset = false) {
       grid.querySelector('.retry-btn')?.addEventListener('click', () => loadVideos(true));
     }
   }
+}
+
+function renderCategoryPagination(page, hasNext) {
+  const nav = document.getElementById('videoPagination');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const pageNumbers = document.getElementById('pageNumbers');
+  if (!nav || !prevBtn || !nextBtn || !pageNumbers) return;
+  nav.style.display = 'flex';
+  prevBtn.disabled = page <= 1;
+  nextBtn.disabled = !hasNext;
+  prevBtn.onclick = () => { if (page > 1) goToCategoryPage(page - 1); };
+  nextBtn.onclick = () => { if (hasNext) goToCategoryPage(page + 1); };
+  pageNumbers.innerHTML = '';
+  const pages = new Set([1, page]);
+  if (page > 1) pages.add(page - 1);
+  if (hasNext) pages.add(page + 1);
+  if (page > 2) pages.add(2);
+  const sorted = [...pages].sort((a, b) => a - b).filter((n) => n >= 1);
+  sorted.forEach((n) => {
+    if (n === 1 && sorted.includes(2) && page > 3) {
+      // ellipsis handled simply: skip
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'page-number' + (n === page ? ' active' : '');
+    btn.textContent = String(n);
+    if (n !== page) btn.addEventListener('click', () => goToCategoryPage(n));
+    else btn.disabled = true;
+    pageNumbers.appendChild(btn);
+  });
+}
+
+function goToCategoryPage(page) {
+  currentPage = page;
+  const url = new URL(window.location.href);
+  url.searchParams.set('page', String(page));
+  if (currentCategory) url.searchParams.set('category', currentCategory);
+  history.pushState({}, '', url);
+  const grid = document.getElementById('videoGrid');
+  if (grid) grid.innerHTML = '<p class="loading">Memuat...</p>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  loadVideos(false);
 }
 
 async function loadSchedule() {
