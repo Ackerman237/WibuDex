@@ -183,6 +183,11 @@ async function setupRandomButton() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Kategori view: jadwal tak relevan, sembunyikan (hemat tempat)
+  if (currentCategory) {
+    document.querySelector('.schedule-section')?.style.setProperty('display', 'none');
+  }
+
   const searchForm = document.getElementById('searchForm');
   const searchInput = document.getElementById('searchInput');
   const backToTopBtn = document.getElementById('backToTop');
@@ -272,15 +277,10 @@ async function loadCatVideos(sec, cat) {
     });
 
     if (videos.length > CAT_VISIBLE) {
-      const more = document.createElement('button');
+      const more = document.createElement('a');
       more.className = 'btn-see-more cat-more';
-      more.textContent = `Lihat lebih banyak (${videos.length - CAT_VISIBLE} lagi)`;
-      more.addEventListener('click', () => {
-        const cards = [...grid.children];
-        const anyHidden = cards.some((c) => c.hidden);
-        cards.forEach((c, i) => { if (i >= CAT_VISIBLE) c.hidden = anyHidden; });
-        more.textContent = anyHidden ? 'Tampilkan lebih sedikit' : `Lihat lebih banyak (${videos.length - CAT_VISIBLE} lagi)`;
-      });
+      more.href = `/video/html/index.html?category=${encodeURIComponent(cat.slug)}`;
+      more.textContent = `Lihat semua — ${videos.length} video`;
       grid.after(more);
     }
   } catch {

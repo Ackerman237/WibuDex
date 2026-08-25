@@ -109,6 +109,13 @@ function attachSlowNotes() {
     const el = document.getElementById('pfLoading');
     if (el && el.style.display !== 'none') {
       el.textContent = 'Lama tak selesai — pakai tombol mode langsung di bawah';
+      // Player benar-benar dianggap gagal → barulah tampilkan fallback eksternal
+      const c = document.getElementById('externalFallbackContainer');
+      if (c) {
+        // href sudah disiapkan saat memilih server — cukup tampilkan
+        const btn = document.getElementById('externalPlayerBtn');
+        if (btn?.href) c.style.display = 'block';
+      }
     }
   }, 25000);
 }
@@ -369,6 +376,16 @@ async function loadDetail() {
       genreRow.style.display = genres.length > 0 ? 'flex' : 'none';
     }
 
+    // Helper: tampilkan tombol eksternal HANYA saat player benar-benar gagal
+    // (opsi A — di toolbar, tidak menutupi video)
+    const revealExternal = (url) => {
+      if (!isAllowedPlayerUrl(url)) return;
+      externalPlayerBtn.href = url;
+      externalFallbackContainer.style.display = 'block';
+    };
+
+    // Gagal total (timeout/slow 25 dtk) juga memicu fallback
+
     if (detail.players && detail.players.length > 0) {
       serverSelectorContainer.innerHTML = '';
 
@@ -381,14 +398,9 @@ async function loadDetail() {
           document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
 
-          // href hanya untuk URL allowlist — javascript:/data: di href TETAP
-          // dieksekusi saat diklik meski tidak pernah masuk iframe.
+          // href disiapkan tapi fallback tetap tersembunyi sampai benar-benar gagal
           if (isAllowedPlayerUrl(playerUrl)) {
             externalPlayerBtn.href = playerUrl;
-            externalFallbackContainer.style.display = 'block';
-          } else {
-            externalPlayerBtn.removeAttribute('href');
-            externalFallbackContainer.style.display = 'none';
           }
 
           mountPlayer(playerBox, playerUrl);
@@ -400,18 +412,19 @@ async function loadDetail() {
       const firstUrl = detail.players[0];
       if (isAllowedPlayerUrl(firstUrl)) {
         externalPlayerBtn.href = firstUrl;
-        externalFallbackContainer.style.display = 'block';
       }
       mountPlayer(playerBox, firstUrl);
     } else {
       hideLoading(); // tidak ada player — matikan overlay agar pesan terlihat
       playerBox.innerHTML = '<p class="player-error-text">Player video tidak tersedia.</p>';
+      revealExternal(detail.players[0] || '');
       renderEpisodeList(detail.episodes);
       renderRandomRetry(playerBox);
     }
   } catch (err) {
     hideLoading();
     playerBox.innerHTML = `<p class="player-error-text">Error: ${escapeHtml(err.message)}</p>`;
+    revealExternal(detail.players?.[0] || '');
   }
 }
 
