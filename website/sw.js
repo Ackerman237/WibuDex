@@ -45,7 +45,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v30';
+const CACHE_VERSION = 'v32';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

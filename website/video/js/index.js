@@ -206,4 +206,84 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSchedule();
   setupRandomButton();
   loadVideos(true);
+  loadCategorySections();
 });
+
+// ─── Home per-kategori (lazy-load + link ke halaman kategori) ───
+
+const CAT_VISIBLE = 3;
+
+function buildCatSection(cat) {
+  const sec = document.createElement('section');
+  sec.className = 'cat-section manga-section';
+  sec.dataset.slug = cat.slug;
+  sec.innerHTML = `
+    <div class="cat-head">
+      <h2 class="section-title">${escapeHtml(cat.name || cat.slug)}</h2>
+      <a class="cat-all" href="/video/html/index.html?category=${encodeURIComponent(cat.slug)}">Lihat semua</a>
+    </div>
+    <div class="video-grid cat-grid"></div>
+    <p class="cat-status loading">Memuat…</p>`;
+  return sec;
+}
+
+async function loadCategorySections() {
+  const host = document.getElementById('categorySections');
+  if (!host) return;
+
+  let cats;
+  try {
+    const res = await fetch('/api/video/categories');
+    cats = (await res.json())?.data || [];
+  } catch { return; }
+
+  for (const cat of cats) {
+    const sec = buildCatSection(cat);
+    host.appendChild(sec);
+    observeCatSection(sec, cat);
+  }
+}
+
+function observeCatSection(sec, cat) {
+  const io = new IntersectionObserver(async (entries) => {
+    entries.forEach(async (entry) => {
+      if (!entry.isIntersecting) return;
+      io.unobserve(entry.target);
+      await loadCatVideos(sec, cat);
+    });
+  }, { rootMargin: '400px 0px' });
+  io.observe(sec);
+}
+
+async function loadCatVideos(sec, cat) {
+  const grid = sec.querySelector('.cat-grid');
+  const statusEl = sec.querySelector('.cat-status');
+  try {
+    const res = await fetch(`/api/video/category?category=${encodeURIComponent(cat.slug)}&page=1`);
+    const result = await res.json();
+    if (!result.success) throw new Error();
+    const videos = (result.data?.videos || []).slice(0, 15);
+    statusEl.remove();
+
+    videos.forEach((v, idx) => {
+      const card = renderMediaCard(v, { variant: 'grid' });
+      if (idx >= CAT_VISIBLE) card.hidden = true;
+      grid.appendChild(card);
+    });
+
+    if (videos.length > CAT_VISIBLE) {
+      const more = document.createElement('button');
+      more.className = 'btn-see-more cat-more';
+      more.textContent = `Lihat lebih banyak (${videos.length - CAT_VISIBLE} lagi)`;
+      more.addEventListener('click', () => {
+        const cards = [...grid.children];
+        const anyHidden = cards.some((c) => c.hidden);
+        cards.forEach((c, i) => { if (i >= CAT_VISIBLE) c.hidden = anyHidden; });
+        more.textContent = anyHidden ? 'Tampilkan lebih sedikit' : `Lihat lebih banyak (${videos.length - CAT_VISIBLE} lagi)`;
+      });
+      grid.after(more);
+    }
+  } catch {
+    if (statusEl) statusEl.textContent = 'Gagal memuat.';
+  }
+}
