@@ -92,6 +92,7 @@ main [id] {
 .nav-links a {
   display: inline-flex;
   align-items: center;
+  gap: 6px; /* ruang ikon modul (play = video) */
   min-height: 44px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-full);
@@ -100,6 +101,11 @@ main [id] {
   font-weight: 600;
   transition: color var(--duration-fast) var(--ease-standard),
               background var(--duration-fast) var(--ease-standard);
+}
+
+.nav-ic {
+  width: 14px;
+  height: 14px;
 }
 
 .nav-links a:hover {

@@ -13,6 +13,7 @@
 
 // v28: hapus duplikat episode/related bawah player + sidebar stack mobile + fix tabrakan loading + enrich thumb episode dari peta halaman.
 // v27: thumbnail related/episode (parser bg-image + li) + genre chips dari meta description upstream.
+// v29: identitas video Wibudex (brand+badge+nav ikon modul) + fix href mati nav.
 // v26: unifikasi tema video home/series/watch (tokens + alias legacy
 // base.css, font Plus Jakarta Sans, theme-color espresso).
 // v25: theater mode watch page.

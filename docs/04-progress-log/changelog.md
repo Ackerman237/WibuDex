@@ -17,6 +17,20 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (26) - Video: identitas Wibudex + pembeda modul navigasi
+
+- Brand header Neko Video -> Wibudex (span amber) + badge mini VIDEO penanda modul.
+- FIX href mati: MANGA->/ dan NEKO VIDEO->/neko/ (404!) -> path modul benar.
+- Pembeda modul: link MANGA berikon book-open, WIBUDEX VIDEO berikon play (bentuk, bukan warna baru); 5 halaman manga ikut.
+- Title dokumen & placeholder search dirapikan.
+
+Gate: ui-check-video-home.mjs +4 assertion identitas -> total 12/12 runtime lolos. sw v29.
+
+---
+
 ## 2026-08-24 (25) - Watch page: hapus duplikat bawah player + enrich thumbnail episode
 
 ### Perubahan

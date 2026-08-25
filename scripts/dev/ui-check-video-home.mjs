@@ -77,15 +77,27 @@ try {
     const tokLoaded = [...document.styleSheets].some((s) =>
       (s.href || '').includes('/css/wibudex-tokens.css'));
     const bg = getComputedStyle(document.body).backgroundColor;
-    const brandBar = getComputedStyle(
-      document.querySelector('header h1'), '::after'
-    ).backgroundColor;
+    const brandBar = getComputedStyle(document.querySelector('header .brand-badge')).backgroundColor;
     return { tokLoaded, bg, brandBar };
   });
   ok('Tema unifikasi: tokens.css termuat', theme.tokLoaded);
   ok('Body espresso #0D0C0C', theme.bg === 'rgb(13, 12, 12)', theme.bg);
   ok('Aksen brand amber (bukan merah legacy)',
      theme.brandBar === 'rgb(217, 119, 6)', theme.brandBar);
+
+  // Identitas: brand Wibudex + ikon modul pada nav
+  const ident = await page.evaluate(() => ({
+    h1: document.querySelector('header h1')?.textContent.trim() || '',
+    badge: document.querySelector('header .brand-badge')?.textContent.trim() || '',
+    playIconOnVideo: Boolean(document.querySelector('.nav-links a[href*="/video"] .nav-ic use')),
+    bookIconOnManga: Boolean(document.querySelector('.nav-links a[href*="/manga"] .nav-ic use')),
+    staleHref: Boolean(document.querySelector('.nav-links a[href="/neko/"], .nav-links a[href="/"]')),
+  }));
+  ok('Brand header = Wibudex + badge Video',
+     ident.h1.startsWith('Wibudex') && ident.badge === 'Video',
+     `"${ident.h1}" / "${ident.badge}"`);
+  ok('Ikon modul di nav (play/buku) & tanpa href mati',
+     ident.playIconOnVideo && ident.bookIconOnManga && !ident.staleHref);
 
   // 2) Struktur markup konsolidasi
   const struct = await page.evaluate(() => {
