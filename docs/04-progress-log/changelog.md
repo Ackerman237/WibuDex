@@ -40,6 +40,7 @@ notes live in `reports/`.
 
 ---
 
+## 2026-08-24 (23) — Video: unifikasi tema home/series/watch dengan Wibudex
 
 Keluhan user: tema video beda dengan manga/komik. Terbukti: 2 dari 3
 halaman video tidak memuat wibudex-tokens.css sama sekali, base.css masih
