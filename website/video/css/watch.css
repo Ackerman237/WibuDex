@@ -47,7 +47,7 @@
 }
 
 
-/* Toolbar buttons (back / ext-link) — selaras theater-toggle */
+/* Toolbar buttons (back / ext-link) ï¿½ selaras theater-toggle */
 .toolbar-btn {
   display: inline-flex;
   align-items: center;
@@ -450,6 +450,12 @@ a#externalPlayerBtn:not([href]) {
 }
 
 .watch-meta-item { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+.meta-ic {
+  width: 13px;
+  height: 13px;
+  color: var(--accent-primary);
+}
 
 /* Synopsis: clamp 4 baris + fade-out hint sebelum expand */
 .synopsis-panel { position: relative; }

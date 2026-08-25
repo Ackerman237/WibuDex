@@ -26,6 +26,23 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (29) - Video polish: emoji -> ikon sprite, auto-hide header, dropdown uppercase, hamburger slim
+
+- Semua emoji di modul video diganti ikon sprite: ACAK (sparkles), heading
+  Jadwal (clock), meta date/duration/studio (clock/play/list), random-retry
+  (refresh-cw), label mode-player & slow-notes jadi teks bersih.
+- Header video kini AUTO-HIDE di mobile (port pola manga): hilang saat
+  scroll-bawah, muncul saat naik + CSS transition.
+- Dropdown CATEGORIES: item menu uppercase (toggle sudah).
+- Hamburger dirapikan: lebih kecil, radius penuh, hover accent.
+
+Gate: ui-check-video-home.mjs 13/13 runtime lolos. sw v31.
+
+---
+
 ## 2026-08-24 (28) - Video: rewrite parser jadwal (struktur baru upstream)
 
 Upstream /jadwal-new-hentai/ ganti format: grup per STATUS (Akan Datang / Sudah Lewat), nama hari hilang total (terverifikasi live probe). Parser lama berbasis nama hari -> hasil selalu kosong.

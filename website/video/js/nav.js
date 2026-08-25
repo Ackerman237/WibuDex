@@ -28,6 +28,20 @@
     });
   }
 
+  // ─── Auto-hide header mobile (pola manga/shared nav.js) ───
+  // Hilang saat scroll-bawah, muncul saat scroll-atas.
+  const headerEl = document.querySelector('header');
+  if (headerEl) {
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      if (window.innerWidth >= 768) return;
+      const y = window.scrollY || document.documentElement.scrollTop;
+      if (y > lastScroll && y > 80) headerEl.classList.add('header-is-hidden');
+      else if (y < lastScroll) headerEl.classList.remove('header-is-hidden');
+      lastScroll = Math.max(y, 0);
+    }, { passive: true });
+  }
+
   // ─── Dropdown CATEGORIES ─────────────────────────────────────────────────
   const dropdown = document.getElementById('categoriesDropdown');
   const toggleBtn = dropdown?.querySelector('.nav-drop-toggle');

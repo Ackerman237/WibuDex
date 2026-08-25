@@ -61,7 +61,7 @@ function renderRandomRetry(playerBox) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'server-btn random-retry-btn';
-  btn.textContent = '🎲 Video Acak Lain';
+  btn.innerHTML = '<svg class="ic"><use href="/manga/icons.svg#i-refresh-cw"></use></svg> Video Acak Lain';
   btn.addEventListener('click', () => goRandomVideo(btn));
   playerBox.appendChild(btn);
 }
@@ -79,7 +79,7 @@ const NATIVE_TIMEOUT_MS = 20000; // batas sabar menunggu ekstraksi sebelum fallb
 // Overlay loading: anak LANGSUNG #playerBox (.video-wrapper, sudah berukuran
 // 16:9 lewat padding-bottom trick). Dulu dibungkus div.pf-wrap tambahan yang
 // tingginya collapse → teks "membersihkan iklan" tergencet di garis atas.
-function showLoading(playerBox, text = '🧹 Sedang membersihkan iklan…') {
+function showLoading(playerBox, text = 'Membersihkan iklan…') {
   let el = document.getElementById('pfLoading');
   if (!el) {
     el = document.createElement('div');
@@ -102,13 +102,13 @@ function attachSlowNotes() {
   slowTimer1 = setTimeout(() => {
     const el = document.getElementById('pfLoading');
     if (el && el.style.display !== 'none') {
-      el.textContent = '⏳ Masih menyiapkan player… jaringan lambat';
+      el.textContent = 'Masih menyiapkan player… jaringan lambat';
     }
   }, 15000);
   slowTimer2 = setTimeout(() => {
     const el = document.getElementById('pfLoading');
     if (el && el.style.display !== 'none') {
-      el.textContent = '⏳ Lama tak selesai — pakai tombol mode langsung di bawah';
+      el.textContent = 'Lama tak selesai — pakai tombol mode langsung di bawah';
     }
   }, 25000);
 }
@@ -132,8 +132,8 @@ function ensureModeBtn(playerBox, playerUrl) {
   host.innerHTML = '<button type="button" id="pfModeBtn" class="pf-mode-btn"></button>';
   const btn = document.getElementById('pfModeBtn');
   btn.textContent = playerMode === 'direct'
-    ? '🧹 Kembali ke mode bersih (anti iklan)'
-    : '⚡ Player tidak muncul? Pakai mode langsung';
+    ? 'Kembali ke mode bersih (anti iklan)'
+    : 'Player tidak muncul? Pakai mode langsung';
   btn.onclick = () => {
     playerMode = playerMode === 'direct' ? 'filtered' : 'direct';
     mountPlayer(playerBox, playerUrl);
@@ -347,13 +347,13 @@ async function loadDetail() {
     if (watchMeta) {
       let metaHtml = '';
       if (detail.date) {
-        metaHtml += `<span class="watch-meta-item">📅 ${escapeHtml(detail.date)}</span>`;
+        metaHtml += `<span class="watch-meta-item"><svg class="ic meta-ic" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg> ${escapeHtml(detail.date)}</span>`;
       }
       if (detail.duration) {
-        metaHtml += `<span class="watch-meta-item">⏱️ ${escapeHtml(detail.duration)}</span>`;
+        metaHtml += `<span class="watch-meta-item"><svg class="ic meta-ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg> ${escapeHtml(detail.duration)}</span>`;
       }
       if (detail.studio) {
-        metaHtml += `<span class="watch-meta-item">🎬 ${escapeHtml(detail.studio)}</span>`;
+        metaHtml += `<span class="watch-meta-item"><svg class="ic meta-ic" aria-hidden="true"><use href="/manga/icons.svg#i-list"></use></svg> ${escapeHtml(detail.studio)}</span>`;
       }
       watchMeta.innerHTML = metaHtml;
     }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wibudex Video — Streaming</title>
+  <title>Wibudex Video ï¿½ Streaming</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/video/css/base.css">
@@ -38,7 +38,7 @@
         </div>
       </nav>
       <form id="searchForm" class="search-box">
-        <input type="text" id="searchInput" placeholder="Cari video…">
+        <input type="text" id="searchInput" placeholder="Cari videoï¿½">
         <button type="submit">CARI</button>
       </form>
       <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
@@ -51,15 +51,21 @@
     <!-- Aksi cepat (kategori kini lewat dropdown CATEGORIES di navbar) -->
     <section class="categories-section">
       <div class="categories-actions">
-        <button id="randomBtn" class="category-btn random-btn" type="button">ðŸŽ² ACAK</button>
+        <button id="randomBtn" class="category-btn random-btn" type="button">
+          <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-sparkles"></use></svg>
+          ACAK
+        </button>
         <a class="category-btn" href="/video/html/series.html?type=hentai">DAFTAR HENTAI</a>
         <a class="category-btn" href="/video/html/series.html?type=jav">DAFTAR JAV</a>
       </div>
     </section>
 
-    <!-- Jadwal New Hentai -->
-    <section class="manga-section schedule-section">
-      <h2 class="section-title">ðŸ“… Jadwal New Hentai</h2>
+    <!-- Jadwal New Hentai (anchor #jadwal â€” dijangkau dari navbar) -->
+    <section class="manga-section schedule-section" id="jadwal">
+      <h2 class="section-title">
+        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg>
+        Jadwal New Hentai
+      </h2>
       <div id="scheduleContainer">
         <p class="loading">Memuat jadwal...</p>
       </div>
