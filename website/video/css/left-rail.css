@@ -1,0 +1,39 @@
+/* Left rail — desktop sidebar navigasi Neko Video (V1.5) */
+.left-rail {
+  position: fixed;
+  left: 0;
+  top: 56px;
+  bottom: 0;
+  width: 240px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  padding: 16px 8px;
+  overflow-y: auto;
+  z-index: 50;
+  transition: width var(--duration-base) var(--ease-standard);
+}
+.left-rail.is-collapsed { width: 64px; }
+.left-rail a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.left-rail a:hover { background: var(--bg-surface-raised); color: var(--text-primary); }
+.left-rail a.active { background: var(--accent-primary-12); color: var(--accent-primary); }
+.left-rail.is-collapsed span.label { display: none; }
+.left-rail.is-collapsed a { justify-content: center; }
+main.has-left-rail { margin-left: 240px; }
+main.has-left-rail.rail-collapsed { margin-left: 64px; }
+@media (max-width: 1023px) {
+  .left-rail { display: none; }
+  main.has-left-rail, main.has-left-rail.rail-collapsed { margin-left: 0; }
+}
