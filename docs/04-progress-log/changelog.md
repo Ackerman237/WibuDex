@@ -61,6 +61,19 @@ Gate: ui-check-video-watch.mjs diperbarui -> 8/8 runtime lolos.
 
 ---
 
+
+---
+
+## 2026-08-24 (29) - Watch: cards.js ditambahkan + duplikat synopsis dihapus
+
+### Fix
+- watch.html: tambahkan script cards.js (renderMediaCard dibutuhkan renderSidebarList
+  tapi tidak pernah dimuat - akar masalah sidebar episode kosong).
+- Hapus duplikat synopsis-panel yang muncul dua kali di watch.html.
+
+### Verifikasi
+ui-check-video-watch.mjs: semua cek runtime lolos.
+
 ## 2026-08-24 (26) - Video: identitas Wibudex + pembeda modul navigasi
 
 - Brand header Neko Video -> Wibudex (span amber) + badge mini VIDEO penanda modul.
