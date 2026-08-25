@@ -20,6 +20,19 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (27) - Watch: toolbar khusus + back + sidebar digabung
+
+- **Toolbar satu baris** di bawah player: tombol Kembali (referrer-aware, fallback ke index) - toggle mode langsung (host terisolasi, tak menimpa) - link Buka player di tab baru (pindah dari deskripsi, tanpa emoji).
+- **Sidebar episode & related DIGABUNG** satu daftar (isinya memang sama di upstream; slug duplikat dilewati) - current tetap amber.
+- Stub gate disesuaikan (thumb campur kosong/isi untuk uji nyata).
+
+Gate: ui-check-video-watch.mjs diperbarui -> 8/8 runtime lolos.
+
+---
+
 ## 2026-08-24 (26) - Video: identitas Wibudex + pembeda modul navigasi
 
 - Brand header Neko Video -> Wibudex (span amber) + badge mini VIDEO penanda modul.

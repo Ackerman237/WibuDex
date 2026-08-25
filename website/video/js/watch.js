@@ -329,9 +329,9 @@ async function loadDetail() {
     document.getElementById('videoTitle').innerText = detail.title || 'Tanpa Judul';
     document.getElementById('videoSynopsis').innerText = detail.synopsis || 'Tidak ada deskripsi/sinopsis.';
 
-    // Render sidebar components
-    renderEpisodeSidebar(detail.episodes || [], slug);
-    renderRelatedSidebar(detail.related || []);
+    // Render sidebar components — digabung SATU daftar (isinya memang
+    // sama di upstream; duplikasi dua heading hanya memakan tempat)
+    renderSidebarList(detail.episodes || [], detail.related || [], slug);
     
     // Setup synopsis toggle
     setupSynopsisToggle();
@@ -414,7 +414,52 @@ async function loadDetail() {
   }
 }
 
+/**
+ * SATU daftar sidebar gabungan: episodes (current ditandai) + related
+ * (slug duplikat dilewati). Kartu memakai renderMediaCard V1.1.
+ */
+function renderSidebarList(episodes, related, currentSlug) {
+  const container = document.getElementById('episodeList');
+  const section = document.getElementById('sidebarEpisodes');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const seen = new Set();
+  let added = 0;
+
+  const push = (item) => {
+    if (!item?.slug) return;
+    if (seen.has(item.slug)) return;
+    seen.add(item.slug);
+    container.appendChild(renderMediaCard(item, {
+      variant: 'episode',
+      isActive: item.slug === currentSlug,
+    }));
+    added++;
+  };
+
+  (episodes || []).forEach(push);
+  (related || []).forEach(push);
+
+  if (section) section.style.display = added > 0 ? 'block' : 'none';
+}
+
 document.addEventListener('DOMContentLoaded', loadDetail);
+
+// ─── Tombol Kembali: referrer-aware (pola detail page) ───
+(function () {
+  document.addEventListener('DOMContentLoaded', () => {
+    const backBtn = document.getElementById('backBtn');
+    if (!backBtn) return;
+    backBtn.addEventListener('click', () => {
+      if (document.referrer && document.referrer.startsWith(location.origin)) {
+        history.back();
+      } else {
+        window.location.href = '/video/html/index.html';
+      }
+    });
+  });
+})();
 
 // ─── Theater mode (V1.2): perbesar player, sembunyikan sidebar sementara ──
 // State persisten di localStorage — preferensi tampilan bersifat sticky.

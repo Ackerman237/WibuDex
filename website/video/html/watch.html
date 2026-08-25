@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Watch Video — Wibudex</title>
+  <title>Watch Video ï¿½ Wibudex</title>
   <link rel="stylesheet" href="/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/video/css/base.css">
   <link rel="stylesheet" href="/video/css/watch.css?v=6">
@@ -56,9 +56,18 @@
       <!-- Tombol Pilihan Server -->
       <div id="serverSelectorContainer" class="server-selector"></div>
 
-      <!-- Toolbar: mode player + theater -->
+      <!-- Toolbar: semua kontrol player-related dalam satu baris -->
       <div class="watch-toolbar">
+        <button id="backBtn" class="toolbar-btn" type="button" aria-label="Kembali ke halaman sebelumnya">
+          <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-left"></use></svg>
+          Kembali
+        </button>
         <div class="pf-mode-toggle-host" id="pfModeToggleHost"></div>
+        <div id="externalFallbackContainer" style="display:none">
+          <a id="externalPlayerBtn" href="#" target="_blank" rel="noopener" class="toolbar-btn ext-link">
+            Buka player di tab baru
+          </a>
+        </div>
         <button id="theaterToggleBtn" class="theater-toggle" type="button" aria-pressed="false">
           Mode Teater
         </button>
@@ -78,10 +87,9 @@
           <button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>
         </div>
 
-        <div class="external-fallback" id="externalFallbackContainer" style="display:none">
-          <a id="externalPlayerBtn" href="#" target="_blank" class="btn-external">
-            ðŸ”— Buka Player di Tab Baru (Jika Layar Hitam / Terblokir)
-          </a>
+        <div class="synopsis-panel">
+          <p id="videoSynopsis" class="synopsis-text"></p>
+          <button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>
         </div>
       </div>
 

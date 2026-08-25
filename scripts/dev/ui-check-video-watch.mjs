@@ -77,9 +77,10 @@ try {
 
   // 2) Related ter-render
   const relCount = await page.evaluate(
-    () => document.querySelectorAll('#relatedList .related-card').length
+    () => document.querySelectorAll('#episodeList .episode-card').length
   );
-  ok('Related sidebar ter-render', relCount >= 2, `${relCount} kartu`);
+  ok('Sidebar gabungan (episode + related) ter-render',
+     relCount >= 5, `${relCount} kartu`);
 
   // Duplikat bawah player sudah dihapus (hanya sidebar)
   const dupGone = await page.evaluate(() =>
@@ -87,16 +88,15 @@ try {
   );
   ok('Tanpa duplikat episode/related di bawah player', dupGone);
 
-  // 2b) Thumbnail kartu memakai URL dari payload (bukan kosong)
+  // 2b) Thumbnail kartu memakai URL dari payload (bukan kosong) + genre chips
   const thumbs = await page.evaluate(() => ({
-    ep1: document.querySelector('#episodeList .episode-thumb')?.getAttribute('src') || '',
-    rel1: document.querySelector('#relatedList .related-thumb')?.getAttribute('src') || '',
+    withStub: [...document.querySelectorAll('#episodeList .episode-thumb')]
+      .filter((i) => (i.getAttribute('src') || '').includes('stub-')).length,
     genres: [...document.querySelectorAll('#watchGenres .genre-chip')].map((c) => c.textContent.trim()),
   }));
-  ok('Thumbnail episode memakai URL stub',
-     thumbs.ep1.includes('/wp-content/uploads/2026/08/stub-ep1.jpg'), thumbs.ep1.slice(-40));
-  ok('Thumbnail related memakai URL stub',
-     thumbs.rel1.includes('stub-rel1'), thumbs.rel1.slice(-40));
+  // Ekspektasi stub: ep1/ep2/rel1 ber-thumb; ep3 & rel2 sengaja kosong
+  ok('Thumbnail episode & related memakai URL stub',
+     thumbs.withStub === 3, `${thumbs.withStub}/5`);
   ok('Genre chips dirender (3)', thumbs.genres.length === 3, JSON.stringify(thumbs.genres));
 
   // 3) Theater toggle
