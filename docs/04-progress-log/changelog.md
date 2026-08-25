@@ -23,6 +23,17 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (28) - Video: rewrite parser jadwal (struktur baru upstream)
+
+Upstream /jadwal-new-hentai/ ganti format: grup per STATUS (Akan Datang / Sudah Lewat), nama hari hilang total (terverifikasi live probe). Parser lama berbasis nama hari -> hasil selalu kosong.
+
+- parsers/schedule.js ditulis ulang: dua grup berdasarkan heading status, dedup lintas grup, thumb diekstrak.
+- index.js: notifikasi jadwal kosong lebih informatif + tombol COBA LAGI.
+- Test schedule diperbarui ke struktur baru. sw v30.
+
 ## 2026-08-24 (27) - Watch: toolbar khusus + back + sidebar digabung
 
 - **Toolbar satu baris** di bawah player: tombol Kembali (referrer-aware, fallback ke index) - toggle mode langsung (host terisolasi, tak menimpa) - link Buka player di tab baru (pindah dari deskripsi, tanpa emoji).

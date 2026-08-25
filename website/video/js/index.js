@@ -89,8 +89,13 @@ async function loadSchedule() {
   try {
     const res = await fetch('/api/video/schedule');
     const result = await res.json();
-    if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
-      container.innerHTML = '<p class="error">Jadwal belum tersedia.</p>';
+    if (!result.success || !Array.isArray(result.data)) {
+      container.innerHTML = `
+        <p class="error">Jadwal belum tersedia dari sumber. Coba lagi nanti.</p>
+        <div style="text-align:center;">
+          <button type="button" class="retry-btn">COBA LAGI</button>
+        </div>`;
+      container.querySelector('.retry-btn')?.addEventListener('click', loadSchedule);
       return;
     }
 
