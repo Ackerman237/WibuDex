@@ -163,8 +163,6 @@ async function tryNativeStream(playerUrl) {
 const failedNativeUrls = new Set();
 
 function mountNativeVideo(playerBox, playerUrl, streamSrc) {
-  // streamSrc = /api/video/stream-proxy (server mengonsumsi token sekali-pakai
-  // dan memipakan byte — browser tidak pernah melihat URL CDN)
   playerBox.innerHTML =
     `<video id="nativeVideo" src="${escapeHtml(streamSrc)}" controls playsinline preload="metadata" ` +
     `referrerpolicy="no-referrer" ` +
@@ -172,7 +170,10 @@ function mountNativeVideo(playerBox, playerUrl, streamSrc) {
   hideLoading();
   const video = document.getElementById('nativeVideo');
   video.addEventListener('loadeddata', hideLoading, { once: true });
-  // Stream gagal diputar di browser → catat dan jatuh SEKALI ke mode filtered.
+  // V1.6 Custom Controls (Opsi A) — ambil alih kontrol native
+  if (typeof window.initPlayerControls === 'function') {
+    window.initPlayerControls(video);
+  }
   video.addEventListener('error', () => {
     failedNativeUrls.add(playerUrl);
     playerMode = 'filtered';

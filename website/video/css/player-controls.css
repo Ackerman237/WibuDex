@@ -1,0 +1,163 @@
+/* ==========================================================================
+   PLAYER CONTROLS — Custom skin di atas <video> native (V1.6 Opsi A)
+   Overlay absolute di dalam .video-wrapper. Hanya aktif pada mode native.
+   ========================================================================== */
+
+.pc-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.pc-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: rgba(13, 12, 12, 0.65);
+  backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity var(--duration-base) var(--ease-standard),
+              scale var(--duration-fast) var(--ease-standard);
+  pointer-events: auto;
+}
+
+.pc-center.is-paused {
+  opacity: 0;
+  scale: 0.8;
+}
+
+.pc-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(13,12,12,.85), transparent);
+  pointer-events: auto;
+}
+
+.pc-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.pc-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.pc-btn .ic {
+  width: 16px;
+  height: 16px;
+}
+
+.pc-btn.is-muted {
+  color: var(--error);
+}
+
+.pc-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: center;
+}
+
+/* ── Seek bar ── */
+.pc-seek-wrap {
+  position: relative;
+  flex: 1;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.pc-seek-buf,
+.pc-seek-fill,
+.pc-seek-thumb {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  height: 4px;
+  border-radius: var(--radius-full);
+}
+
+.pc-seek-buf { left: 0; right: 0; background: rgba(255,255,255,0.15); }
+.pc-seek-fill { left: 0; width: 0%; background: var(--accent-primary); }
+.pc-seek-thumb {
+  width: 12px; height: 12px; height: unset; aspect-ratio: 1; border-radius: 50%;
+  background: var(--accent-primary); box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  left: 0%; transform: translateX(-50%);
+}
+
+.pc-seek-wrap:hover .pc-seek-fill,
+.pc-seek-wrap:hover .pc-seek-buf { height: 5px; }
+
+/* ── Speed menu ── */
+.pc-speed-wrap { position: relative; }
+.pc-speed-btn { font-weight: 700; font-size: 11px; min-width: 32px; }
+.pc-speed-menu {
+  position: absolute;
+  bottom: calc(100% + 4px); left: 50%; translate: -50% 0;
+  z-index: 10;
+  display: none; flex-direction: column; gap: 2px;
+  background: var(--bg-surface-raised); border-radius: var(--radius-md);
+  padding: var(--space-1); min-width: 56px;
+  box-shadow: var(--elevation-modal);
+}
+.pc-speed-opt {
+  background: transparent; border: none; color: var(--text-secondary);
+  font-family: var(--font-ui); font-size: 12px; padding: 4px 10px;
+  border-radius: var(--radius-sm); cursor: pointer;
+}
+.pc-speed-opt:hover { background: var(--bg-surface-raised); color: var(--text-primary); }
+.pc-speed-opt.is-selected { color: var(--accent-primary); font-weight: 700; }
+
+.pc-vol-slider {
+  accent-color: var(--accent-primary);
+  width: 80px;
+}
+
+/* ── Auto-hide bar ── */
+.pc-overlay.is-hidden-bar .pc-bar,
+.pc-overlay.is-hidden-bar .pc-center {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pc-bar,
+.pc-center {
+  transition: opacity var(--duration-slow) var(--ease-standard);
+}
+
+/* ── Meta icons (date/duration/studio) ── */
+.meta-ic {
+  width: 13px;
+  height: 13px;
+  color: var(--accent-primary);
+}
