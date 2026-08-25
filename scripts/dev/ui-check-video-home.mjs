@@ -57,7 +57,16 @@ try {
       req.respond({ status: 200, contentType: 'application/json', body: JSON.stringify(obj) });
     if (u.includes('/api/video?')) return json({ success: true, data: { videos: STUB_VIDEOS, hasNext: false } });
     if (u.includes('/api/video/search')) return json({ success: true, data: { videos: [STUB_VIDEOS[0]], hasNext: false } });
-    if (u.includes('/api/video/schedule')) return json({ success: true, data: [] });
+    if (u.includes('/api/video/schedule'))
+      return json({ success: true, data: [
+        { day: 'Akan Datang', series: [
+          { slug: 'jad-up-1', title: 'Upcoming Satu', thumb: '' },
+          { slug: 'jad-up-2', title: 'Upcoming Dua', thumb: '' },
+        ]},
+        { day: 'Sudah Lewat', series: [
+          { slug: 'jad-past-1', title: 'Past Satu', thumb: '' },
+        ]},
+      ] });
     if (u.includes('/api/video/random')) return json({ success: false, message: 'skip' });
     req.continue();
   });
@@ -148,6 +157,17 @@ try {
     s4 = st.t.includes('Hasil Pencarian');
   }
   ok('Pencarian: sectionTitle berubah + hasil stub', s4, diag4.slice(0, 120));
+
+  // Jadwal: grup baru ter-render (Akan Datang / Sudah Lewat)
+  const sched = await page.evaluate(() => ({
+    groups: [...document.querySelectorAll('#scheduleContainer .schedule-day-title')]
+      .map((h) => h.textContent.trim()),
+    cards: document.querySelectorAll('#scheduleContainer .schedule-card').length,
+  }));
+  ok('Jadwal: dua grup ter-render dengan kartu',
+     sched.groups.some((g) => g.includes('Akan Datang')) &&
+     sched.groups.some((g) => g.includes('Sudah Lewat')) &&
+     sched.cards >= 3, JSON.stringify(sched.groups));
 
   console.log('\n══════ HASIL UI-CHECK VIDEO HOME ══════');
   if (browserLog.length) {

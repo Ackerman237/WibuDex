@@ -36,43 +36,43 @@ beforeEach(() => {
 });
 
 describe('scrapeNekoSchedule', () => {
-  it('mengelompokkan seri per hari sesuai heading', async () => {
+  it('mengelompokkan seri per status (Akan Datang/Sudah Lewat) sesuai struktur baru upstream', async () => {
     fetchMock.mockResolvedValueOnce(
       htmlResponse(`
         <html><body>
-          <h2>Senin</h2>
+          <h2>Hentai Yang Akan Datang</h2>
           <a href="https://nekopoi.care/hentai/anime-a/"><img src="https://nekopoi.care/a.jpg" alt="Anime A"></a>
-          <h3>Selasa</h3>
+          <a href="https://nekopoi.care/hentai/anime-c/">Anime C</a>
+          <h3>Hentai Yang Sudah Lewat</h3>
           <a href="https://nekopoi.care/hentai/anime-b/">Anime B</a>
           <a href="https://nekopoi.care/category/hentai/">Kategori (harus diabaikan)</a>
         </body></html>
       `)
     );
 
-    const days = await scrapeNekoSchedule();
+    const groups = await scrapeNekoSchedule();
 
-    expect(days).toHaveLength(2);
-    expect(days[0].day).toBe('Senin');
-    expect(days[0].series).toHaveLength(1);
-    expect(days[0].series[0].slug).toBe('anime-a');
-    expect(days[0].series[0].title).toBe('Anime A');
-    expect(days[0].series[0].thumb).toContain('a.jpg');
-    expect(days[1].day).toBe('Selasa');
-    expect(days[1].series[0].title).toBe('Anime B');
+    expect(groups).toHaveLength(2);
+    expect(groups[0].day).toBe('Akan Datang');
+    expect(groups[0].series.map((s) => s.slug)).toEqual(['anime-a', 'anime-c']);
+    expect(groups[0].series[0].title).toBe('Anime A');
+    expect(groups[0].series[0].thumb).toContain('a.jpg');
+    expect(groups[1].day).toBe('Sudah Lewat');
+    expect(groups[1].series[0].slug).toBe('anime-b');
   });
 
-  it('tidak menghasilkan hari tanpa seri', async () => {
+  it('tidak menghasilkan grup kosong', async () => {
     fetchMock.mockResolvedValueOnce(
       htmlResponse(`
         <html><body>
-          <h2>Rabu</h2>
+          <h2>Hentai Yang Akan Datang</h2>
           <p>Tidak ada konten.</p>
         </body></html>
       `)
     );
 
-    const days = await scrapeNekoSchedule();
-    expect(days).toHaveLength(0);
+    const groups = await scrapeNekoSchedule();
+    expect(groups).toHaveLength(0);
   });
 });
 
