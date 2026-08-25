@@ -28,6 +28,7 @@ async function loadSeries(reset = false) {
     const payload = result.data || {};
     const items = Array.isArray(payload.series) ? payload.series : [];
     const hasNext = Boolean(payload.hasNext);
+    seriesHasNext = hasNext;
 
     if (reset) grid.innerHTML = '';
 
@@ -73,6 +74,28 @@ function selectType(type, { reload = true } = {}) {
   if (reload) loadSeries(true);
 }
 
+let seriesHasNext = false;
+const SERIES_HYBRID_THRESHOLD = 60;
+
+function setupSeriesInfiniteScroll() {
+  const sentinel = document.getElementById('infiniteSentinelSeries');
+  const grid = document.getElementById('seriesGrid');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  if (!sentinel || !grid || !loadMoreBtn) return;
+  let isLoading = false;
+  const observer = new IntersectionObserver(async (entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting || isLoading) continue;
+      const total = grid.querySelectorAll('.video-card').length;
+      if (total >= SERIES_HYBRID_THRESHOLD || !seriesHasNext) continue;
+      isLoading = true;
+      await loadSeries(false);
+      isLoading = false;
+    }
+  }, { rootMargin: '600px 0px' });
+  observer.observe(sentinel);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const backToTopBtn = document.getElementById('backToTop');
 
@@ -84,5 +107,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setupBackToTop(backToTopBtn, 300);
-  loadSeries(true);
+  loadSeries(true).then(() => setupSeriesInfiniteScroll());
 });

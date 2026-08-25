@@ -42,6 +42,7 @@ async function loadVideos(reset = false) {
     const payload = result.data || {};
     const videos = Array.isArray(payload) ? payload : (payload.videos || []);
     const hasNext = Array.isArray(payload) ? videos.length > 0 : Boolean(payload.hasNext);
+    lastHasNext = hasNext;
 
     if (reset) grid.innerHTML = '';
 
@@ -261,9 +262,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadSchedule();
   setupRandomButton();
-  loadVideos(true);
+  loadVideos(true).then(() => setupHybridInfiniteScroll());
   loadCategorySections();
 });
+
+let lastHasNext = false;
+const HYBRID_THRESHOLD = 60;
+
+function setupHybridInfiniteScroll() {
+  const sentinel = document.getElementById('infiniteSentinel');
+  const grid = document.getElementById('videoGrid');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  if (!sentinel || !grid || !loadMoreBtn) return;
+
+  let isLoading = false;
+  const observer = new IntersectionObserver(async (entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting || isLoading) continue;
+      if (currentCategory || currentQuery) continue;
+      const total = grid.querySelectorAll('.video-card').length;
+      if (total >= HYBRID_THRESHOLD) continue;
+      if (!lastHasNext) continue;
+      isLoading = true;
+      await loadVideos(false);
+      isLoading = false;
+    }
+  }, { rootMargin: '600px 0px' });
+  observer.observe(sentinel);
+}
 
 // ─── Home per-kategori (lazy-load + link ke halaman kategori) ───
 

@@ -43,6 +43,16 @@ Gate: ui-check-video-home.mjs 13/13 runtime lolos. sw v31.
 
 ---
 
+
+---
+
+## 2026-08-24 (31) - Video: infinite scroll hybrid (index/series)
+
+Riset Baymard/NNg: kategori navigasi optimal = lazy-load + Load More (threshold 60 item), bukan infinite murni; search = tombol saja. Hybrid threshold diterapkan: index & series auto-load page berikutnya saat sentinel terlihat, sampai 60 item, lalu wajib tombol. Menjamin footer tetap terjangkau + kontrol pengguna.
+
+- Sentinel div #infiniteSentinel(Series) di kedua HTML.
+- Hybrid observer di index.js & series.js dengan guard lastHasNext + total <60.
+
 ## 2026-08-24 (28) - Video: rewrite parser jadwal (struktur baru upstream)
 
 Upstream /jadwal-new-hentai/ ganti format: grup per STATUS (Akan Datang / Sudah Lewat), nama hari hilang total (terverifikasi live probe). Parser lama berbasis nama hari -> hasil selalu kosong.
