@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Episode Seri — Wibudex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/css/wibudex-tokens.css">
+  <link rel="stylesheet" href="/video/css/base.css">
+  <link rel="stylesheet" href="/video/css/index.css">
+  <link rel="stylesheet" href="/video/css/left-rail.css">
+
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
+  <meta name="theme-color" content="#0D0C0C">
+  <link rel="manifest" href="/manifest.json">
+  <script src="/js/register-sw.js" defer></script>
+  <script src="/shared/utils.js" defer></script>
+  <script src="/video/js/cards.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <a href="/video/html/index.html">
+          <h1>Wibu<span class="brand-amber">dex</span><span class="brand-badge">Video</span></h1>
+        </a>
+      </div>
+      <nav class="nav-links" id="navLinks">
+        <a href="/manga/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-book-open"></use></svg>MANGA</a>
+        <a href="/video/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>WIBUDEX VIDEO</a>
+        <a href="/video/html/index.html#jadwal">JADWAL</a>
+        <div class="nav-dropdown" id="categoriesDropdown">
+          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">CATEGORIES ▾</button>
+          <div class="nav-drop-menu">
+            <p class="nav-drop-loading">Memuat kategori...</p>
+          </div>
+        </div>
+      </nav>
+      <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="manga-section">
+      <h2 id="sectionTitle" class="section-title">Episode Seri</h2>
+      <div id="episodeGrid" class="video-grid">
+        <p class="loading">Memuat episode...</p>
+      </div>
+    </section>
+  </main>
+
+  <button id="backToTop" class="back-to-top" title="Kembali ke atas">▲</button>
+
+  <script src="/video/js/nav.js" defer></script>
+  <script src="/video/js/left-rail.js" defer></script>
+  <script src="/video/js/episodes.js" defer></script>
+  <script src="/shared/bottom-nav.js" defer></script>
+</body>
+</html>

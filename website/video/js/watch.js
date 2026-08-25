@@ -181,6 +181,14 @@ function mountNativeVideo(playerBox, playerUrl, streamSrc) {
   if (typeof window.initPlayerControls === 'function') {
     window.initPlayerControls(video);
   }
+  // V1.5 Autoplay: saat native berakhir, lanjut episode berikutnya jika toggle aktif
+  video.addEventListener('ended', () => {
+    let on = false;
+    try { on = localStorage.getItem('videoAutoplay') === '1'; } catch {}
+    if (!on) return;
+    const next = document.querySelector('.episode-card.is-active')?.nextElementSibling;
+    if (next?.href) window.location.href = next.href;
+  });
   video.addEventListener('error', () => {
     failedNativeUrls.add(playerUrl);
     playerMode = 'filtered';
@@ -335,6 +343,15 @@ async function loadDetail() {
 
     const detail = result.data;
     document.getElementById('videoTitle').innerText = detail.title || 'Tanpa Judul';
+    // Channel row
+    (() => {
+      const epCount = (detail.episodes || []).length;
+      const cr = document.createElement('div');
+      cr.className = 'channel-row';
+      const baseName = String(detail.title || '').split(' Episode')[0].slice(0, 60);
+      cr.innerHTML = `<span class="channel-name">${escapeHtml(baseName)}</span><span class="channel-count">${epCount} episode</span>`;
+      document.getElementById('videoTitle')?.after(cr);
+    })();
     document.getElementById('videoSynopsis').innerText = detail.synopsis || 'Tidak ada deskripsi/sinopsis.';
 
     // Render sidebar components — digabung SATU daftar (isinya memang
@@ -456,7 +473,38 @@ function renderSidebarList(episodes, related, currentSlug) {
   (related || []).forEach(push);
 
   if (section) section.style.display = added > 0 ? 'block' : 'none';
+
+  // Autoplay toggle (V1.5, persisten)
+  if (!document.getElementById('autoplayRow') && section) {
+    const row = document.createElement('label');
+    row.id = 'autoplayRow';
+    row.className = 'autoplay-row';
+    row.innerHTML = '<input type="checkbox" id="autoplayToggle"> Autoplay next';
+    section.insertBefore(row, container);
+    const cb = row.querySelector('input');
+    try { cb.checked = localStorage.getItem('videoAutoplay') === '1'; } catch {}
+    cb.addEventListener('change', () => {
+      try { localStorage.setItem('videoAutoplay', cb.checked ? '1' : '0'); } catch {}
+    });
+  }
 }
+
+// V1.5 Keyboard shortcut (native-only seek, N/P global)
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input, textarea, [contenteditable="true"]')) return;
+  const vid = document.getElementById('nativeVideo');
+  const isNative = vid && vid.tagName === 'VIDEO';
+  if (e.key === ' ' && isNative) { e.preventDefault(); vid.paused ? vid.play().catch(()=>{}) : vid.pause(); }
+  if (e.key === 'ArrowRight' && isNative) { vid.currentTime = Math.min(vid.duration || Infinity, vid.currentTime + 5); }
+  if (e.key === 'ArrowLeft' && isNative) { vid.currentTime = Math.max(0, vid.currentTime - 5); }
+  if (e.key.toLowerCase() === 'n') { const n = document.querySelector('.episode-card.is-active + .episode-card'); if (n?.href) window.location.href = n.href; }
+  if (e.key.toLowerCase() === 'p') {
+    const cards = [...document.querySelectorAll('.episode-card')];
+    const idx = cards.findIndex((c) => c.classList.contains('is-active'));
+    const prev = cards[idx - 1];
+    if (prev?.href) window.location.href = prev.href;
+  }
+});
 
 document.addEventListener('DOMContentLoaded', loadDetail);
 

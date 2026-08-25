@@ -435,6 +435,29 @@ a#externalPlayerBtn:not([href]) {
   margin: 0;
 }
 
+.channel-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.channel-name { font-weight: 700; color: var(--text-primary); }
+.channel-count { opacity: .7; }
+
+.autoplay-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+}
+.autoplay-row input { accent-color: var(--accent-primary); }
+
 /* Metadata: micro-caps ala majalah desain */
 .watch-meta {
   display: flex;
