@@ -207,3 +207,31 @@
   overflow: hidden;
 }
 .video-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
+
+/* ---------- Empty state jadwal ---------- */
+.schedule-empty {
+  text-align: center;
+  padding: var(--space-7) var(--space-4);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+.schedule-empty__icon {
+  width: 36px;
+  height: 36px;
+  color: var(--text-disabled);
+  margin-bottom: var(--space-3);
+}
+.schedule-empty__title {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.schedule-empty__hint {
+  margin: 0 auto var(--space-4);
+  max-width: 46ch;
+  font-size: 13px;
+  color: var(--text-secondary);
+}

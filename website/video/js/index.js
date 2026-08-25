@@ -99,10 +99,24 @@ async function loadSchedule() {
       return;
     }
 
+    if (result.data.length === 0) {
+      // Sumber resmi belum mengisi jadwal (bukan error) — empty state ramah
+      container.innerHTML = `
+        <div class="schedule-empty">
+          <svg class="ic schedule-empty__icon" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg>
+          <p class="schedule-empty__title">Belum ada jadwal tayang</p>
+          <p class="schedule-empty__hint">Sumber belum mempublikasikan jadwal — daftar akan muncul otomatis begitu tersedia.</p>
+          <button type="button" class="retry-btn schedule-empty__retry">Coba lagi</button>
+        </div>`;
+      container.querySelector('.schedule-empty__retry')?.addEventListener('click', loadSchedule);
+      return;
+    }
+
     container.innerHTML = '';
     result.data.forEach((dayGroup) => {
       const dayWrap = document.createElement('div');
       dayWrap.className = 'schedule-day';
+      dayWrap.hidden = (dayGroup.series || []).length === 0;
 
       const head = document.createElement('h3');
       head.className = 'schedule-day-title';
@@ -128,7 +142,7 @@ async function loadSchedule() {
       });
 
       if ((dayGroup.series || []).length === 0) {
-        list.innerHTML = '<p class="error">Tidak ada seri terjadwal.</p>';
+        list.innerHTML = '<p class="error">Belum ada seri untuk grup ini.</p>';
       }
 
       dayWrap.appendChild(list);
