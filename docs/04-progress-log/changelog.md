@@ -53,6 +53,16 @@ Riset Baymard/NNg: kategori navigasi optimal = lazy-load + Load More (threshold 
 - Sentinel div #infiniteSentinel(Series) di kedua HTML.
 - Hybrid observer di index.js & series.js dengan guard lastHasNext + total <60.
 
+
+---
+
+## 2026-08-24 (32) - Cleanup: hapus dead files + bump v35
+
+- Hapus watch-old-backup.css (file mati sisa refactor).
+- Hapus placeholder bottomNav mati di watch.html (bottom-nav.js membuat nav sendiri).
+
+---
+
 ## 2026-08-24 (28) - Video: rewrite parser jadwal (struktur baru upstream)
 
 Upstream /jadwal-new-hentai/ ganti format: grup per STATUS (Akan Datang / Sudah Lewat), nama hari hilang total (terverifikasi live probe). Parser lama berbasis nama hari -> hasil selalu kosong.
