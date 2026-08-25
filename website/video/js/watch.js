@@ -385,6 +385,16 @@ async function loadDetail() {
       watchMeta.innerHTML = metaHtml;
     }
 
+    // Genre chips (dari parseVideoMeta di server)
+    const genreRow = document.getElementById('watchGenres');
+    if (genreRow) {
+      const genres = Array.isArray(detail.genres) ? detail.genres : [];
+      genreRow.innerHTML = genres
+        .map((g) => `<span class="genre-chip">${escapeHtml(String(g))}</span>`)
+        .join('');
+      genreRow.style.display = genres.length > 0 ? 'flex' : 'none';
+    }
+
     if (detail.players && detail.players.length > 0) {
       serverSelectorContainer.innerHTML = '';
 

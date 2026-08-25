@@ -25,17 +25,19 @@ const ok = (name, cond, detail = '') => {
 const STUB_DETAIL = {
   title: 'Stub Video untuk Gate',
   slug: 'stub-gate-video',
-  thumb: '',
+  thumb: 'https://nekopoi.care/wp-content/uploads/2026/08/stub-main.jpg',
   synopsis: '<p>Sinopsis stub.</p>',
   players: [],
+  genres: ['Ahegao', 'Comedy', 'Fantasy'],
+  duration: '16 menit',
   episodes: [
-    { slug: 'stub-ep-1', title: 'Episode Pertama', number: '1' },
-    { slug: 'stub-ep-2', title: 'Episode Kedua', number: '2' },
-    { slug: 'stub-ep-3', title: 'Episode Ketiga', number: '3' },
+    { slug: 'stub-ep-1', title: 'Episode Pertama', number: '1', thumb: 'https://nekopoi.care/wp-content/uploads/2026/08/stub-ep1.jpg' },
+    { slug: 'stub-ep-2', title: 'Episode Kedua', number: '2', thumb: 'https://nekopoi.care/wp-content/uploads/2026/08/stub-ep2.jpg' },
+    { slug: 'stub-ep-3', title: 'Episode Ketiga', number: '3', thumb: '' },
   ],
   related: [
-    { slug: 'stub-rel-1', title: 'Terkait Satu', type: 'Hentai' },
-    { slug: 'stub-rel-2', title: 'Terkait Dua', type: 'JAV' },
+    { slug: 'stub-rel-1', title: 'Terkait Satu', type: 'Hentai', thumb: 'https://nekopoi.care/wp-content/uploads/2026/08/stub-rel1.jpg' },
+    { slug: 'stub-rel-2', title: 'Terkait Dua', type: 'JAV', thumb: '' },
   ],
 };
 
@@ -78,6 +80,18 @@ try {
     () => document.querySelectorAll('#relatedList .related-card').length
   );
   ok('Related sidebar ter-render', relCount >= 2, `${relCount} kartu`);
+
+  // 2b) Thumbnail kartu memakai URL dari payload (bukan kosong)
+  const thumbs = await page.evaluate(() => ({
+    ep1: document.querySelector('#episodeList .episode-thumb')?.getAttribute('src') || '',
+    rel1: document.querySelector('#relatedList .related-thumb')?.getAttribute('src') || '',
+    genres: [...document.querySelectorAll('#watchGenres .genre-chip')].map((c) => c.textContent.trim()),
+  }));
+  ok('Thumbnail episode memakai URL stub',
+     thumbs.ep1.includes('/wp-content/uploads/2026/08/stub-ep1.jpg'), thumbs.ep1.slice(-40));
+  ok('Thumbnail related memakai URL stub',
+     thumbs.rel1.includes('stub-rel1'), thumbs.rel1.slice(-40));
+  ok('Genre chips dirender (3)', thumbs.genres.length === 3, JSON.stringify(thumbs.genres));
 
   // 3) Theater toggle
   await page.click('#theaterToggleBtn');

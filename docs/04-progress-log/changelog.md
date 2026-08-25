@@ -14,7 +14,32 @@ notes live in `reports/`.
 
 ---
 
-## 2026-08-24 (23) - Video: unifikasi tema home/series/watch dengan Wibudex
+## 2026-08-24 (24) — Video: thumbnail related + genre chips (parser baru)
+
+### Parser (`neko/parsers/detail.js`, `neko/index.js`)
+- **parseRelated ditulis ulang**: iterasi per `<li>` — thumbnail diambil dari
+  `background-image` div.ltd (dulu tidak tertangkap karena img/bg ada DI
+  LUAR anchor; anchor pertama kosong), judul dari h2>a + decode entity.
+- **parseVideoMeta baru**: Genre/Duration/Producers/Original Title dari
+  `<meta name="description">` upstream (terverifikasi live: "Genre :
+  Ahegao, Creampie…") → field `genres[]`, `duration`, `producers`,
+  `originalTitle`.
+- `scrapeNekoDetail` menyertakan field baru tersebut.
+
+### Frontend
+- watch page: **genre chips** di bawah meta (pill accent halus); duration
+  otomatis tampil di meta row yang sudah ada.
+
+### Verifikasi
+- Unit test baru `tests/nekoDetailParsers.test.js` + fixture
+  `tests/fixtures/neko-detail.html`: 9 test lolos.
+- Live end-to-end: genres "Ahegao, Creampie, Horny, Big Tits" ✓ · related
+  3/3 punya thumb ✓.
+- `ui-check-video-watch.mjs` +3 assertion (thumb ep/related dari stub,
+  chips dirender) → total 7/7. npm test 207/207. sw v27.
+
+---
+
 
 Keluhan user: tema video beda dengan manga/komik. Terbukti: 2 dari 3
 halaman video tidak memuat wibudex-tokens.css sama sekali, base.css masih
