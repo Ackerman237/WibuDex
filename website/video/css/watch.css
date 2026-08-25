@@ -33,6 +33,19 @@
   display: none;
 }
 
+/* Mobile: satu kolom — sidebar pindah ke bawah konten utama */
+@media (max-width: 768px) {
+  .watch-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .watch-sidebar {
+    position: static;
+    top: auto;
+  }
+}
+
 /* Genre chips di bawah meta (dari parseVideoMeta server) */
 .watch-genres {
   display: flex;
@@ -626,66 +639,9 @@
 }
 
 /* --------------------------------------------------------------------------
-   8 & 9. MOBILE SCROLLERS — Episode & Related horizontal (scroll-snap)
-   Sembunyikan di desktop; tampil via media query ≤768px.
+   8 & 9. (DIHAPUS) Mobile scrollers episode/related — duplikat konten
+   sidebar; kini hanya sidebar di semua breakpoint.
    -------------------------------------------------------------------------- */
-
-.episodes-mobile,
-.related-mobile { display: none; }
-
-.episode-scroller {
-  display: flex;
-  gap: var(--space-3);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scroll-padding-left: var(--space-4);
-  padding: 0 var(--space-4) var(--space-2);
-  scrollbar-width: none;
-}
-.episode-scroller::-webkit-scrollbar { display: none; }
-
-.episode-card-mobile {
-  flex: 0 0 140px;
-  scroll-snap-align: start;
-  text-decoration: none;
-  color: inherit;
-  touch-action: manipulation;
-}
-
-.episode-thumb-mobile {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  background: var(--bg-surface-raised);
-  display: block;
-}
-
-.episode-card-mobile.is-active .episode-thumb-mobile {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 1px;
-}
-
-.episode-number-mobile {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent-primary);
-  margin-top: var(--space-2);
-}
-
-.episode-title-mobile {
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-secondary);
-  margin-top: 2px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 .related-grid {
   display: flex;
@@ -698,34 +654,8 @@
 }
 .related-grid::-webkit-scrollbar { display: none; }
 
-.related-card-mobile {
-  flex: 0 0 160px;
-  scroll-snap-align: start;
-  text-decoration: none;
-  color: inherit;
-  touch-action: manipulation;
-}
 
-.related-thumb-mobile {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  background: var(--bg-surface-raised);
-  display: block;
-}
 
-.related-name-mobile {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-primary);
-  margin-top: var(--space-2);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 /* --------------------------------------------------------------------------
    10. RESPONSIVE ≤768px — Stack, immersive player, thumb-reachable
@@ -753,11 +683,7 @@
   .video-wrapper { border-radius: 0; }
 
   .watch-sidebar { display: none; }          /* konten dipindah ke scroller */
-  .episodes-mobile,
-  .related-mobile { display: block; margin: 0 calc(-1 * var(--space-4)); }
 
-  .episodes-mobile .section-label,
-  .related-mobile .related-title { padding: 0 var(--space-4); }
 
   .watch-info { padding: var(--space-4); }
 
@@ -781,8 +707,7 @@
 .pf-mode-btn:focus-visible,
 .synopsis-toggle:focus-visible,
 .btn-external:focus-visible,
-.episode-card-mobile:focus-visible,
-.related-card-mobile:focus-visible {
+ {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);

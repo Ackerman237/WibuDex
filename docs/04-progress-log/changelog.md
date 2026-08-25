@@ -14,6 +14,21 @@ notes live in `reports/`.
 
 ---
 
+
+---
+
+## 2026-08-24 (25) - Watch page: hapus duplikat bawah player + enrich thumbnail episode
+
+### Perubahan
+- Section episodesMobile & relatedMobile (duplikat di bawah player) DIHAPUS dari html/js/css - episode & related HANYA di sidebar; mobile = satu kolom dengan sidebar pindah ke bawah konten.
+- Parser baru collectPageThumbs: peta slug->thumb dari seluruh halaman (pola div.ltd background-image + anchor img) - episodes yang tidak punya thumb sendiri kini di-enrich (live: 5/5).
+- Fix tabrakan loading: teks statis "Memuat Player Video..." dihapus saat overlay pf-loading muncul.
+
+### Gate
+ui-check-video-watch.mjs +1 assertion tanpa duplikat -> 8/8 runtime lolos. sw v28.
+
+---
+
 ## 2026-08-24 (24) — Video: thumbnail related + genre chips (parser baru)
 
 ### Parser (`neko/parsers/detail.js`, `neko/index.js`)

@@ -11,6 +11,7 @@
    Versioning: naikkan CACHE_VERSION untuk invalidate semua cache.
    ========================================================= */
 
+// v28: hapus duplikat episode/related bawah player + sidebar stack mobile + fix tabrakan loading + enrich thumb episode dari peta halaman.
 // v27: thumbnail related/episode (parser bg-image + li) + genre chips dari meta description upstream.
 // v26: unifikasi tema video home/series/watch (tokens + alias legacy
 // base.css, font Plus Jakarta Sans, theme-color espresso).
@@ -42,7 +43,7 @@
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
 // invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v27';
+const CACHE_VERSION = 'v28';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

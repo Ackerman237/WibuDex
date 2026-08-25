@@ -87,6 +87,9 @@ function showLoading(playerBox, text = '🧹 Sedang membersihkan iklan…') {
     el.className = 'pf-loading';
     playerBox.prepend(el);
   }
+  // Hapus teks loading statis awal dari HTML agar tidak bertumpuk dengan
+  // overlay pf-loading (laporan user 2026-08-24)
+  playerBox.querySelectorAll('.player-loading-text').forEach((n) => n.remove());
   el.style.display = 'flex';
   el.textContent = text;
 }
@@ -256,7 +259,6 @@ function setupSynopsisToggle() {
 function renderEpisodeSidebar(episodes, currentSlug) {
   if (!Array.isArray(episodes) || episodes.length === 0) return;
 
-  // Desktop sidebar
   const container = document.getElementById('episodeList');
   const sidebarSection = document.getElementById('sidebarEpisodes');
   if (container) {
@@ -270,53 +272,24 @@ function renderEpisodeSidebar(episodes, currentSlug) {
     });
     if (sidebarSection) sidebarSection.style.display = 'block';
   }
-
-  // Mobile horizontal scroller
-  const mobileList = document.getElementById('episodeMobileList');
-  const mobileSection = document.getElementById('episodesMobile');
-  if (mobileList) {
-    mobileList.innerHTML = '';
-    episodes.forEach((ep) => {
-      if (!ep?.slug) return;
-      mobileList.appendChild(renderMediaCard(ep, {
-        variant: 'episodeMobile',
-        isActive: ep.slug === currentSlug,
-      }));
-    });
-    if (mobileSection && mobileList.children.length > 0) {
-      mobileSection.style.display = 'block';
-    }
-  }
+  // Duplikat mobile (episodeMobileList) dihapus — episode hanya di sidebar.
 }
 
 function renderRelatedSidebar(related) {
   const sidebarSection = document.getElementById('sidebarRelated');
-  const mobileSection = document.getElementById('relatedMobile');
   const sidebarContainer = document.getElementById('relatedList');
-  const mobileContainer = document.getElementById('relatedGrid');
 
-  // Kosong → sembunyikan kedua section agar tidak ada judul menggantung
+  // Kosong → sembunyikan section agar tidak ada judul menggantung
   if (!Array.isArray(related) || related.length === 0) {
     if (sidebarSection) sidebarSection.style.display = 'none';
-    if (mobileSection) mobileSection.style.display = 'none';
     return;
   }
 
-  // Desktop sidebar
   if (sidebarContainer) {
     sidebarContainer.innerHTML = '';
     related.forEach((item) => {
       if (!item?.slug) return;
       sidebarContainer.appendChild(renderMediaCard(item, { variant: 'related' }));
-    });
-  }
-
-  // Mobile horizontal scroll
-  if (mobileContainer) {
-    mobileContainer.innerHTML = '';
-    related.forEach((item) => {
-      if (!item?.slug) return;
-      mobileContainer.appendChild(renderMediaCard(item, { variant: 'relatedMobile' }));
     });
   }
 }

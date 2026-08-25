@@ -81,6 +81,12 @@ try {
   );
   ok('Related sidebar ter-render', relCount >= 2, `${relCount} kartu`);
 
+  // Duplikat bawah player sudah dihapus (hanya sidebar)
+  const dupGone = await page.evaluate(() =>
+    !document.getElementById('episodesMobile') && !document.getElementById('relatedMobile')
+  );
+  ok('Tanpa duplikat episode/related di bawah player', dupGone);
+
   // 2b) Thumbnail kartu memakai URL dari payload (bukan kosong)
   const thumbs = await page.evaluate(() => ({
     ep1: document.querySelector('#episodeList .episode-thumb')?.getAttribute('src') || '',
