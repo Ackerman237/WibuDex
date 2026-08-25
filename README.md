@@ -75,3 +75,13 @@ Kode dilisensikan under [MIT](LICENSE).
 > scraper/aggregator pribadi self-hosted — tidak dimaksudkan untuk
 > redistribusi konten pihak ketiga yang dikumpulkan scraper. Konten tetap
 > milik pemiliknya masing-masing.
+
+## Acknowledgements
+
+Fungsi scraping untuk sumber manga/doujin dan video pada project ini dibangun di atas
+[doujin-scraper](https://github.com/kyy0887/doujin-scraper) oleh
+[@kyy0887](https://github.com/kyy0887), yang menyediakan library scraping tanpa
+dependensi untuk doujin.desu.xxx dan nekopoi.care. Library aslinya dirilis di bawah
+lisensi MIT. Terima kasih atas kontribusi open-source-nya 🙏
+
+Detail lisensi: [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
