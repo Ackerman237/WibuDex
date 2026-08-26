@@ -48,8 +48,8 @@
 // v36: refactor portfolio — website→public, backend kebab-case (controllers/middleware/lib), fix korupsi $2 video HTML
 // v37: player fallback overlay di dalam video-wrapper + halaman schedule standalone + navbar JADWAL ke schedule.html
 // v38: production hardening build — bundle+minify+mangle JS, hash filename, strip HTML/JS comment, no sourcemap
-// v39: UI/UX upgrade — dynamic cover colors, view transitions, spotlight 3D cards, custom loaders, and fallbacks
-const CACHE_VERSION = 'v39';
+// v42: manga & video clean redesign — frameless poster cards, slim mobile single-row header, fixed category dropdown, no bottom-bar clutter
+const CACHE_VERSION = 'v42';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

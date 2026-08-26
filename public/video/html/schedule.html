@@ -2,13 +2,14 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jadwal Rilis — Wibudex Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Jadwal Rilis Anime & Video — Wibudex Streaming</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/video/css/base.css">
   <link rel="stylesheet" href="/video/css/left-rail.css">
   <link rel="stylesheet" href="/video/css/index.css">
+
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
   <meta name="theme-color" content="#0D0C0C">
@@ -18,37 +19,68 @@
   <script src="/video/js/cards.js" defer></script>
 </head>
 <body>
+  <!-- Glassmorphism Navbar -->
   <header>
     <div class="nav-container">
-      <div class="brand">
-        <a href="/video/html/index.html">
+      <div class="nav-left">
+        <a href="/video/html/index.html" class="brand">
           <h1>Wibu<span class="brand-amber">dex</span><span class="brand-badge">Video</span></h1>
         </a>
+
+        <div class="module-switcher-pill" aria-label="Pilih Modul">
+          <a href="/manga/html/index.html" class="switcher-btn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            MANGA
+          </a>
+          <a href="/video/html/index.html" class="switcher-btn active" aria-current="page">
+            <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>
+            VIDEO
+          </a>
+        </div>
       </div>
+
       <nav class="nav-links" id="navLinks">
-        <a href="/manga/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-book-open"></use></svg>MANGA</a>
-        <a href="/video/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>WIBUDEX VIDEO</a>
-        <a href="/video/html/schedule.html" class="active" aria-current="page">JADWAL</a>
+        <a href="/video/html/index.html" class="nav-link-item">HOME</a>
+        <a href="/video/html/schedule.html" class="nav-link-item active" aria-current="page">JADWAL</a>
+        <a href="/video/html/series.html?type=hentai" class="nav-link-item">SERI HENTAI</a>
+        <a href="/video/html/series.html?type=jav" class="nav-link-item">SERI JAV</a>
         <div class="nav-dropdown" id="categoriesDropdown">
-          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">CATEGORIES ▾</button>
+          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">KATEGORI ▾</button>
           <div class="nav-drop-menu">
             <p class="nav-drop-loading">Memuat kategori...</p>
           </div>
         </div>
       </nav>
-      <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span><span></span>
-      </button>
+
+      <div class="nav-right">
+        <button class="nav-action-btn nav-search-trigger" id="navSearchTrigger" type="button" aria-label="Buka Pencarian (Ctrl+K)">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="nav-action-btn btn-random" id="navRandomBtn" type="button" title="Tonton Video Acak">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main>
     <section class="manga-section schedule-section">
-      <h2 class="section-title">
-        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg>
-        Jadwal New Hentai
-      </h2>
-      <p class="section-subtitle" style="font-size:13px;color:var(--text-secondary);margin:8px 0 16px">Jadwal gabungan semua kategori — diperbarui otomatis dari sumber.</p>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <svg class="ic section-title__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            Jadwal Rilis Mingguan
+          </h2>
+          <p style="font-size:13px;color:var(--text-secondary);margin:4px 0 0">Pantau estimasi jadwal tayang episode anime dan video terbaru setiap harinya.</p>
+        </div>
+      </div>
+
+      <!-- Tab Bar Hari -->
+      <div id="scheduleDayTabs" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin:20px 0 28px;"></div>
+
       <div id="scheduleContainer">
         <p class="loading">Memuat jadwal...</p>
       </div>
@@ -59,7 +91,6 @@
 
   <script src="/video/js/nav.js" defer></script>
   <script src="/video/js/left-rail.js" defer></script>
-  <script src="/shared/bottom-nav.js" defer></script>
   <script src="/video/js/schedule.js" defer></script>
 </body>
 </html>

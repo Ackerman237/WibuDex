@@ -1,15 +1,60 @@
-// video/js/index.js — Neko Video list page
+// video/js/index.js — Homepage Video Streaming Wibudex
+// Hero Spotlight, Continue Watching, Category Carousels, & Video Grid.
 
 let currentOffset = 1;
 let currentCategory = new URLSearchParams(window.location.search).get('category') || '';
 let currentPage = parseInt(new URLSearchParams(window.location.search).get('page')) || 1;
 let currentQuery = '';
+let lastHasNext = false;
+const HYBRID_THRESHOLD = 60;
 
 function renderVideoCard(video) {
-  // Markup terkonsolidasi di cards.js (escaping + fallback thumb seragam)
   return renderMediaCard(video, { variant: 'grid' });
 }
 
+// ─── Continue Watching (Lanjutkan Menonton) ───
+function loadContinueWatching() {
+  const container = document.getElementById('continueWatchingTrack');
+  const section = document.getElementById('continueWatchingSection');
+  if (!container || !section) return;
+
+  try {
+    const historyKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('video_progress_')) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const item = JSON.parse(raw);
+          if (item && item.slug) historyKeys.push(item);
+        }
+      }
+    }
+
+    if (historyKeys.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    // Sort by last watched time
+    historyKeys.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    container.innerHTML = '';
+
+    historyKeys.slice(0, 10).forEach((item) => {
+      const card = renderMediaCard(item, {
+        variant: 'grid',
+        meta: item.lastPositionFormatted ? `Lanjut ${item.lastPositionFormatted}` : (item.date || 'Tersimpan'),
+      });
+      container.appendChild(card);
+    });
+
+    section.style.display = 'block';
+  } catch {
+    section.style.display = 'none';
+  }
+}
+
+// ─── Load Main Video Feed & Hero Spotlight ───
 async function loadVideos(reset = false) {
   const grid = document.getElementById('videoGrid');
   const sectionTitle = document.getElementById('sectionTitle');
@@ -24,7 +69,6 @@ async function loadVideos(reset = false) {
   }
 
   try {
-    // Determin endpoint berdasarkan filter yang aktif
     let endpoint;
     if (currentCategory) {
       endpoint = `/api/video/category?category=${encodeURIComponent(currentCategory)}&page=${currentPage}`;
@@ -38,7 +82,6 @@ async function loadVideos(reset = false) {
     const result = await res.json();
     if (!result.success) throw new Error(result.message || 'Gagal memuat video.');
 
-    // Normalisasi payload: API mengembalikan {videos, hasNext} atau array langsung
     const payload = result.data || {};
     const videos = Array.isArray(payload) ? payload : (payload.videos || []);
     const hasNext = Array.isArray(payload) ? videos.length > 0 : Boolean(payload.hasNext);
@@ -52,19 +95,23 @@ async function loadVideos(reset = false) {
       return;
     }
 
+    // Inisialisasi Hero Spotlight pada kunjungan beranda awal
+    if (reset && !currentCategory && !currentQuery && window.initHeroSpotlight && videos.length >= 3) {
+      window.initHeroSpotlight(videos);
+    }
+
     if (sectionTitle) {
       sectionTitle.textContent = currentQuery
         ? `Hasil Pencarian: "${currentQuery}"`
         : currentCategory
           ? `Kategori: ${currentCategory}`
-          : 'Video Terbaru';
+          : 'Rilis Video Terbaru';
     }
 
-    videos.forEach(video => {
+    videos.forEach((video) => {
       grid.appendChild(renderVideoCard(video));
     });
 
-    // Pagination: kategori pakai halaman bernomor, lainnya pakai SEE MORE
     if (currentCategory) {
       renderCategoryPagination(currentPage, hasNext);
       if (loadMoreBtn) loadMoreBtn.style.display = 'none';
@@ -109,9 +156,6 @@ function renderCategoryPagination(page, hasNext) {
   if (page > 2) pages.add(2);
   const sorted = [...pages].sort((a, b) => a - b).filter((n) => n >= 1);
   sorted.forEach((n) => {
-    if (n === 1 && sorted.includes(2) && page > 3) {
-      // ellipsis handled simply: skip
-    }
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'page-number' + (n === page ? ' active' : '');
@@ -134,140 +178,89 @@ function goToCategoryPage(page) {
   loadVideos(false);
 }
 
-async function loadSchedule() {
-  const container = document.getElementById('scheduleContainer');
-  if (!container) return;
+// ─── Carousel Controls (Scroll Prev/Next) ───
+function setupCarouselScroll(track, prevBtn, nextBtn) {
+  if (!track) return;
+  const scrollAmount = () => track.clientWidth * 0.75;
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      track.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+    });
+  }
+}
 
+// ─── Home Category Horizontal Rows ───
+async function loadCategorySections() {
+  const host = document.getElementById('categorySections');
+  if (!host || currentCategory || currentQuery) return;
+
+  let cats;
   try {
-    const res = await fetch('/api/video/schedule');
+    const res = await fetch('/api/video/categories');
+    cats = (await res.json())?.data || [];
+  } catch { return; }
+
+  for (const cat of cats.slice(0, 6)) {
+    const sec = document.createElement('section');
+    sec.className = 'carousel-section';
+    sec.dataset.slug = cat.slug;
+    sec.innerHTML = `
+      <div class="section-header">
+        <h2 class="section-title">
+          <svg class="ic section-title__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          ${escapeHtml(cat.name || cat.slug)}
+        </h2>
+        <a class="section-more-link" href="/video/html/series.html?category=${encodeURIComponent(cat.slug)}">
+          Lihat Semua
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </a>
+      </div>
+      <div class="carousel-wrap">
+        <button class="carousel-btn prev" type="button" aria-label="Sebelumnya">‹</button>
+        <div class="carousel-track"></div>
+        <button class="carousel-btn next" type="button" aria-label="Berikutnya">›</button>
+      </div>
+    `;
+    host.appendChild(sec);
+    setupCarouselScroll(
+      sec.querySelector('.carousel-track'),
+      sec.querySelector('.carousel-btn.prev'),
+      sec.querySelector('.carousel-btn.next')
+    );
+    observeCatSection(sec, cat);
+  }
+}
+
+function observeCatSection(sec, cat) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(async (entry) => {
+      if (!entry.isIntersecting) return;
+      io.unobserve(entry.target);
+      await loadCatVideos(sec, cat);
+    });
+  }, { rootMargin: '400px 0px' });
+  io.observe(sec);
+}
+
+async function loadCatVideos(sec, cat) {
+  const track = sec.querySelector('.carousel-track');
+  try {
+    const res = await fetch(`/api/video/category?category=${encodeURIComponent(cat.slug)}&page=1`);
     const result = await res.json();
-    if (!result.success || !Array.isArray(result.data)) {
-      container.innerHTML = `
-        <p class="error">Jadwal belum tersedia dari sumber. Coba lagi nanti.</p>
-        <div style="text-align:center;">
-          <button type="button" class="retry-btn">COBA LAGI</button>
-        </div>`;
-      container.querySelector('.retry-btn')?.addEventListener('click', loadSchedule);
-      return;
-    }
-
-    if (result.data.length === 0) {
-      // Sumber resmi belum mengisi jadwal (bukan error) — empty state ramah
-      container.innerHTML = `
-        <div class="schedule-empty">
-          <svg class="ic schedule-empty__icon" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg>
-          <p class="schedule-empty__title">Belum ada jadwal tayang</p>
-          <p class="schedule-empty__hint">Sumber belum mempublikasikan jadwal — daftar akan muncul otomatis begitu tersedia.</p>
-          <button type="button" class="retry-btn schedule-empty__retry">Coba lagi</button>
-        </div>`;
-      container.querySelector('.schedule-empty__retry')?.addEventListener('click', loadSchedule);
-      return;
-    }
-
-    container.innerHTML = '';
-    result.data.forEach((dayGroup) => {
-      const dayWrap = document.createElement('div');
-      dayWrap.className = 'schedule-day';
-      dayWrap.hidden = (dayGroup.series || []).length === 0;
-
-      const head = document.createElement('h3');
-      head.className = 'schedule-day-title';
-      head.textContent = dayGroup.day || '-';
-      dayWrap.appendChild(head);
-
-      const list = document.createElement('div');
-      list.className = 'schedule-series-list';
-
-      (dayGroup.series || []).forEach((item) => {
-        const card = document.createElement('a');
-        card.className = 'schedule-card';
-        card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
-
-        const thumbUrl = item.thumb || '';
-        const title = escapeHtml(item.title || '');
-
-        card.innerHTML = `
-          <img src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
-          <span class="schedule-card-title">${title}</span>
-        `;
-        list.appendChild(card);
-      });
-
-      if ((dayGroup.series || []).length === 0) {
-        list.innerHTML = '<p class="error">Belum ada seri untuk grup ini.</p>';
-      }
-
-      dayWrap.appendChild(list);
-      container.appendChild(dayWrap);
+    if (!result.success) throw new Error();
+    const videos = (result.data?.videos || []).slice(0, 10);
+    videos.forEach((v) => {
+      track.appendChild(renderMediaCard(v, { variant: 'grid' }));
     });
-  } catch (err) {
-    console.error('Gagal memuat jadwal:', err);
-    container.innerHTML = `
-      <p class="error">Gagal memuat jadwal.</p>
-      <div style="text-align: center;">
-        <button type="button" class="retry-btn">COBA LAGI</button>
-      </div>`;
-    container.querySelector('.retry-btn')?.addEventListener('click', loadSchedule);
+  } catch {
+    // Abaikan jika kategori kosong
   }
 }
-
-async function setupRandomButton() {
-  const btn = document.getElementById('randomBtn');
-  if (!btn) return;
-
-  btn.addEventListener('click', async () => {
-    if (btn.disabled) return;
-    btn.disabled = true;
-    const original = btn.textContent;
-    btn.textContent = 'MENCARI...';
-    try {
-      const res = await fetch('/api/video/random');
-      const result = await res.json();
-      if (!result.success || !result.data?.slug) throw new Error(result.message || 'Gagal');
-      window.location.href = `/video/html/watch.html?slug=${encodeURIComponent(result.data.slug)}`;
-    } catch (err) {
-      console.error('Gagal ambil video acak:', err);
-      alert('Gagal mengambil video acak, coba lagi.');
-      btn.disabled = false;
-      btn.textContent = original;
-    }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Kategori view: jadwal tak relevan, sembunyikan (hemat tempat)
-  if (currentCategory) {
-    document.querySelector('.schedule-section')?.style.setProperty('display', 'none');
-  }
-
-  const searchForm = document.getElementById('searchForm');
-  const searchInput = document.getElementById('searchInput');
-  const backToTopBtn = document.getElementById('backToTop');
-
-  if (searchForm) {
-    searchForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      // FIX BUG: dulu memakai loadVideos(true) yang me-RESET currentQuery=''
-      // sebelum endpoint dibangun → pencarian selalu menampilkan video
-      // terbaru. Sekarang: kosongkan grid manual + jalankan tanpa reset.
-      currentQuery = searchInput ? searchInput.value.trim() : '';
-      currentOffset = 1;
-      const grid = document.getElementById('videoGrid');
-      if (grid) grid.innerHTML = '';
-      loadVideos(false);
-    });
-  }
-
-  setupBackToTop(backToTopBtn, 300);
-
-  loadSchedule();
-  setupRandomButton();
-  loadVideos(true).then(() => setupHybridInfiniteScroll());
-  loadCategorySections();
-});
-
-let lastHasNext = false;
-const HYBRID_THRESHOLD = 60;
 
 function setupHybridInfiniteScroll() {
   const sentinel = document.getElementById('infiniteSentinel');
@@ -291,76 +284,40 @@ function setupHybridInfiniteScroll() {
   observer.observe(sentinel);
 }
 
-// ─── Home per-kategori (lazy-load + link ke halaman kategori) ───
-
-const CAT_VISIBLE = 3;
-
-function buildCatSection(cat) {
-  const sec = document.createElement('section');
-  sec.className = 'cat-section manga-section';
-  sec.dataset.slug = cat.slug;
-  sec.innerHTML = `
-    <div class="cat-head">
-      <h2 class="section-title">${escapeHtml(cat.name || cat.slug)}</h2>
-      <a class="cat-all" href="/video/html/index.html?category=${encodeURIComponent(cat.slug)}">Lihat semua</a>
-    </div>
-    <div class="video-grid cat-grid"></div>
-    <p class="cat-status loading">Memuat…</p>`;
-  return sec;
-}
-
-async function loadCategorySections() {
-  const host = document.getElementById('categorySections');
-  if (!host) return;
-
-  let cats;
-  try {
-    const res = await fetch('/api/video/categories');
-    cats = (await res.json())?.data || [];
-  } catch { return; }
-
-  for (const cat of cats) {
-    const sec = buildCatSection(cat);
-    host.appendChild(sec);
-    observeCatSection(sec, cat);
+document.addEventListener('DOMContentLoaded', () => {
+  if (currentCategory) {
+    document.getElementById('heroSpotlight')?.style.setProperty('display', 'none');
+    document.getElementById('continueWatchingSection')?.style.setProperty('display', 'none');
   }
-}
 
-function observeCatSection(sec, cat) {
-  const io = new IntersectionObserver(async (entries) => {
-    entries.forEach(async (entry) => {
-      if (!entry.isIntersecting) return;
-      io.unobserve(entry.target);
-      await loadCatVideos(sec, cat);
+  const searchForm = document.getElementById('searchForm');
+  const searchInput = document.getElementById('searchInput');
+
+  if (searchForm) {
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      currentQuery = searchInput ? searchInput.value.trim() : '';
+      currentOffset = 1;
+      const grid = document.getElementById('videoGrid');
+      if (grid) grid.innerHTML = '';
+      document.getElementById('heroSpotlight')?.style.setProperty('display', 'none');
+      document.getElementById('continueWatchingSection')?.style.setProperty('display', 'none');
+      document.getElementById('categorySections')?.style.setProperty('display', 'none');
+      loadVideos(false);
     });
-  }, { rootMargin: '400px 0px' });
-  io.observe(sec);
-}
-
-async function loadCatVideos(sec, cat) {
-  const grid = sec.querySelector('.cat-grid');
-  const statusEl = sec.querySelector('.cat-status');
-  try {
-    const res = await fetch(`/api/video/category?category=${encodeURIComponent(cat.slug)}&page=1`);
-    const result = await res.json();
-    if (!result.success) throw new Error();
-    const videos = (result.data?.videos || []).slice(0, 15);
-    statusEl.remove();
-
-    videos.forEach((v, idx) => {
-      const card = renderMediaCard(v, { variant: 'grid' });
-      if (idx >= CAT_VISIBLE) card.hidden = true;
-      grid.appendChild(card);
-    });
-
-    if (videos.length > CAT_VISIBLE) {
-      const more = document.createElement('a');
-      more.className = 'btn-see-more cat-more';
-      more.href = `/video/html/index.html?category=${encodeURIComponent(cat.slug)}`;
-      more.textContent = `Lihat semua — ${videos.length} video`;
-      grid.after(more);
-    }
-  } catch {
-    if (statusEl) statusEl.textContent = 'Gagal memuat.';
   }
-}
+
+  // Setup Carousel Continue Watching
+  const cwSection = document.getElementById('continueWatchingSection');
+  if (cwSection) {
+    setupCarouselScroll(
+      cwSection.querySelector('.carousel-track'),
+      cwSection.querySelector('.carousel-btn.prev'),
+      cwSection.querySelector('.carousel-btn.next')
+    );
+  }
+
+  loadContinueWatching();
+  loadVideos(true).then(() => setupHybridInfiniteScroll());
+  loadCategorySections();
+});

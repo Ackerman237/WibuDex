@@ -2,79 +2,111 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wibudex Video — Streaming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Wibudex Video — Platform Streaming Anime & Video</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/video/css/base.css">
   <link rel="stylesheet" href="/video/css/left-rail.css">
   <link rel="stylesheet" href="/video/css/index.css">
 
-  <!-- Favicon & tema browser mobile -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
   <meta name="theme-color" content="#0D0C0C">
   <link rel="manifest" href="/manifest.json">
-  <!-- Service Worker (offline cache) -->
   <script src="/js/register-sw.js" defer></script>
   <script src="/shared/utils.js" defer></script>
   <script src="/video/js/cards.js" defer></script>
+  <script src="/video/js/hero-spotlight.js" defer></script>
 </head>
 <body>
+  <!-- Glassmorphism Navbar -->
   <header>
     <div class="nav-container">
-      <div class="brand">
-        <a href="/video/html/index.html">
+      <div class="nav-left">
+        <a href="/video/html/index.html" class="brand">
           <h1>Wibu<span class="brand-amber">dex</span><span class="brand-badge">Video</span></h1>
         </a>
+
+        <!-- Quick Switcher Pill (Manga ⇋ Video) -->
+        <div class="module-switcher-pill" aria-label="Pilih Modul">
+          <a href="/manga/html/index.html" class="switcher-btn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            MANGA
+          </a>
+          <a href="/video/html/index.html" class="switcher-btn active" aria-current="page">
+            <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>
+            VIDEO
+          </a>
+        </div>
       </div>
+
       <nav class="nav-links" id="navLinks">
-        <a href="/manga/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-book-open"></use></svg>MANGA</a>
-        <a href="/video/html/index.html" class="active nav-cross" aria-current="page"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>WIBUDEX VIDEO</a>
-        <a href="/video/html/schedule.html">JADWAL</a>
+        <a href="/video/html/index.html" class="nav-link-item active">HOME</a>
+        <a href="/video/html/schedule.html" class="nav-link-item">JADWAL</a>
+        <a href="/video/html/series.html?type=hentai" class="nav-link-item">SERI HENTAI</a>
+        <a href="/video/html/series.html?type=jav" class="nav-link-item">SERI JAV</a>
         <div class="nav-dropdown" id="categoriesDropdown">
-          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">CATEGORIES ▾</button>
+          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">KATEGORI ▾</button>
           <div class="nav-drop-menu">
             <p class="nav-drop-loading">Memuat kategori...</p>
           </div>
         </div>
       </nav>
-      <form id="searchForm" class="search-box">
-        <input type="text" id="searchInput" placeholder="Cari video…">
-        <button type="submit">CARI</button>
-      </form>
-      <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span><span></span>
-      </button>
+
+      <div class="nav-right">
+        <!-- Quick Search Box -->
+        <form id="searchForm" class="search-box">
+          <input type="text" id="searchInput" placeholder="Cari video… (Ctrl+K)">
+          <button type="submit" aria-label="Cari">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </form>
+
+        <!-- Search Icon Mobile Trigger -->
+        <button class="nav-action-btn nav-search-trigger" id="navSearchTrigger" type="button" aria-label="Buka Pencarian">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+
+        <!-- Randomizer Action Icon -->
+        <button class="nav-action-btn btn-random" id="navRandomBtn" type="button" title="Tonton Video Acak">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+
+        <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main>
-    <!-- Aksi cepat (kategori kini lewat dropdown CATEGORIES di navbar) -->
-    <section class="categories-section">
-      <div class="categories-actions">
-        <button id="randomBtn" class="category-btn random-btn" type="button">
-          <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-sparkles"></use></svg>
-          ACAK
-        </button>
-        <a class="category-btn" href="/video/html/series.html?type=hentai">DAFTAR HENTAI</a>
-        <a class="category-btn" href="/video/html/series.html?type=jav">DAFTAR JAV</a>
+    <!-- Hero Spotlight Billboard -->
+    <section class="hero-section" id="heroSpotlight"></section>
+
+    <!-- Continue Watching Row (Muncul otomatis jika ada riwayat tontonan) -->
+    <section class="carousel-section continue-watching-section" id="continueWatchingSection" style="display:none">
+      <div class="section-header">
+        <h2 class="section-title">
+          <svg class="ic section-title__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          Lanjutkan Menonton
+        </h2>
+      </div>
+      <div class="carousel-wrap">
+        <button class="carousel-btn prev" type="button" aria-label="Sebelumnya">‹</button>
+        <div class="carousel-track" id="continueWatchingTrack"></div>
+        <button class="carousel-btn next" type="button" aria-label="Berikutnya">›</button>
       </div>
     </section>
 
-    <!-- Jadwal New Hentai (anchor #jadwal — dijangkau dari navbar) -->
-    <section class="manga-section schedule-section" id="jadwal">
-      <h2 class="section-title">
-        <svg class="ic section-title__icon" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg>
-        Jadwal New Hentai
-      </h2>
-      <div id="scheduleContainer">
-        <p class="loading">Memuat jadwal...</p>
-      </div>
-    </section>
-
+    <!-- Main Video Section (16:9 Grid) -->
     <section class="manga-section">
-      <h2 id="sectionTitle" class="section-title">Video Terbaru</h2>
+      <div class="section-header">
+        <h2 id="sectionTitle" class="section-title">
+          <svg class="ic section-title__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+          Rilisan Video Terbaru
+        </h2>
+      </div>
       <div id="videoGrid" class="video-grid">
         <p class="loading">Memuat video...</p>
       </div>
@@ -89,7 +121,7 @@
       </nav>
     </section>
 
-    <!-- Home per-kategori (lazy-load oleh index.js) -->
+    <!-- Horizontal Category Carousels (Lazy Loaded) -->
     <div id="categorySections"></div>
   </main>
 

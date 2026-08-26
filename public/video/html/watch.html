@@ -3,58 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Watch Video — Wibudex</title>
+  <title>Watch Video — Wibudex Streaming</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/video/css/base.css">
   <link rel="stylesheet" href="/video/css/left-rail.css">
-  <link rel="stylesheet" href="/video/css/watch.css?v=6">
+  <link rel="stylesheet" href="/video/css/player-controls.css">
+  <link rel="stylesheet" href="/video/css/watch.css?v=11">
 
-  <!-- Favicon & tema browser mobile -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png">
   <meta name="theme-color" content="#0D0C0C">
   <link rel="manifest" href="/manifest.json">
-  <!-- Service Worker (offline cache) -->
   <script src="/js/register-sw.js" defer></script>
   <script src="/shared/utils.js" defer></script>
-  <link rel="stylesheet" href="/video/css/player-controls.css">
 </head>
 <body>
-
+  <!-- Glassmorphism Navbar -->
   <header>
     <div class="nav-container">
-      <div class="brand">
-        <a href="/video/html/index.html">
+      <div class="nav-left">
+        <a href="/video/html/index.html" class="brand">
           <h1>Wibu<span class="brand-amber">dex</span><span class="brand-badge">Video</span></h1>
         </a>
-      </div>
-      <nav class="nav-links" id="navLinks">
-        <a href="/manga/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-book-open"></use></svg>MANGA</a>
-        <a href="/video/html/index.html" class="active nav-cross" aria-current="page"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>WIBUDEX VIDEO</a>
-                <a href="/video/html/schedule.html">JADWAL</a>
 
+        <div class="module-switcher-pill" aria-label="Pilih Modul">
+          <a href="/manga/html/index.html" class="switcher-btn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            MANGA
+          </a>
+          <a href="/video/html/index.html" class="switcher-btn active" aria-current="page">
+            <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>
+            VIDEO
+          </a>
+        </div>
+      </div>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="/video/html/index.html" class="nav-link-item">HOME</a>
+        <a href="/video/html/schedule.html" class="nav-link-item">JADWAL</a>
+        <a href="/video/html/series.html?type=hentai" class="nav-link-item">SERI HENTAI</a>
+        <a href="/video/html/series.html?type=jav" class="nav-link-item">SERI JAV</a>
         <div class="nav-dropdown" id="categoriesDropdown">
-          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">CATEGORIES ▾</button>
+          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">KATEGORI ▾</button>
           <div class="nav-drop-menu">
             <p class="nav-drop-loading">Memuat kategori...</p>
           </div>
         </div>
       </nav>
-      <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span><span></span>
-      </button>
+
+      <div class="nav-right">
+        <button class="nav-action-btn nav-search-trigger" id="navSearchTrigger" type="button" aria-label="Buka Pencarian (Ctrl+K)">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="nav-action-btn btn-random" id="navRandomBtn" type="button" title="Tonton Video Acak">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="watch-layout">
     <div class="watch-ambience" aria-hidden="true"></div>
 
-    <!-- Kolom kiri: player + info -->
+    <!-- Kolom kiri: player + unified command bar + info -->
     <div class="watch-main">
       <div class="player-card">
         <div class="video-wrapper" id="playerBox">
           <p class="player-loading-text">Memuat Player Video...</p>
-          <!-- Fallback overlay — HANYA tampil saat player gagal (centered di dalam video-wrapper, tidak tumpang tindih saat sukses) -->
           <div id="playerFallback" class="player-fallback" hidden>
             <svg class="ic player-fallback__icon" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>
             <p class="player-fallback__title">Player tidak dapat dimuat</p>
@@ -67,25 +86,56 @@
         </div>
       </div>
 
-      <!-- Tombol Pilihan Server -->
-      <div id="serverSelectorContainer" class="server-selector"></div>
+      <!-- Unified Player Command Bar -->
+      <div class="unified-command-bar">
+        <div class="cmd-left">
+          <!-- Server Selector Container -->
+          <div id="serverSelectorContainer" class="server-selector-pill"></div>
+        </div>
 
-      <!-- Toolbar: semua kontrol player-related dalam satu baris -->
-      <div class="watch-toolbar">
-        <button id="backBtn" class="toolbar-btn" type="button" aria-label="Kembali ke halaman sebelumnya">
-          <svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-arrow-left"></use></svg>
-          Kembali
-        </button>
-        <div class="pf-mode-toggle-host" id="pfModeToggleHost"></div>
-        <button id="theaterToggleBtn" class="theater-toggle" type="button" aria-pressed="false">
-          Mode Teater
-        </button>
+        <div class="cmd-right">
+          <!-- Episode Navigation Buttons -->
+          <div class="ep-nav-group">
+            <button id="prevEpBtn" class="cmd-btn" type="button" title="Episode Sebelumnya" disabled>
+              <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              <span class="cmd-btn-text">Prev Ep</span>
+            </button>
+            <button id="nextEpBtn" class="cmd-btn" type="button" title="Episode Berikutnya" disabled>
+              <span class="cmd-btn-text">Next Ep</span>
+              <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+          </div>
+
+          <!-- Mobile Episode Sheet Trigger -->
+          <button id="mobileEpSheetBtn" class="cmd-btn mobile-ep-btn" type="button" title="Daftar Episode">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <span>Episode</span>
+          </button>
+
+          <!-- Picture in Picture -->
+          <button id="pipBtn" class="cmd-btn" type="button" title="Picture in Picture (PiP)">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="4" width="20" height="16" rx="2"></rect><rect x="12" y="10" width="8" height="6" rx="1"></rect></svg>
+          </button>
+
+          <!-- Theater Mode -->
+          <button id="theaterToggleBtn" class="cmd-btn theater-toggle" type="button" aria-pressed="false" title="Mode Teater">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="18" rx="2"></rect><line x1="2" y1="9" x2="22" y2="9"></line></svg>
+            <span class="cmd-btn-text">Teater</span>
+          </button>
+
+          <div class="pf-mode-toggle-host" id="pfModeToggleHost"></div>
+        </div>
       </div>
 
+      <!-- Info Video -->
       <div class="watch-info">
         <div class="watch-badges">
           <span class="live-badge"><span class="live-dot"></span>STREAMING</span>
           <span class="content-badge" id="contentTypeBadge"></span>
+          <button id="favoriteBtn" class="favorite-action-btn" type="button" title="Simpan ke Favorit">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span id="favoriteBtnText">Favorit</span>
+          </button>
         </div>
         <h1 id="videoTitle" class="watch-title">Memuat Judul...</h1>
         <div class="watch-meta" id="watchMeta"></div>
@@ -96,27 +146,53 @@
           <button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>
         </div>
       </div>
-
-      <!-- Episode & Related: HANYA di sidebar (duplikat bawah player
-           dihapus atas masukan user 2026-08-24) -->
     </div>
 
-    <!-- Kolom kanan: sidebar -->
+    <!-- Kolom kanan: sidebar Desktop -->
     <aside class="watch-sidebar">
       <div class="sidebar-episodes" id="sidebarEpisodes">
-        <h2 class="sidebar-title">Episode</h2>
+        <h2 class="sidebar-title">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          Daftar Episode
+        </h2>
         <div class="episode-list" id="episodeList"></div>
       </div>
 
       <div class="sidebar-related" id="sidebarRelated">
-        <h2 class="sidebar-title">Video Terkait</h2>
+        <h2 class="sidebar-title">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Video Terkait
+        </h2>
         <div class="related-list" id="relatedList"></div>
       </div>
     </aside>
-
   </main>
 
+  <!-- Mobile Bottom Sheet Drawer for Episodes -->
+  <div id="mobileEpSheet" class="bottom-sheet-backdrop">
+    <div class="bottom-sheet-modal">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Pilih Episode</h3>
+        <button id="closeSheetBtn" class="sheet-close-btn" type="button" aria-label="Tutup">✕</button>
+      </div>
+      <div class="sheet-body" id="mobileSheetEpisodeList"></div>
+    </div>
+  </div>
 
+  <!-- Auto-Next Toast Notification -->
+  <div id="autoNextToast" class="auto-next-toast" hidden>
+    <div class="toast-content">
+      <span class="toast-indicator">▶ Auto-Next</span>
+      <p class="toast-text" id="autoNextText">Memutar episode berikutnya dalam <b id="autoNextCountdown">5</b>s...</p>
+    </div>
+    <div class="toast-actions">
+      <button id="cancelAutoNextBtn" class="toast-btn-cancel" type="button">Batal</button>
+      <button id="playAutoNextBtn" class="toast-btn-play" type="button">Putar Sekarang</button>
+    </div>
+  </div>
+
+  <button id="backToTop" class="back-to-top" title="Kembali ke atas">▲</button>
 
   <script src="/video/js/nav.js" defer></script>
   <script src="/video/js/left-rail.js" defer></script>
@@ -124,7 +200,6 @@
   <script src="/video/js/cards.js" defer></script>
   <script src="/video/js/player-controls.js" defer></script>
   <script src="/video/js/cover-theme-video.js" defer></script>
-  <script src="/video/js/watch.js?v=10" defer></script>
-  <script src="/shared/bottom-nav.js" defer></script>
+  <script src="/video/js/watch.js?v=11" defer></script>
 </body>
 </html>

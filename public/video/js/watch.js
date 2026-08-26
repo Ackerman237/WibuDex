@@ -562,42 +562,135 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('DOMContentLoaded', loadDetail);
 
-// ─── Tombol Kembali: referrer-aware (pola detail page) ───
+// ─── Command Bar Enhancements (Prev/Next, PiP, Mobile Sheet, Favorites, Progress) ───
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
-    const backBtn = document.getElementById('backBtn');
-    if (!backBtn) return;
-    backBtn.addEventListener('click', () => {
-      if (document.referrer && document.referrer.startsWith(location.origin)) {
-        history.back();
-      } else {
-        window.location.href = '/video/html/index.html';
+    const slug = pageSlug();
+    const prevBtn = document.getElementById('prevEpBtn');
+    const nextBtn = document.getElementById('nextEpBtn');
+    const pipBtn = document.getElementById('pipBtn');
+    const mobileEpBtn = document.getElementById('mobileEpSheetBtn');
+    const mobileSheet = document.getElementById('mobileEpSheet');
+    const closeSheetBtn = document.getElementById('closeSheetBtn');
+    const sheetList = document.getElementById('mobileSheetEpisodeList');
+    const favBtn = document.getElementById('favoriteBtn');
+    const favBtnText = document.getElementById('favoriteBtnText');
+
+    // Setup Episode Navigation
+    function updateEpisodeNav() {
+      const cards = [...document.querySelectorAll('.sidebar-episodes .episode-card')];
+      const activeIdx = cards.findIndex((c) => c.classList.contains('is-active'));
+
+      if (activeIdx !== -1) {
+        const prevCard = cards[activeIdx - 1];
+        const nextCard = cards[activeIdx + 1];
+
+        if (prevBtn) {
+          prevBtn.disabled = !prevCard;
+          if (prevCard?.href) prevBtn.onclick = () => { window.location.href = prevCard.href; };
+        }
+        if (nextBtn) {
+          nextBtn.disabled = !nextCard;
+          if (nextCard?.href) nextBtn.onclick = () => { window.location.href = nextCard.href; };
+        }
+      }
+    }
+
+    // Observe changes in episode list to update Prev/Next buttons & Mobile Sheet
+    const epObserver = new MutationObserver(() => {
+      updateEpisodeNav();
+      if (sheetList) {
+        sheetList.innerHTML = '';
+        const epCards = document.querySelectorAll('.sidebar-episodes .episode-card');
+        epCards.forEach((card) => {
+          const clone = card.cloneNode(true);
+          sheetList.appendChild(clone);
+        });
       }
     });
+
+    const epContainer = document.getElementById('episodeList');
+    if (epContainer) epObserver.observe(epContainer, { childList: true });
+
+    // Mobile Sheet Toggle
+    if (mobileEpBtn && mobileSheet) {
+      mobileEpBtn.addEventListener('click', () => {
+        mobileSheet.classList.add('is-open');
+      });
+      closeSheetBtn?.addEventListener('click', () => {
+        mobileSheet.classList.remove('is-open');
+      });
+      mobileSheet.addEventListener('click', (e) => {
+        if (e.target === mobileSheet) mobileSheet.classList.remove('is-open');
+      });
+    }
+
+    // Picture-in-Picture
+    if (pipBtn) {
+      pipBtn.addEventListener('click', async () => {
+        const video = document.getElementById('nativeVideo');
+        if (video && document.pictureInPictureEnabled) {
+          try {
+            if (document.pictureInPictureElement) {
+              await document.exitPictureInPicture();
+            } else {
+              await video.requestPictureInPicture();
+            }
+          } catch (err) {
+            console.warn('PiP error:', err);
+          }
+        } else {
+          alert('Picture-in-Picture hanya didukung saat memutar video native.');
+        }
+      });
+    }
+
+    // Favorites
+    if (favBtn && slug) {
+      const FAV_KEY = `video_fav_${slug}`;
+      let isFav = false;
+      try { isFav = localStorage.getItem(FAV_KEY) === '1'; } catch {}
+
+      function updateFavUI() {
+        favBtn.classList.toggle('is-active', isFav);
+        if (favBtnText) favBtnText.textContent = isFav ? 'Tersimpan' : 'Favorit';
+      }
+      updateFavUI();
+
+      favBtn.addEventListener('click', () => {
+        isFav = !isFav;
+        try {
+          if (isFav) localStorage.setItem(FAV_KEY, '1');
+          else localStorage.removeItem(FAV_KEY);
+        } catch {}
+        updateFavUI();
+      });
+    }
+
+    // Save Progress for Resume Playback & Continue Watching
+    setInterval(() => {
+      const video = document.getElementById('nativeVideo');
+      if (video && !video.paused && video.duration > 0 && slug) {
+        const percentage = Math.round((video.currentTime / video.duration) * 100);
+        const mins = Math.floor(video.currentTime / 60);
+        const secs = Math.floor(video.currentTime % 60);
+        const formatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        const titleEl = document.getElementById('videoTitle');
+        const title = titleEl ? titleEl.textContent : '';
+
+        try {
+          localStorage.setItem(`video_progress_${slug}`, JSON.stringify({
+            slug,
+            title,
+            currentTime: video.currentTime,
+            duration: video.duration,
+            percentage,
+            lastPositionFormatted: formatted,
+            updatedAt: Date.now(),
+          }));
+        } catch {}
+      }
+    }, 5000);
   });
 })();
 
-// ─── Theater mode (V1.2): perbesar player, sembunyikan sidebar sementara ──
-// State persisten di localStorage — preferensi tampilan bersifat sticky.
-(function () {
-  const KEY = 'watchTheater';
-  const layout = document.querySelector('.watch-layout');
-  const btn = document.getElementById('theaterToggleBtn');
-  if (!layout || !btn) return;
-
-  function apply(on) {
-    layout.classList.toggle('theater-mode', on);
-    btn.setAttribute('aria-pressed', String(on));
-    btn.textContent = on ? 'Keluar Mode Teater' : 'Mode Teater';
-  }
-
-  let on = false;
-  try { on = localStorage.getItem(KEY) === '1'; } catch { /* abaikan */ }
-  apply(on);
-
-  btn.addEventListener('click', () => {
-    on = !on;
-    try { localStorage.setItem(KEY, on ? '1' : '0'); } catch { /* abaikan */ }
-    apply(on);
-  });
-})();

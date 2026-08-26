@@ -1,311 +1,264 @@
 /* =========================================================
-   Neko Video — INDEX PAGE
-   Scroller kategori/genre, grid video (card + thumbnail).
-   Load setelah base.css. Khusus dipakai di index.html.
+   Wibudex Video — INDEX (Homepage Streaming Layout)
+   Hero Spotlight Billboard, Continue Watching, Carousel Rows
    ========================================================= */
 
-/* ---------- kategori / genre scroller ---------- */
+/* ---------- Hero Spotlight Billboard ---------- */
 
-.categories-section {
-  margin-bottom: 30px;
-}
-.categories-grid {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-.categories-grid::-webkit-scrollbar {
-  height: 6px;
-}
-.categories-grid::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-.category-btn {
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  color: var(--text-muted);
-  font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 6px 14px;
-  border-radius: var(--radius);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.category-btn:hover {
-  background: var(--card-hover);
-  color: var(--text);
-  border-color: var(--border);
-}
-.category-btn.active {
-  background: var(--ink);
-  color: var(--text);
-  border-color: var(--ink);
+.hero-section {
+  margin-bottom: 36px;
 }
 
-/* ---------- aksi cepat (acak / daftar seri) ---------- */
-.categories-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-.random-btn {
-  border-color: var(--border);
-}
-.random-btn:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-/* ---------- jadwal new hentai ---------- */
-.schedule-section {
-  margin-bottom: 30px;
-}
-#scheduleContainer {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-.schedule-day { flex: 0 0 280px; }
-.schedule-day {
-  margin-bottom: 22px;
-}
-.schedule-day-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 0 0 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-soft);
-}
-.schedule-series-list {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-.schedule-series-list::-webkit-scrollbar {
-  height: 6px;
-}
-.schedule-series-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-.schedule-card {
-  flex: 0 0 110px;
-  width: 110px;
-  text-decoration: none;
-  color: inherit;
-}
-.schedule-card img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  background: var(--bg-surface-raised);
-  border-radius: var(--radius);
-  display: block;
-}
-.schedule-card-title {
-  display: block;
-  font-size: 12px;
-  line-height: 1.3;
-  margin-top: 6px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-/* ---------- grid video ---------- */
-
-.video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-.video-card {
+.hero-slider {
   position: relative;
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  width: 100%;
+  min-height: 380px;
+  max-height: 480px;
+  aspect-ratio: 21 / 9;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.video-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--ink);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
 
-/* play icon overlay on hover */
-.video-card::after {
-  content: '▶';
-  position: absolute;
-  top: 0;
-  left: 0;
+.hero-slides-track {
+  position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text);
-  font-size: 15px;
-  pointer-events: none;
+  height: 100%;
 }
-.video-card::before {
-  content: '';
+
+.hero-slide {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 46px;
-  height: 46px;
-  transform: translate(-50%, -50%) scale(0.75);
-  background: rgba(193, 68, 58, 0.88);
-  border-radius: 50%;
+  inset: 0;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 600ms cubic-bezier(0.2, 0, 0, 1),
+              visibility 600ms cubic-bezier(0.2, 0, 0, 1);
+  display: flex;
+  align-items: flex-end;
+  padding: 40px 48px;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+.hero-backdrop-wrap {
+  position: absolute;
+  inset: 0;
   z-index: 1;
 }
-.video-card:hover::before {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-.video-card::after {
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.video-card:hover::after {
-  opacity: 1;
+
+.hero-backdrop {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  filter: brightness(0.65) saturate(1.2);
+  transform: scale(1.03);
+  transition: transform 6s ease-out;
 }
 
-.video-thumb {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  background-color: var(--card);
-  display: block;
-  transition: transform 0.3s ease;
+.hero-slide.is-active .hero-backdrop {
+  transform: scale(1);
 }
-.video-card:hover .video-thumb {
-  transform: scale(1.05);
+
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #0D0C0C 0%, rgba(13, 12, 12, 0.8) 40%, rgba(13, 12, 12, 0.2) 100%),
+              linear-gradient(90deg, #0D0C0C 0%, rgba(13, 12, 12, 0.6) 50%, transparent 100%);
 }
-.video-info { padding: 12px; }
-.video-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.4;
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hero-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(217, 119, 6, 0.2);
+  border: 1px solid rgba(217, 119, 6, 0.5);
+  color: var(--accent-primary);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.hero-badge-type {
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.hero-badge-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+
+.hero-title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.video-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
 
-/* ---------- Kategori rows (home per-kategori) ---------- */
-.cat-head {
+.hero-synopsis {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d1cbc5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
-}
-.cat-all {
-  font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  white-space: nowrap;
-}
-.cat-all:hover {
-  background: var(--ink);
-  color: var(--text);
+  margin-top: 4px;
 }
 
-/* ---------- Pagination kategori (mirip all-manga) ---------- */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 24px 0;
-  flex-wrap: wrap;
-}
-.page-numbers {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.page-number, .page-btn {
-  min-width: 44px;
-  min-height: 44px;
+.hero-btn-play {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  font-family: var(--font-display);
+  gap: 8px;
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  font-family: var(--font-ui);
   font-size: 13px;
-  cursor: pointer;
-}
-.page-number.active {
-  background: var(--ink);
-  color: var(--text);
-  border-color: var(--ink);
-}
-.page-number:disabled,
-.page-btn:disabled {
-  opacity: .4;
-  cursor: not-allowed;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--ease-standard);
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.4);
 }
 
-/* ---------- Empty state jadwal ---------- */
-.schedule-empty {
-  text-align: center;
-  padding: var(--space-7) var(--space-4);
-  border: 1px dashed var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
+.hero-btn-play:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.6);
 }
-.schedule-empty__icon {
-  width: 36px;
-  height: 36px;
-  color: var(--text-disabled);
-  margin-bottom: var(--space-3);
-}
-.schedule-empty__title {
-  margin: 0 0 var(--space-1);
-  font-family: var(--font-ui);
-  font-size: 15px;
-  font-weight: 700;
+
+.hero-btn-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(24, 22, 21, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-}
-.schedule-empty__hint {
-  margin: 0 auto var(--space-4);
-  max-width: 46ch;
+  font-family: var(--font-ui);
   font-size: 13px;
-  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.hero-btn-info:hover {
+  background: var(--bg-surface-raised);
+  border-color: var(--text-secondary);
+}
+
+.hero-dots {
+  position: absolute;
+  bottom: 20px;
+  right: 28px;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+}
+
+.hero-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.hero-dot.is-active {
+  width: 28px;
+  background: var(--accent-primary);
+}
+
+/* ---------- Continue Watching & Carousel Styles ---------- */
+
+.continue-watching-section {
+  margin-bottom: 36px;
+}
+
+.schedule-preview-section {
+  margin-bottom: 36px;
+}
+
+/* ---------- Responsive Hero ---------- */
+
+@media (max-width: 768px) {
+  .hero-slider {
+    min-height: 320px;
+    aspect-ratio: 16 / 10;
+  }
+  .hero-slide {
+    padding: 24px 20px;
+  }
+  .hero-title {
+    font-size: 20px;
+  }
+  .hero-synopsis {
+    display: none;
+  }
+  .hero-btn-play {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  .hero-btn-info {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .hero-dots {
+    bottom: 14px;
+    right: 18px;
+  }
 }

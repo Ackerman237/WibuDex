@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Episode Seri — Wibudex</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Detail Seri & Episode — Wibudex Streaming</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="/css/wibudex-tokens.css">
   <link rel="stylesheet" href="/video/css/base.css">
@@ -19,33 +19,84 @@
   <script src="/video/js/cards.js" defer></script>
 </head>
 <body>
+  <!-- Glassmorphism Navbar -->
   <header>
     <div class="nav-container">
-      <div class="brand">
-        <a href="/video/html/index.html">
+      <div class="nav-left">
+        <a href="/video/html/index.html" class="brand">
           <h1>Wibu<span class="brand-amber">dex</span><span class="brand-badge">Video</span></h1>
         </a>
+
+        <div class="module-switcher-pill" aria-label="Pilih Modul">
+          <a href="/manga/html/index.html" class="switcher-btn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            MANGA
+          </a>
+          <a href="/video/html/index.html" class="switcher-btn active" aria-current="page">
+            <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>
+            VIDEO
+          </a>
+        </div>
       </div>
+
       <nav class="nav-links" id="navLinks">
-        <a href="/manga/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-book-open"></use></svg>MANGA</a>
-        <a href="/video/html/index.html" class="nav-cross"><svg class="ic nav-ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg>WIBUDEX VIDEO</a>
-        <a href="/video/html/schedule.html">JADWAL</a>
+        <a href="/video/html/index.html" class="nav-link-item">HOME</a>
+        <a href="/video/html/schedule.html" class="nav-link-item">JADWAL</a>
+        <a href="/video/html/series.html?type=hentai" class="nav-link-item">SERI HENTAI</a>
+        <a href="/video/html/series.html?type=jav" class="nav-link-item">SERI JAV</a>
         <div class="nav-dropdown" id="categoriesDropdown">
-          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">CATEGORIES ▾</button>
+          <button type="button" class="nav-drop-toggle" aria-expanded="false" aria-haspopup="true">KATEGORI ▾</button>
           <div class="nav-drop-menu">
             <p class="nav-drop-loading">Memuat kategori...</p>
           </div>
         </div>
       </nav>
-      <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span><span></span>
-      </button>
+
+      <div class="nav-right">
+        <button class="nav-action-btn nav-search-trigger" id="navSearchTrigger" type="button" aria-label="Buka Pencarian (Ctrl+K)">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="nav-action-btn btn-random" id="navRandomBtn" type="button" title="Tonton Video Acak">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main>
-    <section class="manga-section">
-      <h2 id="sectionTitle" class="section-title">Episode Seri</h2>
+    <!-- Series Header Billboard -->
+    <div id="seriesHeader" class="series-header-billboard" style="display:none">
+      <div class="series-header-backdrop" id="seriesBackdrop"></div>
+      <div class="series-header-content">
+        <img id="seriesCover" class="series-header-cover" src="" alt="">
+        <div class="series-header-details">
+          <div class="series-header-badges">
+            <span class="hero-badge-tag" id="seriesTypeBadge">SERI</span>
+            <span class="hero-badge-type" id="seriesEpCount">0 Episode</span>
+          </div>
+          <h1 id="seriesTitle" class="series-header-title">Judul Seri</h1>
+          <p id="seriesSynopsis" class="series-header-synopsis"></p>
+          <div class="series-header-actions">
+            <a id="playFirstEpBtn" href="#" class="hero-btn-play">
+              <svg class="ic" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+              Tonton Episode 1
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Episode Section -->
+    <section class="manga-section" style="margin-top: 32px;">
+      <div class="section-header">
+        <h2 id="sectionTitle" class="section-title">
+          <svg class="ic section-title__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          Daftar Episode
+        </h2>
+      </div>
       <div id="episodeGrid" class="video-grid">
         <p class="loading">Memuat episode...</p>
       </div>
@@ -57,6 +108,5 @@
   <script src="/video/js/nav.js" defer></script>
   <script src="/video/js/left-rail.js" defer></script>
   <script src="/video/js/episodes.js" defer></script>
-  <script src="/shared/bottom-nav.js" defer></script>
 </body>
 </html>

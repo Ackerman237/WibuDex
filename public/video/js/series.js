@@ -1,11 +1,16 @@
-// video/js/series.js — Halaman daftar seri Hentai/JAV
+// video/js/series.js — Halaman daftar seri Hentai/JAV (2:3 Poster Format)
 
 let currentType = 'hentai';
 let currentPage = 1;
+let seriesHasNext = false;
+const SERIES_HYBRID_THRESHOLD = 60;
 
 function renderSeriesCard(item) {
-  // Markup terkonsolidasi di cards.js (dulu: src thumb lupa di-escape)
-  return renderMediaCard(item, { variant: 'grid' });
+  return renderMediaCard(item, {
+    variant: 'series',
+    href: `/video/html/episodes.html?slug=${encodeURIComponent(item.slug)}`,
+    meta: item.type || (currentType === 'jav' ? 'JAV Series' : 'Hentai Series'),
+  });
 }
 
 async function loadSeries(reset = false) {
@@ -39,7 +44,7 @@ async function loadSeries(reset = false) {
     }
 
     if (sectionTitle) {
-      sectionTitle.textContent = currentType === 'jav' ? 'Daftar Seri JAV' : 'Daftar Seri Hentai';
+      sectionTitle.textContent = currentType === 'jav' ? 'Katalog Seri JAV' : 'Katalog Seri Hentai';
     }
 
     items.forEach((item) => grid.appendChild(renderSeriesCard(item)));
@@ -74,19 +79,17 @@ function selectType(type, { reload = true } = {}) {
   if (reload) loadSeries(true);
 }
 
-let seriesHasNext = false;
-const SERIES_HYBRID_THRESHOLD = 60;
-
 function setupSeriesInfiniteScroll() {
   const sentinel = document.getElementById('infiniteSentinelSeries');
   const grid = document.getElementById('seriesGrid');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
   if (!sentinel || !grid || !loadMoreBtn) return;
+
   let isLoading = false;
   const observer = new IntersectionObserver(async (entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting || isLoading) continue;
-      const total = grid.querySelectorAll('.video-card').length;
+      const total = grid.querySelectorAll('.series-card').length;
       if (total >= SERIES_HYBRID_THRESHOLD || !seriesHasNext) continue;
       isLoading = true;
       await loadSeries(false);
@@ -97,15 +100,17 @@ function setupSeriesInfiniteScroll() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const backToTopBtn = document.getElementById('backToTop');
-
-  const urlType = new URLSearchParams(window.location.search).get('type');
-  selectType(urlType || 'hentai', { reload: false });
+  const params = new URLSearchParams(window.location.search);
+  const typeParam = params.get('type');
+  if (typeParam === 'jav' || typeParam === 'hentai') {
+    selectType(typeParam, { reload: false });
+  }
 
   document.querySelectorAll('#typeTabsContainer .category-btn').forEach((btn) => {
-    btn.addEventListener('click', () => selectType(btn.dataset.type));
+    btn.addEventListener('click', () => {
+      selectType(btn.dataset.type, { reload: true });
+    });
   });
 
-  setupBackToTop(backToTopBtn, 300);
   loadSeries(true).then(() => setupSeriesInfiniteScroll());
 });
