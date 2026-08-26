@@ -5,11 +5,11 @@ import {
   scrapeGenres,
 } from '../lib/scraper/index.js';
 import { validatePage, validateLimit, validateQuery, validateSlug, validateId, validateCategoryList, validateEnum } from '../lib/validator.js';
-import { respondUpstreamError } from '../middleware/upstreamResponse.js';
+import { respondUpstreamError } from '../middleware/upstream-response.js';
 
-// Engine proxy gambar dipindah ke lib/imageProxy.js (SoC) — controller hanya
+// Engine proxy gambar dipindah ke lib/image-proxy.js (SoC) — controller hanya
 // me-re-export agar rute /api/image-proxy tidak berubah.
-export { proxyImage } from '../lib/imageProxy.js';
+export { proxyImage } from '../lib/image-proxy.js';
 
 const VALID_SORTS = new Set(['newest', 'rating', 'title']);
 const VALID_STATUSES = new Set(['ongoing', 'completed', 'hiatus']);

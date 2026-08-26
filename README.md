@@ -55,11 +55,11 @@ npm start
 
 ```
 server.js        Entry point Express
-controllers/     Handler API per domain (manga, video, progress)
+controllers/     Handler API per domain (manga, video, progress) — kebab-case
 routes/          Routing per domain (index.js mount semuanya)
-lib/             Logic murni: scraper internal, security, validator, db, vpn
-middleware/      errorHandler, rateLimit, upstreamResponse
-website/         Frontend statis (manga/, video/, shared/, css/)
+lib/             Logic murni: scraper internal, security, validator, db, vpn — kebab-case
+middleware/      error-handler, rate-limit, upstream-response
+public/          Frontend statis (manga/, video/, shared/, css/) — vanilla PWA
 tests/           Vitest unit + integration (offline, mock)
 docs/            Dokumentasi terstruktur (01-project-overview … 08-decisions)
 ```

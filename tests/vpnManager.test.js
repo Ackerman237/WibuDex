@@ -19,7 +19,7 @@ import {
   getVpnStatus,
   classifyError,
   _internals,
-} from '../lib/vpn/vpnManager.js';
+} from '../lib/vpn/vpn-manager.js';
 
 function makeProvider(name, { type = 'proxy', connectError = null, connectDelayMs = 0 } = {}) {
   return {

@@ -1,4 +1,4 @@
-import { getVpnStatus } from '../lib/vpn/vpnManager.js';
+import { getVpnStatus } from '../lib/vpn/vpn-manager.js';
 import logger from '../lib/logger.js';
 
 // Status VPN berisi detail infrastruktur (provider, health, history error)

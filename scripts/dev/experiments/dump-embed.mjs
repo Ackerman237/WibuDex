@@ -1,13 +1,13 @@
 // Debug one-off: dump HTML embed yang diterima fetchProviderEmbed
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { scrapeNekoDetail } from '../../lib/scraper/nekoScraper.js';
-import { fetchProviderEmbed } from '../../lib/scraper/playerFrame.js';
+import { scrapeNekoDetail } from '../../lib/scraper/neko-scraper.js';
+import { fetchProviderEmbed } from '../../lib/scraper/player-frame.js';
 
 const slug = process.argv[2] || 'latest';
 let target = slug;
 if (target === 'latest') {
-  const { scrapeNekoList } = await import('../../lib/scraper/nekoScraper.js');
+  const { scrapeNekoList } = await import('../../lib/scraper/neko-scraper.js');
   const list = await scrapeNekoList(1);
   target = list.videos?.[0]?.slug;
 }

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../lib/vpn/vpnManager.js', () => ({
+vi.mock('../lib/vpn/vpn-manager.js', () => ({
   ensureVpn: vi.fn(async () => ({ provider: null })),
   reportFailure: vi.fn(),
   reportSuccess: vi.fn(),
@@ -20,7 +20,7 @@ import {
   scrapeNekoDetail,
   decodeEntities,
   _clearNekoCacheForTests,
-} from '../lib/scraper/nekoScraper.js';
+} from '../lib/scraper/neko-scraper.js';
 
 function htmlResponse(body) {
   return {

@@ -6,7 +6,7 @@ import {
   isAllowedPlayerUrl,
   stripAdScripts,
   buildPlayerFrameHtml,
-} from '../lib/scraper/playerFrame.js';
+} from '../lib/scraper/player-frame.js';
 import { createPlayerFrameApp } from '../scripts/dev/player-frame-server.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

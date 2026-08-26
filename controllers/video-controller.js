@@ -7,15 +7,15 @@ import {
   scrapeNekoSchedule,
   scrapeNekoSeriesList,
   scrapeNekoRandom,
-} from '../lib/scraper/nekoScraper.js';
+} from '../lib/scraper/neko-scraper.js';
 import { validatePage, validateCategory, validateQuery, validateSlug, validateUrl, validateEnum } from '../lib/validator.js';
 import logger from '../lib/logger.js';
-import { respondUpstreamError } from '../middleware/upstreamResponse.js';
-import { fetchProviderEmbed, buildPlayerFrameHtml, isAllowedPlayerUrl } from '../lib/scraper/playerFrame.js';
-import { extractDirectStream } from '../lib/scraper/streamExtract.js';
+import { respondUpstreamError } from '../middleware/upstream-response.js';
+import { fetchProviderEmbed, buildPlayerFrameHtml, isAllowedPlayerUrl } from '../lib/scraper/player-frame.js';
+import { extractDirectStream } from '../lib/scraper/stream-extract.js';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { PLAYER_HOSTS } from '../lib/config/playerHosts.js';
+import { PLAYER_HOSTS } from '../lib/config/player-hosts.js';
 import { USER_AGENT } from '../lib/constants.js';
 import { CacheManager } from '../lib/scraper/cache.js';
 

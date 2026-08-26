@@ -11,7 +11,7 @@
  */
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { fetchProviderEmbed } from '../../lib/scraper/playerFrame.js';
+import { fetchProviderEmbed } from '../../lib/scraper/player-frame.js';
 import { USER_AGENT } from '../../lib/constants.js';
 
 const execFileAsync = promisify(execFile);
@@ -31,7 +31,7 @@ async function curlGet(url, { referer, cookie = '' } = {}) {
 
 const slugArg = process.argv[2];
 
-const { scrapeNekoDetail, scrapeNekoList } = await import('../../lib/scraper/nekoScraper.js');
+const { scrapeNekoDetail, scrapeNekoList } = await import('../../lib/scraper/neko-scraper.js');
 
 let slug = slugArg;
 if (!slug || slug === 'latest') {

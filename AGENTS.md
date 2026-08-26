@@ -7,8 +7,8 @@ situs sumber melalui scraper internal — tidak ada CMS, tidak ada konten yang
 disimpan permanen.
 
 Dua modul produk:
-- **Manga** (`website/manga/`) — katalog, detail chapter, reader
-- **Video** (`website/video/`) — daftar video, watch page dengan player
+- **Manga** (`public/manga/`) — katalog, detail chapter, reader
+- **Video** (`public/video/`) — daftar video, watch page dengan player
 
 ## Fokus Saat Ini
 **Task aktif: BANGUN UI MANGA dari nol.**
@@ -17,7 +17,7 @@ kontrak DOM per halaman (ID yang wajib disediakan HTML untuk JS screens
 existing), wireframe, dan urutan eksekusi:
 `index.html → catalog → detail → reader → library/history`.
 Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
-`website/css/wibudex-tokens.css`. Satu halaman satu commit, QA tiap halaman.
+`public/css/wibudex-tokens.css`. Satu halaman satu commit, QA tiap halaman.
 
 ## Batasan Teknis Penting
 - **Runtime:** Node.js ≥22.5 (`node:sqlite` built-in), ESM (`"type": "module"`)
@@ -32,31 +32,31 @@ Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
 ```
 /server.js               → Entry point Express (static serve + API mount)
 /controllers/            → Handler API per domain (tanpa logic scraping)
-  mangaController.js     → Endpoint /api/manga/*, /api/chapter
-  videoController.js     → Endpoint /api/video/*, player-frame, stream proxy
-  progressController.js  → CRUD posisi baca (SQLite)
-/vpnController...        → Status VPN
+  manga-controller.js     → Endpoint /api/manga/*, /api/chapter
+  video-controller.js     → Endpoint /api/video/*, player-frame, stream proxy
+  progress-controller.js  → CRUD posisi baca (SQLite)
+/vpn-controller...        → Status VPN
 /routes/                 → Routing per domain
   index.js               → Mount semua sub-router
   manga.routes.js / video.routes.js / progress.routes.js / vpn.routes.js
 /lib/                    → Logic murni (portable, tanpa DOM)
   scraper/               → Lapisan INTERNAL — boleh menyebut nama situs sumber
-    doujinScraper.js       Scraper API JSON terenkripsi (doujin.desu.xxx)
-    nekoScraper.js         Scraper HTML WordPress (nekopoi.care)
+    doujin-scraper.js       Scraper API JSON terenkripsi (doujin.desu.xxx)
+    neko-scraper.js         Scraper HTML WordPress (nekopoi.care)
     fetcher.js             Fetch + concurrency queue + timeout + retry
     cache.js               CacheManager (TTL + maxSize + byte budget)
     normalizer.js          Normalisasi data + repair mojibake
     decryptor.js           Dekripsi respons terenkripsi
-    playerFrame.js         Sanitasi embed player + sandbox CSP
-    streamExtract.js       Ekstraksi stream MP4/HLS dari player penyedia
+    player-frame.js         Sanitasi embed player + sandbox CSP
+    stream-extract.js       Ekstraksi stream MP4/HLS dari player penyedia
   security.js            SSRF guard, allowlist domain gambar, stripHtml
   validator.js           Validasi input request
   db.js                  SQLite via node:sqlite (posisi baca)
-  vpn/vpnManager.js      Manajemen VPN otomatis (WARP) anti-blokir
-/middleware/             → errorHandler, rateLimit, upstreamResponse
+  vpn/vpn-manager.js      Manajemen VPN otomatis (WARP) anti-blokir
+/middleware/             → error-handler, rate-limit, upstream-response
 /tests/                  → Vitest unit + integration (mock/offline, tanpa situs live)
 /scripts/                → get-secret.js, demo.js, generate-icons.mjs, dev/
-/website/                → Frontend statis
+/public/                → Frontend statis
   css/wibudex-tokens.css → Design token pusat (dark-first, accent amber)
   shared/                → JS bersama kedua modul (utils/api/storage/ui/nav)
   js/register-sw.js      → Registrasi service worker
@@ -78,7 +78,7 @@ Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
 4. **Keamanan non-negotiable:** jangan bocorkan error internal ke client,
    jangan commit secret (.env), jangan log kredensial.
 5. **Logic murni vs UI-bound:** helper portable tanpa DOM taruh di
-   `website/shared/`; kode yang menyentuh struktur HTML tetap di screen
+   `public/shared/`; kode yang menyentuh struktur HTML tetap di screen
    script masing-masing halaman. Referensi audit: `docs/06-architecture/module-map.md`.
 
 ## Fitur Utama
@@ -110,7 +110,7 @@ Desain mengikuti `docs/06-architecture/style-guide.md` + token terkunci
 - **Satu state UI = satu mekanisme toggling** — jangan campur atribut
   `[hidden]` dengan class; pilih class-driven visibility.
 - **Setiap batch perubahan aset statis (css/js/html baru/diubah) → bump
-  `CACHE_VERSION` di `website/sw.js`** — stale-while-revalidate menyajikan
+  `CACHE_VERSION` di `public/sw.js`** — stale-while-revalidate menyajikan
   aset lama pada kunjungan pertama tanpa bump.
 
 ## Skill Terkait (muat sesuai jenis task)

@@ -9,11 +9,11 @@ import request from 'supertest';
 import express from 'express';
 import http from 'node:http';
 
-vi.mock('../lib/scraper/streamExtract.js', () => ({
+vi.mock('../lib/scraper/stream-extract.js', () => ({
   extractDirectStream: vi.fn(),
 }));
 
-const { extractDirectStream } = await import('../lib/scraper/streamExtract.js');
+const { extractDirectStream } = await import('../lib/scraper/stream-extract.js');
 const videoRouter = (await import('../routes/video.routes.js')).default;
 
 const STREAM_URL = 'https://playmogo.com/f/token-sekali-pakai.mp4';

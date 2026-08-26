@@ -11,7 +11,7 @@ API /api/video, routes per domain, shared terpusat).
 
 ---
 
-## UTILS BERSAMA — `website/shared/`
+## UTILS BERSAMA — `public/shared/`
 
 ### `shared/utils.js` (BARU)
 **Klasifikasi: LOGIC MURNI & UI HELPER**
@@ -25,7 +25,7 @@ File kanonik bersama untuk fungsi yang dibutuhkan lintas bagian (doujin & neko).
 
 ---
 
-## SHARED — `website/shared/` (semua file shared kini di sini, bukan nested per modul)
+## SHARED — `public/shared/` (semua file shared kini di sini, bukan nested per modul)
 
 ### `shared/api.js`
 **Klasifikasi: LOGIC MURNI (100% portable)**
@@ -65,7 +65,7 @@ Semua fungsi hanya melakukan fetch HTTP dan mengembalikan data. Tidak ada refere
 ### `shared/ui.js`
 **Klasifikasi: UI-BOUND & COMPONENT RENDERER**
 
-*Catatan: `escapeHtml` dan `setupBackToTop` sudah dipindah ke `website/shared/utils.js`.*
+*Catatan: `escapeHtml` dan `setupBackToTop` sudah dipindah ke `public/shared/utils.js`.*
 
 | Fungsi | Klasifikasi | Alasan |
 |---|---|---|
@@ -95,7 +95,7 @@ IIFE perender bottom navigation bar khusus mobile (lebar <= 700px).
 
 ---
 
-## FRONTEND — `website/manga/js/` (screens)
+## FRONTEND — `public/manga/js/` (screens)
 
 ### `js/index.js`
 **Klasifikasi: UI-BOUND (screen homepage)**
@@ -159,7 +159,7 @@ Fetch riwayat tersimpan dari backend (`/api/progress/all`) dan render ke `#histo
 
 ---
 
-## FRONTEND — `website/video/`
+## FRONTEND — `public/video/`
 
 *Semua HTML video (`index.html`, `series.html`, `watch.html`) sekarang meng-include `/shared/utils.js`.*
 
@@ -193,15 +193,15 @@ Seluruh modul di `lib/` tidak bersentuhan dengan DOM browser dan fully testable:
 | `lib/constants.js` | User-Agent & referer global | Logic murni |
 | `lib/db.js` | SQLite store via `node:sqlite` untuk reading position | Logic murni |
 | `lib/browser.js` | Lifecycle management Puppeteer Chromium | Logic murni |
-| `lib/imageProxy.js` | Image proxy stream + sharp resize cache | Logic murni |
+| `lib/image-proxy.js` | Image proxy stream + sharp resize cache | Logic murni |
 | `lib/scraper/fetcher.js` | Fetcher dengan concurrency queue, timeout, & retry | Logic murni |
 | `lib/scraper/cache.js` | In-memory cache manager (TTL + LRU eviction + byte budget) | Logic murni |
 | `lib/scraper/decryptor.js` | XOR decryption engine dengan time-bucket key derivation | Logic murni |
 | `lib/scraper/normalizer.js` | Schema mapper API doujin & Mojibake repair (`repairMojibake`) | Logic murni |
-| `lib/scraper/doujinScraper.js`| Scraper JSON API doujin.desu.xxx | Logic murni |
-| `lib/scraper/nekoScraper.js`  | Scraper HTML & schedule nekopoi.care | Logic murni |
-| `lib/scraper/playerFrame.js`  | Sanitasi embed player video & inject sandbox CSP | Logic murni |
-| `lib/scraper/streamExtract.js`| Regex stream extractor MP4/HLS dari player provider | Logic murni |
+| `lib/scraper/doujin-scraper.js`| Scraper JSON API doujin.desu.xxx | Logic murni |
+| `lib/scraper/neko-scraper.js`  | Scraper HTML & schedule nekopoi.care | Logic murni |
+| `lib/scraper/player-frame.js`  | Sanitasi embed player video & inject sandbox CSP | Logic murni |
+| `lib/scraper/stream-extract.js`| Regex stream extractor MP4/HLS dari player provider | Logic murni |
 
 ---
 
@@ -212,8 +212,8 @@ Seluruh modul di `lib/` tidak bersentuhan dengan DOM browser dan fully testable:
 | `server.js` | Entry point Express, static routing, helmet CSP, graceful shutdown | Backend Logic |
 | outes/index.js | Mount semua sub-router domain | Backend Logic |
 | outes/manga.routes.js / ideo.routes.js / progress.routes.js / pn.routes.js | Routing per domain | Backend Logic |
-| `controllers/mangaController.js` | Handler API manga/doujin | Controller Logic |
-| `controllers/videoController.js` | Handler API video neko, stream proxy, player frame | Controller Logic |
-| `controllers/progressController.js`| Handler API sync progress baca via SQLite | Controller Logic |
-| `website/sw.js` | Service Worker (PWA caching strategies: SWR, network-first, offline fallback) | Service Worker Logic |
-| `website/js/register-sw.js` | PWA service worker registration script | UI Helper |
+| `controllers/manga-controller.js` | Handler API manga/doujin | Controller Logic |
+| `controllers/video-controller.js` | Handler API video neko, stream proxy, player frame | Controller Logic |
+| `controllers/progress-controller.js`| Handler API sync progress baca via SQLite | Controller Logic |
+| `public/sw.js` | Service Worker (PWA caching strategies: SWR, network-first, offline fallback) | Service Worker Logic |
+| `public/js/register-sw.js` | PWA service worker registration script | UI Helper |

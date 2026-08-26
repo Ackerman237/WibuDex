@@ -1,12 +1,12 @@
 // eslint.config.js — Flat config ESLint 9.
 // Cakupan: kode backend (lib, controllers, routes, middleware, scripts, tests).
-// website/ diabaikan (frontend tanpa build step, environment browser terpisah).
+// public/ diabaikan (frontend tanpa build step, environment browser terpisah).
 import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
   {
-    ignores: ['node_modules/**', 'website/**', '.runtime/**', 'coverage/**'],
+    ignores: ['node_modules/**', 'public/**', '.runtime/**', 'coverage/**'],
   },
   js.configs.recommended,
   {
@@ -51,13 +51,15 @@ export default [
   },
   {
     // Callback page.evaluate berjalan DI BROWSER — `document` valid di sana.
-    // Skrip probe/spike adalah diagnostik sekali-pakai: longgar saja.
-    files: ['scripts/dev/ui-check.mjs', 'scripts/dev/spikes/**'],
+    // Skrip probe/spike/qa adalah diagnostik sekali-pakai: longgar saja.
+    files: ['scripts/dev/qa/**', 'scripts/dev/experiments/**'],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },
     rules: {
       'no-unused-vars': 'off',
+      'prefer-const': 'off',
+      'no-empty': 'off',
     },
   },
 ];

@@ -9,7 +9,7 @@ import {
   isAllowedPlayerUrl,
   buildPlayerFrameHtml,
   fetchProviderEmbed,
-} from '../../lib/scraper/playerFrame.js';
+} from '../../lib/scraper/player-frame.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PLAYER_FRAME_PORT) || 3444;

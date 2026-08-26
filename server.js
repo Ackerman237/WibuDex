@@ -5,8 +5,8 @@ import net from 'net';
 import helmet from 'helmet';
 import apiRoutes from './routes/index.js';
 import logger from './lib/logger.js';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { disconnectVpn } from './lib/vpn/vpnManager.js';
+import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
+import { disconnectVpn } from './lib/vpn/vpn-manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,7 +46,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 2. Serve Static Files (Folder website/ untuk HTML, CSS, & JS Frontend)
+// 2. Serve Static Files (Folder public/ untuk HTML, CSS, & JS Frontend)
 // Kebijakan cache:
 //   - HTML  -> no-cache (perubahan UI langsung terlihat; dulu maxAge 365d
 //              membuat user terjebak di JS lama berbulan-bulan)
@@ -59,12 +59,12 @@ const staticCacheHeaders = (res, filePath) => {
 };
 
 app.use(
-  express.static(path.join(__dirname, 'website'), { setHeaders: staticCacheHeaders })
+  express.static(path.join(__dirname, 'public'), { setHeaders: staticCacheHeaders })
 );
 
-// Semua folder di website/ otomatis ter-serve lewat satu express.static di atas:
-//   /manga/...  → website/manga/
-//   /video/...  → website/video/
+// Semua folder di public/ otomatis ter-serve lewat satu express.static di atas:
+//   /manga/...  → public/manga/
+//   /video/...  → public/video/
 // Tidak perlu mounting eksplisit tambahan per-folder.
 app.get('/', (_req, res) => {
   // Interim: halaman manga belum dibangun ulang — arahkan ke video yang hidup.

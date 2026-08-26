@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { mkdtempSync } from 'node:fs';
 
 // ─── Mock scraper & VPN agar tidak ada trafik jaringan nyata ──────────────
-vi.mock('../lib/scraper/nekoScraper.js', () => ({
+vi.mock('../lib/scraper/neko-scraper.js', () => ({
   scrapeNekoList: vi.fn().mockResolvedValue({ videos: [], hasNext: false }),
   scrapeNekoCategory: vi.fn().mockResolvedValue({}),
   scrapeNekoSearch: vi.fn().mockResolvedValue({}),
@@ -20,7 +20,7 @@ vi.mock('../lib/scraper/nekoScraper.js', () => ({
   scrapeNekoRandom: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock('../lib/vpn/vpnManager.js', () => ({
+vi.mock('../lib/vpn/vpn-manager.js', () => ({
   ensureVpn: vi.fn().mockResolvedValue({ provider: null, agent: undefined, dispatcher: undefined }),
   reportFailure: vi.fn(),
   reportSuccess: vi.fn(),
@@ -52,7 +52,7 @@ vi.mock('../lib/scraper/fetcher.js', () => ({
 process.env.DB_PATH = join(mkdtempSync(join(tmpdir(), 'doujintest-')), 'cap-test.db');
 
 const { upsertPosition, countDeviceRows, getAllPositions } = await import('../lib/db.js');
-const { scrapeMangaDetail, scrapeChapterImages } = await import('../lib/scraper/doujinScraper.js');
+const { scrapeMangaDetail, scrapeChapterImages } = await import('../lib/scraper/doujin-scraper.js');
 const { fetchJSON } = await import('../lib/scraper/fetcher.js');
 const app = (await import('../server.js')).default;
 

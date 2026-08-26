@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { generalLimiter } from '../middleware/rateLimit.js';
-import { getVpnStatusHandler } from '../controllers/vpnController.js';
+import { generalLimiter } from '../middleware/rate-limit.js';
+import { getVpnStatusHandler } from '../controllers/vpn-controller.js';
 
 const router = Router();
 

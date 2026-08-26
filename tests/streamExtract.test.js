@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { parseDoodStreamEmbed, buildMakePlaySuffix } from '../lib/scraper/streamExtract.js';
+import { parseDoodStreamEmbed, buildMakePlaySuffix } from '../lib/scraper/stream-extract.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const playmogoHtml = readFileSync(join(__dirname, 'fixtures', 'playmogo.html'), 'utf-8');

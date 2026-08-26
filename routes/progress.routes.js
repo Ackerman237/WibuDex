@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { generalLimiter } from '../middleware/rateLimit.js';
+import { generalLimiter } from '../middleware/rate-limit.js';
 import {
   getReadingPosition,
   getAllReadingPositions,
   saveReadingPositionHandler,
-} from '../controllers/progressController.js';
+} from '../controllers/progress-controller.js';
 
 const router = Router();
 

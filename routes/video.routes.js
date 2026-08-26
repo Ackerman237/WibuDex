@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { generalLimiter, proxyLimiter } from '../middleware/rateLimit.js';
+import { generalLimiter, proxyLimiter } from '../middleware/rate-limit.js';
 import {
   getVideoList,
   getVideoCategory,
@@ -14,7 +14,7 @@ import {
   getStream,
   getStreamProxy,
   passthroughProviderXhr,
-} from '../controllers/videoController.js';
+} from '../controllers/video-controller.js';
 
 const router = Router();
 

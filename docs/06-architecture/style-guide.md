@@ -19,7 +19,7 @@ sampai kamu sendiri yang memutuskan untuk mengubahnya.
 
 ## Warna
 
-> Status: FINAL — sinkron dengan `website/css/wibudex-tokens.css` (2026-08-24).
+> Status: FINAL — sinkron dengan `public/css/wibudex-tokens.css` (2026-08-24).
 > Jangan menambah warna di luar sistem ini; semua halaman wajib pakai token.
 
 | Token (tokens.css) | Hex | Dipakai untuk |
@@ -59,9 +59,9 @@ dalam skrip itu. Jangan pernah load varian CJK secara global.
 
 > Status: FINAL (2026-08-24) — sudah terimplementasi.
 
-SVG sprite self-hosted di `website/manga/icons.svg` (30 ikon, prefix `i-`),
-dikonsumsi lewat helper `ic(name)` dari `website/shared/ui.js`. Bendera negara
-di `website/icons/flags/` (jp/kr/cn). Verifikasi: `node scripts/dev/verify-icons.mjs`.
+SVG sprite self-hosted di `public/manga/icons.svg` (30 ikon, prefix `i-`),
+dikonsumsi lewat helper `ic(name)` dari `public/shared/ui.js`. Bendera negara
+di `public/icons/flags/` (jp/kr/cn). Verifikasi: `node scripts/dev/verify-icons.mjs`.
 Tidak ada icon font dan tidak ada load dari CDN.
 
 ## Desain Card Komik
@@ -285,7 +285,7 @@ supaya ada jejak keputusan desain.
   Espresso terkunci); (2) tipografi diputuskan mengikuti token terkunci
   (Plus Jakarta Sans + Inter) — rekomendasi awal Cabinet Grotesk/IBM Plex Sans
   tidak jadi; IBM Plex CJK tetap opsional khusus alt-title; (3) bagian Icon
-  diperbarui ke realita sprite `website/manga/icons.svg`; (4) referensi usang
+  diperbarui ke realita sprite `public/manga/icons.svg`; (4) referensi usang
   `comics.json` diganti cache localStorage; (5) Signature Element diisi:
   cover-expand (utama) + tema dinamis cover (sekunder terbatas).
 - _(sebelumnya)_ — dokumen dibuat dengan status REKOMENDASI awal.

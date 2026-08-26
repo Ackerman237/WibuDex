@@ -22,7 +22,7 @@ vi.mock('../lib/scraper/index.js', () => ({
   ]),
 }));
 
-vi.mock('../lib/scraper/nekoScraper.js', () => ({
+vi.mock('../lib/scraper/neko-scraper.js', () => ({
   scrapeNekoList: vi.fn().mockResolvedValue({ videos: [], hasNext: false }),
   scrapeNekoCategory: vi.fn().mockResolvedValue({ videos: [], hasNext: false }),
   scrapeNekoSearch: vi.fn().mockResolvedValue({ videos: [], hasNext: false }),

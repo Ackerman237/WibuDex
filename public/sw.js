@@ -44,8 +44,9 @@
 // v10: batch UI manga (home.css direvisi, catalog.html/css/js baru,
 // filter-dropdown.js baru) — invalidate cache stale-while-revalidate.
 // v9: restrukturisasi folder web (doujinPage→manga, nekoPage→video) —
-// invalidate semua cache aset dengan path lama.
-const CACHE_VERSION = 'v35';
+ // invalidate semua cache aset dengan path lama.
+// v36: refactor portfolio — website→public, backend kebab-case (controllers/middleware/lib), fix korupsi $2 video HTML
+const CACHE_VERSION = 'v36';
 const ASSET_CACHE = `doujin-cache-${CACHE_VERSION}`;
 const FONT_CACHE = `doujin-fonts-${CACHE_VERSION}`;
 

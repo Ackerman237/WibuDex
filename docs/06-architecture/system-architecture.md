@@ -2,13 +2,13 @@
 
 ## 1. Overview
 The application is an Express server that serves a static frontend
-(`website/`) and exposes a JSON API (`/api/*`) backed by two independent
+(`public/`) and exposes a JSON API (`/api/*`) backed by two independent
 scraping modules: **Doujin** and **Neko**.
 
 ```
                      ┌───────────────┐
                      │   Frontend    │
-                     │  (website/)   │
+                     │  (public/)   │
                      └──────┬────────┘
                             │
                      ┌──────▼────────┐

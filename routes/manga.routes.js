@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { generalLimiter, proxyLimiter } from '../middleware/rateLimit.js';
+import { generalLimiter, proxyLimiter } from '../middleware/rate-limit.js';
 import {
   getMangaList,
   getMangaDetail,
   getMangaCategories,
   getChapterImages,
   proxyImage,
-} from '../controllers/mangaController.js';
+} from '../controllers/manga-controller.js';
 
 const router = Router();
 
