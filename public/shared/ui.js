@@ -58,10 +58,21 @@ function showError(container, message, onRetry) {
  */
 function showEmpty(container, message, btnLabel, onAction) {
   if (!container) return;
+  const svgIcon = `
+    <div style="display: flex; justify-content: center; margin-bottom: var(--space-4);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="width: 56px; height: 56px; color: var(--accent-primary); opacity: 0.7; filter: drop-shadow(0 2px 8px rgba(217, 119, 6, 0.25));">
+        <rect x="2" y="2" width="20" height="20" rx="2.5" ry="2.5" />
+        <path d="m9 8 7 4-7 4V8z" fill="currentColor" fill-opacity="0.15" />
+        <line x1="6" y1="2" x2="6" y2="22" />
+        <line x1="18" y1="2" x2="18" y2="22" />
+      </svg>
+    </div>
+  `;
   container.innerHTML = `
-    <div class="state-box empty-state">
-      <p>${message}</p>
-      ${(btnLabel && onAction) ? `<button type="button" class="retry-btn">${btnLabel}</button>` : ''}
+    <div class="state-box empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-6) var(--space-4);">
+      ${svgIcon}
+      <p style="margin: 0 0 var(--space-4); max-width: 32ch; text-align: center; line-height: 1.5; color: var(--text-secondary); font-size: 14px;">${message}</p>
+      ${(btnLabel && onAction) ? `<button type="button" class="retry-btn" style="margin-top: var(--space-1);">${btnLabel}</button>` : ''}
     </div>
   `;
   if (btnLabel && onAction) {
@@ -170,7 +181,7 @@ function renderMangaCard(manga) {
   const rawThumb = manga.thumb || manga.cover || '';
   const thumbSrc = rawThumb
     ? `/api/image-proxy?url=${encodeURIComponent(rawThumb)}&w=300`
-    : 'https://placehold.co/110x140?text=No+Cover';
+    : '';
 
   let chaptersHTML = '';
   if (Array.isArray(manga.chapters) && manga.chapters.length > 0) {
@@ -190,7 +201,7 @@ function renderMangaCard(manga) {
 
   card.innerHTML = `
     <div class="thumb-container" data-slug="${mangaSlug}">
-      <img src="${thumbSrc}" alt="${escapeHtml(manga.title || '')}" loading="lazy">
+      <img src="${thumbSrc}" alt="${escapeHtml(manga.title || '')}" loading="lazy" style="view-transition-name: cover-${mangaSlug}">
       <span class="rating-tag">${ic('star')} ${escapeHtml(manga.rating ?? '-')}</span>
     </div>
     <div class="manga-info">

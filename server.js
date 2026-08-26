@@ -46,7 +46,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 2. Serve Static Files (Folder public/ untuk HTML, CSS, & JS Frontend)
+// 2. Serve Static Files — dev: public/, production (hardened): dist/public/ via STATIC_DIR
+//    `npm run build` menghasilkan dist/public yang dibundle/minify+mangle & tanpa comment.
+//    Production: STATIC_DIR=dist/public node --env-file=.env server.js  (atau npm run build:preview)
 // Kebijakan cache:
 //   - HTML  -> no-cache (perubahan UI langsung terlihat; dulu maxAge 365d
 //              membuat user terjebak di JS lama berbulan-bulan)
@@ -58,17 +60,17 @@ const staticCacheHeaders = (res, filePath) => {
   );
 };
 
+const STATIC_DIR = process.env.STATIC_DIR || 'public';
 app.use(
-  express.static(path.join(__dirname, 'public'), { setHeaders: staticCacheHeaders })
+  express.static(path.join(__dirname, STATIC_DIR), { setHeaders: staticCacheHeaders })
 );
 
-// Semua folder di public/ otomatis ter-serve lewat satu express.static di atas:
-//   /manga/...  → public/manga/
-//   /video/...  → public/video/
+// Semua folder di STATIC_DIR otomatis ter-serve:
+//   /manga/...  → ${STATIC_DIR}/manga/
+//   /video/...  → ${STATIC_DIR}/video/
 // Tidak perlu mounting eksplisit tambahan per-folder.
 app.get('/', (_req, res) => {
-  // Interim: halaman manga belum dibangun ulang — arahkan ke video yang hidup.
-  res.redirect('/video/html/');
+  res.redirect('/manga/html/'); //renacananya mau dibuatkan home antara mangan dan video
 });
 
 // 3. Routing API

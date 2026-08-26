@@ -51,6 +51,7 @@ describe('vpnManager', () => {
   beforeEach(() => {
     _internals.reset();
     _internals.setVerifyConfig({ attempts: 2, delayMs: 1 });
+    _internals.setPolicyMode('doujin', 'auto');
     __setProviders([]);
     vi.restoreAllMocks();
   });

@@ -183,7 +183,7 @@ async function loadSchedule() {
         card.className = 'schedule-card';
         card.href = `/video/html/watch.html?slug=${encodeURIComponent(item.slug)}`;
 
-        const thumbUrl = item.thumb || 'https://placehold.co/100x140?text=?';
+        const thumbUrl = item.thumb || '';
         const title = escapeHtml(item.title || '');
 
         card.innerHTML = `

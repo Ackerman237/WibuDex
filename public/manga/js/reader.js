@@ -723,7 +723,7 @@ async function loadChapter() {
       saveReadingHistory({
         slug: mangaSlug,
         title: mangaTitle,
-        thumb: chapterData.thumb || mangaDetail?.thumb || mangaDetail?.cover || mangaDetail?.coverUrl || "https://placehold.co/420x560?text=No+Cover",
+        thumb: chapterData.thumb || mangaDetail?.thumb || mangaDetail?.cover || mangaDetail?.coverUrl || "",
         type: mangaDetail?.type || '',
         chapter: chapterData.number ?? chapterData.chapter ?? (currentIndex >= 0 ? currentIndex + 1 : 1),
         chapterId: chapterId,

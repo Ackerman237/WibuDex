@@ -19,12 +19,9 @@
     navigator.serviceWorker
       .register('/sw.js')
       .then(function (registration) {
-        console.log(
-          '[SW] Terdaftar, scope:',
-          registration.scope
-        );
-
-        // Deteksi service worker versi baru sedang menunggu aktivasi
+        if (isLocalhost) {
+          console.log('[SW] Terdaftar, scope:', registration.scope);
+        }
         registration.addEventListener('updatefound', function () {
           var newWorker = registration.installing;
           if (!newWorker) return;
@@ -33,13 +30,13 @@
               newWorker.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
-              console.log('[SW] Versi baru tersedia, refresh halaman untuk memakai cache terbaru.');
+              if (isLocalhost) console.log('[SW] Versi baru tersedia, refresh halaman untuk memakai cache terbaru.');
             }
           });
         });
       })
       .catch(function (err) {
-        console.warn('[SW] Registrasi gagal:', err);
+        if (isLocalhost) console.warn('[SW] Registrasi gagal:', err);
       });
   });
 })();

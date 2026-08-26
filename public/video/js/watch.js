@@ -35,7 +35,7 @@ function renderEpisodeList(episodes) {
     wrap.appendChild(a);
   });
 
-  playerBox.innerHTML = '';
+  cleanPlayerBox(playerBox);
   playerBox.appendChild(wrap);
   return true;
 }
@@ -110,11 +110,11 @@ function attachSlowNotes() {
     if (el && el.style.display !== 'none') {
       el.textContent = 'Lama tak selesai — pakai tombol mode langsung di bawah';
       // Player benar-benar dianggap gagal → barulah tampilkan fallback eksternal
-      const c = document.getElementById('externalFallbackContainer');
+      const c = document.getElementById('playerFallback');
       if (c) {
         // href sudah disiapkan saat memilih server — cukup tampilkan
-        const btn = document.getElementById('externalPlayerBtn');
-        if (btn?.href) c.style.display = 'block';
+        const btn = document.getElementById('fallbackExternalBtn');
+        if (btn?.href) c.hidden = false;
       }
     }
   }, 25000);
@@ -167,15 +167,59 @@ async function tryNativeStream(playerUrl) {
 }
 
 // URL yang sudah terbukti gagal diputar di sesi ini — jangan coba native lagi
+// URL yang sudah terbukti gagal diputar di sesi ini — jangan coba native lagi
 const failedNativeUrls = new Set();
 
-function mountNativeVideo(playerBox, playerUrl, streamSrc) {
-  playerBox.innerHTML =
-    `<video id="nativeVideo" src="${escapeHtml(streamSrc)}" controls playsinline preload="metadata" ` +
-    `referrerpolicy="no-referrer" ` +
-    `style="position:absolute;inset:0;width:100%;height:100%;background:#000;border:0"></video>`;
+function cleanPlayerBox(playerBox) {
+  const fb = document.getElementById('playerFallback');
+  // Remove everything else (like existing iframe, video, loader, or buttons)
+  Array.from(playerBox.childNodes).forEach(node => {
+    if (node !== fb) {
+      node.remove();
+    }
+  });
+}
+
+function showFallback(playerUrl) {
   hideLoading();
-  const video = document.getElementById('nativeVideo');
+  const fb = document.getElementById('playerFallback');
+  if (fb) {
+    fb.removeAttribute('hidden');
+    // Hide standard loader
+    const loader = document.getElementById('pfLoading');
+    if (loader) loader.style.display = 'none';
+  }
+  const btn = document.getElementById('fallbackExternalBtn');
+  if (btn && isAllowedPlayerUrl(playerUrl)) {
+    btn.href = playerUrl;
+  }
+}
+
+function hideFallback() {
+  const fb = document.getElementById('playerFallback');
+  if (fb) {
+    fb.setAttribute('hidden', '');
+  }
+}
+
+function mountNativeVideo(playerBox, playerUrl, streamSrc) {
+  cleanPlayerBox(playerBox);
+  const video = document.createElement('video');
+  video.id = 'nativeVideo';
+  video.src = streamSrc;
+  video.controls = true;
+  video.playsInline = true;
+  video.preload = 'metadata';
+  video.referrerPolicy = 'no-referrer';
+  video.style.position = 'absolute';
+  video.style.inset = '0';
+  video.style.width = '100%';
+  video.style.height = '100%';
+  video.style.background = '#000';
+  video.style.border = '0';
+  playerBox.appendChild(video);
+
+  hideLoading();
   video.addEventListener('loadeddata', hideLoading, { once: true });
   // V1.6 Custom Controls (Opsi A) — ambil alih kontrol native
   if (typeof window.initPlayerControls === 'function') {
@@ -198,23 +242,31 @@ function mountNativeVideo(playerBox, playerUrl, streamSrc) {
 }
 
 function mountFilteredFrame(playerBox, playerUrl) {
-  playerBox.innerHTML =
-    `<iframe src="${escapeHtml(`/api/video/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`)}" ` +
-    `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  cleanPlayerBox(playerBox);
+  const iframe = document.createElement('iframe');
+  iframe.src = `/api/video/player-frame?url=${encodeURIComponent(playerUrl)}&slug=${encodeURIComponent(pageSlug())}`;
+  iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+  iframe.allowFullscreen = true;
+  playerBox.appendChild(iframe);
+
   showLoading(playerBox); // innerHTML menghapus overlay lama — pasang lagi sampai load
-  const frame = playerBox.querySelector('iframe');
-  frame.addEventListener('load', hideLoading);
+  iframe.addEventListener('load', hideLoading);
+  iframe.addEventListener('error', () => showFallback(playerUrl));
   attachSlowNotes();
   ensureModeBtn(playerBox, playerUrl);
 }
 
 function mountDirectFrame(playerBox, playerUrl) {
-  playerBox.innerHTML =
-    `<iframe src="${escapeHtml(playerUrl)}" ` +
-    `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  cleanPlayerBox(playerBox);
+  const iframe = document.createElement('iframe');
+  iframe.src = playerUrl;
+  iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+  iframe.allowFullscreen = true;
+  playerBox.appendChild(iframe);
+
   showLoading(playerBox);
-  const frame = playerBox.querySelector('iframe');
-  frame.addEventListener('load', hideLoading);
+  iframe.addEventListener('load', hideLoading);
+  iframe.addEventListener('error', () => showFallback(playerUrl));
   attachSlowNotes();
   ensureModeBtn(playerBox, playerUrl);
 }
@@ -225,6 +277,7 @@ async function mountPlayer(playerBox, playerUrl, opts = {}) {
   showLoading(playerBox);
   attachSlowNotes();
   ensureModeBtn(playerBox, playerUrl);
+  hideFallback();
 
   if (playerMode === 'direct') {
     // Guard: URL di luar allowlist tidak pernah masuk iframe langsung —
@@ -314,8 +367,8 @@ async function loadDetail() {
   const slug = params.get('slug');
   const playerBox = document.getElementById('playerBox');
   const serverSelectorContainer = document.getElementById('serverSelectorContainer');
-  const externalFallbackContainer = document.getElementById('externalFallbackContainer');
-  const externalPlayerBtn = document.getElementById('externalPlayerBtn');
+  const externalFallbackContainer = document.getElementById('playerFallback');
+  const externalPlayerBtn = document.getElementById('fallbackExternalBtn');
 
   if (!slug) {
     playerBox.innerHTML = '<p class="player-error-text">Error: Parameter slug tidak ditemukan di URL.</p>';
@@ -342,6 +395,7 @@ async function loadDetail() {
     }
 
     const detail = result.data;
+    document.dispatchEvent(new CustomEvent('video-detail-loaded', { detail: detail }));
     document.getElementById('videoTitle').innerText = detail.title || 'Tanpa Judul';
     // Channel row
     (() => {
@@ -397,8 +451,8 @@ async function loadDetail() {
     // (opsi A — di toolbar, tidak menutupi video)
     const revealExternal = (url) => {
       if (!isAllowedPlayerUrl(url)) return;
-      externalPlayerBtn.href = url;
-      externalFallbackContainer.style.display = 'block';
+      if (externalPlayerBtn) externalPlayerBtn.href = url;
+      if (externalFallbackContainer) externalFallbackContainer.hidden = false;
     };
 
     // Gagal total (timeout/slow 25 dtk) juga memicu fallback

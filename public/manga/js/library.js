@@ -49,7 +49,7 @@ function renderLibrarySection(storageKey, gridId, emptyId, btnId) {
 
     const coverUrl = item.thumb
       ? `/api/image-proxy?url=${encodeURIComponent(item.thumb)}&w=300`
-      : "https://placehold.co/180x240?text=No+Cover";
+      : "";
     const title = item.title || "Tanpa Judul";
     const rating = item.rating ? Number(item.rating).toFixed(1) : '-';
 

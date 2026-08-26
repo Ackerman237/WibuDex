@@ -11,7 +11,7 @@
     <a href="/video/html/index.html"><svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-house"></use></svg><span class="label">Beranda</span></a>
     <a href="/video/html/series.html?type=hentai"><svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-play"></use></svg><span class="label">Hentai</span></a>
     <a href="/video/html/series.html?type=jav"><span class="label">JAV</span></a>
-    <a href="/video/html/index.html#jadwal"><svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg><span class="label">Jadwal</span></a>
+    <a href="/video/html/schedule.html"><svg class="ic" aria-hidden="true"><use href="/manga/icons.svg#i-clock"></use></svg><span class="label">Jadwal</span></a>
   `;
   document.body.appendChild(rail);
   main.classList.add('has-left-rail');

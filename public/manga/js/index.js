@@ -26,7 +26,7 @@ function renderHomeHistory() {
     const flag = typeof getMangaFlag === 'function' ? getMangaFlag(item.type) : '';
     if (flag) card.dataset.flag = flag;
 
-    const thumbUrl = item.thumb || 'https://placehold.co/110x140?text=No+Cover';
+    const thumbUrl = item.thumb || '';
     const formattedDate = item.lastRead ? new Date(item.lastRead).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-';
 
     card.innerHTML = `
@@ -129,11 +129,11 @@ let heroTimer = null;
 function heroProxyImage(thumb) {
   return thumb
     ? `/api/image-proxy?url=${encodeURIComponent(thumb)}&w=1200`
-    : 'https://placehold.co/1200x400/201b16/ece6dc?text=Featured+Manga';
+    : '';
 }
 
 const HERO_PLACEHOLDER_BG =
-  'url("https://placehold.co/1200x400/201b16/ece6dc?text=Featured+Manga")';
+  'url("")';
 
 /** Chapter pertama (nomor terkecil) dari payload list; null bila tak ada. */
 function getFirstChapter(manga) {

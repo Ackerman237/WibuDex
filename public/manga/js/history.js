@@ -22,7 +22,7 @@ async function loadServerHistory() {
     grid.innerHTML = '';
     rows.forEach((row) => {
       const title = row.manga_title || row.manga_slug || 'Manga';
-      const coverUrl = row.cover_url || 'https://placehold.co/420x560?text=No+Cover';
+      const coverUrl = row.cover_url || '';
       const chapterNum = row.chapter_num || row.chapter_id || '-';
       const updatedText = row.updated_at
         ? new Date(Number(row.updated_at) * 1000).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })

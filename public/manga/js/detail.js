@@ -149,7 +149,7 @@ async function renderDetail() {
   try {
     const data = await fetchMangaDetail(slug);
 
-    const coverUrl = data.cover || data.thumb || data.coverUrl || "https://placehold.co/420x560?text=No+Cover";
+    const coverUrl = data.cover || data.thumb || data.coverUrl || "";
     const titleText = data.title || "Tanpa Judul";
     globalTitleText = titleText;
     const mangaSlug = data.slug || slug;
@@ -206,7 +206,11 @@ async function renderDetail() {
     });
 
     if (el("coverFrame")) el("coverFrame").style.backgroundImage = `url('${coverUrl}')`;
-    if (el("coverImg")) { el("coverImg").src = coverUrl; el("coverImg").alt = titleText; }
+    if (el("coverImg")) {
+      el("coverImg").src = coverUrl;
+      el("coverImg").alt = titleText;
+      el("coverImg").style.viewTransitionName = 'cover-' + slug;
+    }
 
     if (el("mTitle")) el("mTitle").textContent = titleText;
     // Alt title kini HANYA di panel info (duplikasi di bawah judul dihapus)

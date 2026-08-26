@@ -31,3 +31,13 @@ function setupBackToTop(btn, threshold) {
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   sync();
 }
+
+// Load spotlight.js dynamically on DOM content loaded (Premium Hover/3D effects)
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const scr = document.createElement('script');
+    scr.src = '/shared/spotlight.js';
+    scr.defer = true;
+    document.head.appendChild(scr);
+  });
+}

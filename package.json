@@ -19,7 +19,9 @@
     "demo": "node --env-file=.env scripts/demo.js",
     "demo:manga": "node --env-file=.env scripts/demo.js --manga-only",
     "demo:video": "node --env-file=.env scripts/demo.js --video-only",
-    "demo:fast": "node --env-file=.env scripts/demo.js --skip-images"
+    "demo:fast": "node --env-file=.env scripts/demo.js --skip-images",
+    "build": "node scripts/build.mjs",
+    "build:preview": "STATIC_DIR=dist/public node --env-file=.env server.js"
   },
   "dependencies": {
     "express": "^4.22.2",
@@ -37,6 +39,7 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "esbuild": "^0.28.2",
     "eslint": "^10.9.0",
     "globals": "^17.11.0",
     "sharp": "^0.35.3",

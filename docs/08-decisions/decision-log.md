@@ -99,6 +99,16 @@ authenticated private access, or splitting sensitive logic out.
 
 ---
 
+### 2026-08-26 — Always-on VPN mode for doujin with auto-idle disconnect
+**Decision:** Mengubah konfigurasi VPN untuk target `doujin` dari `'auto'` menjadi `'always'`. VPN akan aktif otomatis sejak request pertama manga dilakukan, dan akan mati otomatis (idle teardown) 3 menit setelah Chrome ditutup (tidak ada aktivitas request baru).
+
+**Why:** Situs `doujin.desu.xxx` diblokir di Indonesia. Menggunakan mode `'auto'` memicu jeda/timeout 5-10 detik di awal pemuatan sebelum sistem mendeteksi blokir dan menyalakan VPN. Dengan mengubahnya ke `'always'`, VPN aktif instan sejak awal. Fitur auto-idle-teardown yang sudah ada di server secara otomatis mematikan VPN jika tidak ada aktivitas selama 3 menit, menjaga privasi dan menghindari kecurigaan koneksi VPN yang menyala terus-menerus setelah aplikasi tidak digunakan.
+
+**Alternatives considered:**
+- Mengandalkan mode `'auto'` bawaan — rejected karena mengakibatkan lag awal yang mengganggu kenyamanan pengguna.
+
+---
+
 ### Template for new entries
 ```md
 ### YYYY-MM-DD — <short decision title>

@@ -14,6 +14,7 @@
 // Field opsional masa depan (durasi/views/genre — lihat roadmap Bagian 2)
 // tinggal ditambah di sini, semua konteks langsung ikut.
 
+const PLACEHOLDER_THUMB = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%27 height=%27140%27%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%23222%27/%3E%3C/svg%3E';
 const MEDIA_CARD_VARIANTS = {
   grid: {
     card: 'video-card',
@@ -23,7 +24,7 @@ const MEDIA_CARD_VARIANTS = {
     titleTag: 'h3',
     meta: 'video-date',
     order: ['meta', 'title'],
-    fallbackThumb: 'https://placehold.co/480x270?text=No+Thumb',
+    fallbackThumb: PLACEHOLDER_THUMB,
   },
   episode: {
     card: 'episode-card',
@@ -34,7 +35,7 @@ const MEDIA_CARD_VARIANTS = {
     titleTag: 'div',
     metaPrefix: 'Ep.',
     order: ['meta', 'title'],
-    fallbackThumb: 'https://placehold.co/224x126?text=Episode',
+    fallbackThumb: PLACEHOLDER_THUMB,
   },
   episodeMobile: {
     card: 'episode-card-mobile',
@@ -44,7 +45,7 @@ const MEDIA_CARD_VARIANTS = {
     titleTag: 'div',
     metaPrefix: 'Ep.',
     order: ['meta', 'title'],
-    fallbackThumb: 'https://placehold.co/280x158?text=Episode',
+    fallbackThumb: PLACEHOLDER_THUMB,
   },
   related: {
     card: 'related-card',
@@ -54,7 +55,7 @@ const MEDIA_CARD_VARIANTS = {
     titleTag: 'div',
     typeClass: 'related-type',
     order: ['title', 'type'],
-    fallbackThumb: 'https://placehold.co/256x144?text=Video',
+    fallbackThumb: PLACEHOLDER_THUMB,
   },
   relatedMobile: {
     card: 'related-card-mobile',
@@ -62,7 +63,7 @@ const MEDIA_CARD_VARIANTS = {
     title: 'related-name-mobile',
     titleTag: 'div',
     order: ['title'],
-    fallbackThumb: 'https://placehold.co/256x144?text=Video',
+    fallbackThumb: PLACEHOLDER_THUMB,
   },
 };
 
@@ -108,7 +109,7 @@ function renderMediaCard(item, opts = {}) {
   card.className = v.card + (opts.isActive ? ' is-active' : '');
   card.href = `/video/html/watch.html?slug=${encodeURIComponent(slug)}`;
   card.innerHTML = `
-    <img class="${v.thumb}" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">
+    <img class="${v.thumb}" src="${escapeHtml(thumbUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" style="view-transition-name: cover-${slug}">
     ${inner}
   `;
 
